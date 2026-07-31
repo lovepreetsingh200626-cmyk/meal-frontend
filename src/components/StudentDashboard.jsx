@@ -375,7 +375,7 @@ export default function StudentDashboard({ user, onLogout }) {
             {/* Footer note inside table card */}
             <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-center gap-2 text-xs text-slate-400">
               <ShieldCheck className="w-4 h-4 text-blue-600/80" />
-              <span>GNDU Amritsar • Campus Mess Attendance System</span>
+              <span className=' text-taupe-800'>you can update the entry for a day </span>
             </div>
           </div>
         </div>
