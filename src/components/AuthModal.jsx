@@ -48,6 +48,24 @@ export default function AuthModal({ onLoginSuccess }) {
     setError('');
     setSuccessMsg('');
 
+    // --- FRONTEND GENDER/HOSTEL VALIDATION GUARD ---
+    if (isRegistering) {
+      const hostelPrefix = formData.hostelNo.toUpperCase().substring(0, 2);
+      
+      if (formData.gender === 'Female' && hostelPrefix === 'BH') {
+        setError('Female students cannot select a Boys Hostel (BH). Please select a Girls Hostel.');
+        setLoading(false);
+        return;
+      }
+
+      if (formData.gender === 'Male' && hostelPrefix === 'GH') {
+        setError('Male students cannot select a Girls Hostel (GH). Please select a Boys Hostel.');
+        setLoading(false);
+        return;
+      }
+    }
+    // -----------------------------------------------
+
     try {
       if (isRegistering) {
         await API.post('/auth/register', formData);
