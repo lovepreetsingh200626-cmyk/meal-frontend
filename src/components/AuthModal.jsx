@@ -51,6 +51,7 @@ export default function AuthModal({ onLoginSuccess }) {
     // --- FRONTEND GENDER/HOSTEL VALIDATION GUARD ---
     if (isRegistering) {
       const hostelPrefix = formData.hostelNo.toUpperCase().substring(0, 2);
+      console.log(hostelPrefix)
       
       if (formData.gender === 'Female' && hostelPrefix === 'BH') {
         setError('Female students cannot select a Boys Hostel (BH). Please select a Girls Hostel.');
