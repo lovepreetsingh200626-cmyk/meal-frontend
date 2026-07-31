@@ -194,7 +194,7 @@ export default function AuthModal({ onLoginSuccess }) {
           <div>
             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Roll Number</label>
             <div className="relative mt-1 group">
-              <Hash className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400 group-focus-within:text-blue-600 transition" />
+              <User className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400 group-focus-within:text-blue-600 transition" />
               <input
                 required
                 type="text"
