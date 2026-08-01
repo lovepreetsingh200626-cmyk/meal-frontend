@@ -12,10 +12,11 @@ import {
   Building,
   Receipt,
   AlertCircle,
-  ShieldCheck
+  ShieldCheck,
+  Wallet
 } from 'lucide-react';
 
-export default function StudentDashboard({ user, onLogout }) {
+export default function StudentDashboard({ user, onLogout, onOpenProfile }) {
   const todayStr = new Date().toISOString().split('T')[0];
   const [selectedDate, setSelectedDate] = useState(todayStr);
   const [meals, setMeals] = useState({ breakfast: false, lunch: false, dinner: false });
@@ -66,17 +67,37 @@ export default function StudentDashboard({ user, onLogout }) {
     setExtras(extras.filter((_, idx) => idx !== index));
   };
 
+  // --- LIVE TOTAL LOGIC (1 Diet = 2 Diets) ---
   const calculateLiveTotal = () => {
-    let total = 0;
-    const costs = hostelData?.mealCosts || { breakfast: 40, lunch: 60, dinner: 60 };
-    if (meals.breakfast) total += costs.breakfast;
-    if (meals.lunch) total += costs.lunch;
-    if (meals.dinner) total += costs.dinner;
-    total += extras.reduce((sum, item) => sum + Number(item.cost), 0);
-    return total;
+    let mealCount = 0;
+    if (meals.breakfast) mealCount++;
+    if (meals.lunch) mealCount++;
+    if (meals.dinner) mealCount++;
+
+    const dietRate = 37; // Standard GNDU Diet Rate
+    let standardMealsCost = 0;
+
+    if (mealCount === 1) {
+      standardMealsCost = dietRate * 2; // Rule: 1 diet bumped to 2
+    } else if (mealCount > 1) {
+      standardMealsCost = mealCount * dietRate;
+    }
+
+    const extrasCost = extras.reduce((sum, item) => sum + Number(item.cost), 0);
+    return {
+      total: standardMealsCost + extrasCost,
+      mealCount
+    };
   };
 
   const handleSaveEntry = async () => {
+    // Validation: Ensure at least one standard meal is selected
+    if (!meals.breakfast && !meals.lunch && !meals.dinner) {
+      setErrorMsg('You must select at least one standard meal (Breakfast, Lunch, or Dinner) to save a log.');
+      setTimeout(() => setErrorMsg(''), 4000);
+      return; 
+    }
+
     setSaving(true);
     setErrorMsg('');
     setSuccessMsg('');
@@ -99,7 +120,16 @@ export default function StudentDashboard({ user, onLogout }) {
     }
   };
 
+  // --- BILL CALCULATIONS ---
   const totalSpentAllTime = history.reduce((sum, r) => sum + (r.dailyTotalCost || 0), 0);
+  
+  // Calculate Current Month's Bill (YYYY-MM match)
+  const currentMonthPrefix = new Date().toISOString().substring(0, 7);
+  const currentMonthBill = history
+    .filter(r => r.date.startsWith(currentMonthPrefix))
+    .reduce((sum, r) => sum + (r.dailyTotalCost || 0), 0);
+
+  const liveCalc = calculateLiveTotal();
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 pb-16 font-sans relative overflow-hidden selection:bg-blue-600 selection:text-white">
@@ -107,17 +137,31 @@ export default function StudentDashboard({ user, onLogout }) {
       {/* Soft Background Ambient Glows */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-96 bg-gradient-to-b from-blue-100/60 to-transparent pointer-events-none" />
 
-      {/* Top Profile Banner */}
+      {/* Top Profile Banner (Clickable Profile & Photo) */}
       <nav className="border-b border-slate-200 bg-white/90 backdrop-blur-md sticky top-0 z-50 shadow-sm">
         <div className="max-w-6xl mx-auto px-4 py-3.5 flex items-center justify-between">
-          <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-xl bg-blue-600 text-white font-extrabold text-lg flex items-center justify-center shadow-md shadow-blue-600/20">
-              {user.name.charAt(0).toUpperCase()}
+          
+          <div 
+            onClick={onOpenProfile} 
+            className="flex items-center gap-3.5 cursor-pointer group hover:opacity-80 transition"
+            title="Edit Profile"
+          >
+            <div className="w-11 h-11 rounded-xl bg-blue-600 text-white font-extrabold text-lg flex items-center justify-center shadow-md shadow-blue-600/20 overflow-hidden">
+              {user.profilePhoto ? (
+                <img src={user.profilePhoto} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                user?.name.charAt(0).toUpperCase()
+              )}
             </div>
             <div>
-              <h1 className="font-extrabold text-slate-900 text-base leading-tight">{user.name}</h1>
+              <h1 className="font-extrabold text-slate-900 text-base leading-tight group-hover:text-blue-600 transition-colors">
+                {user.name}
+              </h1>
               <p className="text-xs font-medium text-slate-500 mt-0.5">
-                Roll No: <span className="text-slate-700 font-semibold uppercase">{user.rollNo}</span> • {user.gender}
+                Roll No: <span className="text-slate-700 font-semibold uppercase">{user.rollNo}</span>
+                {/* --- ADDED STUDENT ID HERE --- */}
+                {user.studentId && ` • ID: ${user.studentId}`}
+                {user.dob && ` • DOB: ${user.dob}`}
               </p>
             </div>
           </div>
@@ -125,7 +169,7 @@ export default function StudentDashboard({ user, onLogout }) {
           <div className="flex items-center gap-3">
             <div className="hidden sm:flex items-center gap-2 bg-blue-50 border border-blue-100 px-3.5 py-1.5 rounded-lg text-xs font-medium text-blue-900">
               <Building className="w-4 h-4 text-blue-600" />
-              <span>Hostel: <strong className="text-blue-950 uppercase">{user.hostelNo}</strong> ({user.hostelType.toUpperCase()})</span>
+              <span>Hostel: <strong className="text-blue-950 uppercase">{user.hostelNo}</strong></span>
             </div>
 
             <button 
@@ -133,7 +177,7 @@ export default function StudentDashboard({ user, onLogout }) {
               className="flex items-center gap-1.5 text-xs font-semibold bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 px-3.5 py-2 rounded-lg transition cursor-pointer"
             >
               <LogOut className="w-3.5 h-3.5" />
-              <span>Logout</span>
+              <span className="hidden sm:inline">Logout</span>
             </button>
           </div>
         </div>
@@ -141,21 +185,32 @@ export default function StudentDashboard({ user, onLogout }) {
 
       <div className="max-w-6xl mx-auto px-4 mt-8 relative z-10">
         
-        {/* Quick Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+        {/* Quick Stats Grid (4 Columns) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+          
           <div className="bg-white border border-slate-200/80 p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow flex items-center justify-between">
             <div>
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Logged Days</p>
-              <p className="text-3xl font-extrabold text-slate-900 mt-1.5">{history.length} <span className="text-xs font-medium text-slate-500">days</span></p>
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Logged Days</p>
+              <p className="text-3xl font-extrabold text-slate-900 mt-1.5">{history.length}</p>
             </div>
-            <div className="w-12 h-12 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center">
-              <Calendar className="w-6 h-6 text-blue-600" />
+            <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center">
+              <Calendar className="w-6 h-6 text-slate-600" />
             </div>
           </div>
 
           <div className="bg-white border border-slate-200/80 p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow flex items-center justify-between">
             <div>
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Accumulated Bill</p>
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">This Month's Bill</p>
+              <p className="text-3xl font-extrabold text-blue-600 mt-1.5">₹{currentMonthBill}</p>
+            </div>
+            <div className="w-12 h-12 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center">
+              <Wallet className="w-6 h-6 text-blue-600" />
+            </div>
+          </div>
+
+          <div className="bg-white border border-slate-200/80 p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow flex items-center justify-between">
+            <div>
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Accumulated Bill</p>
               <p className="text-3xl font-extrabold text-emerald-600 mt-1.5">₹{totalSpentAllTime}</p>
             </div>
             <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center">
@@ -168,10 +223,11 @@ export default function StudentDashboard({ user, onLogout }) {
               <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Contact Mobile</p>
               <p className="text-xl font-bold text-slate-800 mt-1.5">+91 {user.mobileNo}</p>
             </div>
-            <div className="w-12 h-12 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center">
               <Clock className="w-6 h-6 text-slate-600" />
             </div>
           </div>
+
         </div>
 
         {/* Status Alerts */}
@@ -206,12 +262,12 @@ export default function StudentDashboard({ user, onLogout }) {
               />
             </div>
 
-            {/* Standard Meals */}
+            {/* Standard Meals (Using ₹37 Uniform Rate) */}
             <div className="space-y-3 mb-6">
               {[
-                { key: 'breakfast', label: 'Breakfast', cost: hostelData?.mealCosts?.breakfast || 40 },
-                { key: 'lunch', label: 'Lunch', cost: hostelData?.mealCosts?.lunch || 60 },
-                { key: 'dinner', label: 'Dinner', cost: hostelData?.mealCosts?.dinner || 60 },
+                { key: 'breakfast', label: 'Breakfast', cost: 37 },
+                { key: 'lunch', label: 'Lunch', cost: 37 },
+                { key: 'dinner', label: 'Dinner', cost: 37 },
               ].map(meal => (
                 <div 
                   key={meal.key}
@@ -289,9 +345,16 @@ export default function StudentDashboard({ user, onLogout }) {
             </div>
 
             {/* Live Cost Computation Footer */}
-            <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-4 mb-5 flex items-center justify-between">
-              <span className="text-sm font-semibold text-slate-600">Computed Day Total:</span>
-              <span className="text-2xl font-extrabold text-blue-700">₹{calculateLiveTotal()}</span>
+            <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-4 mb-5">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-semibold text-slate-600">Computed Day Total:</span>
+                <span className="text-2xl font-extrabold text-blue-700">₹{liveCalc.total}</span>
+              </div>
+              {liveCalc.mealCount === 1 && (
+                <p className="text-[11px] font-semibold text-amber-700 mt-1">
+                  * 1 diet selected: Minimum 2 diets (₹74) applied.
+                </p>
+              )}
             </div>
 
             <button 
@@ -342,7 +405,7 @@ export default function StudentDashboard({ user, onLogout }) {
                       <tr key={rec._id} className="hover:bg-blue-50/40 transition">
                         <td className="py-3.5 pl-2 font-semibold text-slate-800">{rec.date}</td>
                         <td className="py-3.5">
-                          <div className="flex gap-1.5">
+                          <div className="flex items-center gap-1.5">
                             {rec.meals.breakfast && (
                               <span className="bg-blue-50 border border-blue-200 text-blue-700 px-2 py-0.5 rounded text-xs font-bold">B</span>
                             )}
@@ -351,6 +414,11 @@ export default function StudentDashboard({ user, onLogout }) {
                             )}
                             {rec.meals.dinner && (
                               <span className="bg-blue-50 border border-blue-200 text-blue-700 px-2 py-0.5 rounded text-xs font-bold">D</span>
+                            )}
+                            {rec.appliedDietRule === '1_DIET_BUMPED_TO_2' && (
+                              <span className="text-[10px] bg-amber-50 text-amber-700 border border-amber-200 px-1.5 py-0.5 rounded font-bold">
+                                Min 2 Diets
+                              </span>
                             )}
                             {!rec.meals.breakfast && !rec.meals.lunch && !rec.meals.dinner && (
                               <span className="text-slate-400 text-xs font-medium italic">No standard meals</span>
@@ -373,9 +441,12 @@ export default function StudentDashboard({ user, onLogout }) {
             )}
 
             {/* Footer note inside table card */}
-            <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-center gap-2 text-xs text-slate-400">
-              <ShieldCheck className="w-4 h-4 text-blue-600/80" />
-              <span className=' text-taupe-800'>you can update the entry for a day </span>
+            <div className="mt-6 pt-4 border-t border-slate-100 flex flex-col items-center justify-center gap-2 text-xs text-slate-400">
+              <div className="flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-blue-600/80" />
+                <span className="font-semibold text-slate-500">GNDU Amritsar • Campus Mess System</span>
+              </div>
+              <span>You can update any past entry by selecting its date and saving again.</span>
             </div>
           </div>
         </div>

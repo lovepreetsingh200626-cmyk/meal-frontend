@@ -14,13 +14,12 @@ import {
   ArrowRight,
   ShieldCheck,
   Mail,
-  KeyRound,
-  ShieldAlert
+  KeyRound
 } from 'lucide-react';
 
 export default function AuthModal({ onLoginSuccess }) {
   const [isRegistering, setIsRegistering] = useState(false);
-  const [isAdminMode, setIsAdminMode] = useState(false); // Toggle between Student and Admin Portal
+  const [isAdminMode, setIsAdminMode] = useState(false); // Switch between Student and Admin Portal
   const [hostels, setHostels] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -33,7 +32,7 @@ export default function AuthModal({ onLoginSuccess }) {
     gender: 'Male',
     mobileNo: '',
     password: '',
-    adminSecret: '' // Used only for Admin Registration
+    adminSecret: '' // Only used for Admin Registration
   });
 
   useEffect(() => {
@@ -54,7 +53,7 @@ export default function AuthModal({ onLoginSuccess }) {
     setSuccessMsg('');
 
     // =========================================================
-    // --- 1. ADMIN FORM VALIDATION GUARDS (Simplified) ---
+    // --- 1. ADMIN FORM VALIDATION GUARDS ---
     // =========================================================
     if (isAdminMode) {
       if (!formData.name.trim() || !/^[a-zA-Z\s]{2,}$/.test(formData.name.trim())) {
@@ -74,7 +73,7 @@ export default function AuthModal({ onLoginSuccess }) {
         setLoading(false);
         return;
       }
-    } 
+    }
     // =========================================================
     // --- 2. STUDENT FORM VALIDATION GUARDS ---
     // =========================================================
@@ -131,7 +130,7 @@ export default function AuthModal({ onLoginSuccess }) {
       if (isRegistering) {
         const endpoint = isAdminMode ? '/auth/register-admin' : '/auth/register';
 
-        // For Admin registration, we only send name, password, and adminSecret
+        // ONLY send fields required by the Admin model when in Admin mode
         const payload = isAdminMode
           ? {
               name: formData.name.trim(),
@@ -147,10 +146,10 @@ export default function AuthModal({ onLoginSuccess }) {
           setSuccessMsg('');
         }, 1500);
       } else {
-        // Switch login payload: Admin logs in with name + password, Student logs in with rollNo + password
+        // ONLY send Admin fields when signing in as Admin
         const loginPayload = isAdminMode
           ? { name: formData.name.trim(), password: formData.password, role: 'admin' }
-          : { rollNo: formData.rollNo, password: formData.password };
+          : { rollNo: formData.rollNo.trim(), password: formData.password };
 
         const { data } = await API.post('/auth/login', loginPayload);
         localStorage.setItem('token', data.token);
@@ -191,11 +190,11 @@ export default function AuthModal({ onLoginSuccess }) {
         {/* Dynamic Header Badge + Admin Toggle Button */}
         <div className="flex items-center justify-between mb-4">
           <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${
-            isAdminMode 
-              ? 'bg-amber-50 text-amber-800 border-amber-200' 
+            isAdminMode
+              ? 'bg-amber-50 text-amber-800 border-amber-200'
               : 'bg-blue-50 text-blue-700 border-blue-200'
           }`}>
-            <Sparkles className="w-3.5 h-3.5" /> 
+            <Sparkles className="w-3.5 h-3.5" />
             {isAdminMode ? 'GNDU Executive Admin Portal' : 'Campus Dining & Attendance Portal'}
           </span>
 
@@ -246,7 +245,7 @@ export default function AuthModal({ onLoginSuccess }) {
             onClick={() => { setIsRegistering(false); setError(''); setSuccessMsg(''); }}
             className={`py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer ${
               !isRegistering
-                ? isAdminMode 
+                ? isAdminMode
                   ? 'bg-amber-600 text-white shadow-sm shadow-amber-600/20'
                   : 'bg-blue-600 text-white shadow-sm shadow-blue-600/20'
                 : 'text-slate-600 hover:text-slate-900'
@@ -259,7 +258,7 @@ export default function AuthModal({ onLoginSuccess }) {
             onClick={() => { setIsRegistering(true); setError(''); setSuccessMsg(''); }}
             className={`py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer ${
               isRegistering
-                ? isAdminMode 
+                ? isAdminMode
                   ? 'bg-amber-600 text-white shadow-sm shadow-amber-600/20'
                   : 'bg-blue-600 text-white shadow-sm shadow-blue-600/20'
                 : 'text-slate-600 hover:text-slate-900'
@@ -286,13 +285,13 @@ export default function AuthModal({ onLoginSuccess }) {
 
         {/* Form Elements */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          
+
           {/* ========================================================= */}
-          {/* --- VIEW 1: DEDICATED ADMIN FORM (Simple & Clean) --- */}
+          {/* --- VIEW 1: DEDICATED ADMIN FORM --- */}
           {/* ========================================================= */}
           {isAdminMode ? (
             <>
-              {/* Admin Name (Required for both Sign In & Register) */}
+              {/* Admin Name */}
               <div>
                 <label className="text-xs font-bold text-amber-800 uppercase tracking-wider">Admin Name</label>
                 <div className="relative mt-1 group">
@@ -346,7 +345,7 @@ export default function AuthModal({ onLoginSuccess }) {
             </>
           ) : (
             /* ========================================================= */
-            /* --- VIEW 2: STANDARD STUDENT FORM (Roll No & Hostel) --- */
+            /* --- VIEW 2: STANDARD STUDENT FORM --- */
             /* ========================================================= */
             <>
               {isRegistering && (
@@ -369,7 +368,7 @@ export default function AuthModal({ onLoginSuccess }) {
               <div>
                 <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Roll Number (0 - 999)</label>
                 <div className="relative mt-1 group">
-                  <User className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400 group-focus-within:text-blue-600 transition" />
+                  <Hash className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400 group-focus-within:text-blue-600 transition" />
                   <input
                     required
                     type="text"
