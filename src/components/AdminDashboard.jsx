@@ -21,6 +21,7 @@ import {
     ImagePlus,
     User as UserIcon,
     Phone,
+    MessageSquareWarning,
     PlusCircle
 } from 'lucide-react';
 
@@ -28,12 +29,13 @@ export default function AdminDashboard({ user, onLogout, onUpdateUser }) {
     const [usersList, setUsersList] = useState([]);
     const [mealsList, setMealsList] = useState([]);
     const [adminsList, setAdminsList] = useState([]); 
+    const [complaintsList, setComplaintsList] = useState([]); 
     const [loading, setLoading] = useState(false);
     const [errorMsg, setErrorMsg] = useState('');
     const [successMsg, setSuccessMsg] = useState('');
 
     // UI Tabs & Filters
-    const [activeTab, setActiveTab] = useState('users'); 
+    const [activeTab, setActiveTab] = useState('users'); // 'users' | 'admins' | 'meals' | 'complaints'
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedHostelFilter, setSelectedHostelFilter] = useState('ALL');
 
@@ -68,11 +70,19 @@ export default function AdminDashboard({ user, onLogout, onUpdateUser }) {
         extras: []
     });
 
+    // Complaint Resolution Modal State
+    const [isComplaintModalOpen, setIsComplaintModalOpen] = useState(false);
+    const [activeComplaint, setActiveComplaint] = useState(null);
+    const [complaintStatus, setComplaintStatus] = useState('Pending');
+    const [adminRemark, setAdminRemark] = useState('');
+
     useEffect(() => {
         fetchUsers();
         fetchAllMeals();
         fetchAdmins();
+        fetchComplaints();
     }, []);
+    console.log(complaintsList)
 
     const fetchUsers = async () => {
         setLoading(true);
@@ -109,6 +119,15 @@ export default function AdminDashboard({ user, onLogout, onUpdateUser }) {
             }
         } catch (err) {
             console.error('Failed to fetch admins:', err);
+        }
+    };
+
+    const fetchComplaints = async () => {
+        try {
+            const { data } = await API.get('/complaints/all');
+            setComplaintsList(data || []);
+        } catch (err) {
+            console.error('Failed to fetch complaints:', err);
         }
     };
 
@@ -243,9 +262,7 @@ export default function AdminDashboard({ user, onLogout, onUpdateUser }) {
         }
     };
 
-    // ==========================================
-    // MEAL LOG MANAGEMENT FOR ADMINS
-    // ==========================================
+    // Meal Log Management
     const openMealEditModal = (meal) => {
         setEditingMeal(meal);
         setMealEditData({
@@ -283,6 +300,41 @@ export default function AdminDashboard({ user, onLogout, onUpdateUser }) {
         }
     };
 
+    // Complaint Resolution Management
+    const openComplaintModal = (c) => {
+        setActiveComplaint(c);
+        setComplaintStatus(c.status || 'Pending');
+        setAdminRemark(c.adminRemark || '');
+        setIsComplaintModalOpen(true);
+    };
+
+    const handleComplaintUpdateSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const { data } = await API.put(`/complaints/${activeComplaint._id}`, { status: complaintStatus, adminRemark });
+            setSuccessMsg(data.message || 'Complaint status updated successfully!');
+            setTimeout(() => setSuccessMsg(''), 4000);
+            setComplaintsList(prev => prev.map(c => c._id === activeComplaint._id ? data.complaint : c));
+            setIsComplaintModalOpen(false);
+        } catch (err) {
+            setErrorMsg(err.response?.data?.message || 'Failed to update complaint status.');
+            setTimeout(() => setErrorMsg(''), 4000);
+        }
+    };
+
+    const handleDeleteComplaint = async (cId) => {
+        if (!window.confirm('Are you sure you want to delete this complaint?')) return;
+        try {
+            await API.delete(`/complaints/${cId}`);
+            setSuccessMsg('Complaint deleted successfully.');
+            setTimeout(() => setSuccessMsg(''), 4000);
+            setComplaintsList(prev => prev.filter(c => c._id !== cId));
+        } catch (err) {
+            setErrorMsg('Failed to delete complaint');
+            setTimeout(() => setErrorMsg(''), 4000);
+        }
+    };
+
     // Filtered Lists
     const filteredUsers = usersList
         .filter(u => {
@@ -292,12 +344,10 @@ export default function AdminDashboard({ user, onLogout, onUpdateUser }) {
         })
         .sort((a, b) => (Number(a.rollNo) || 0) - (Number(b.rollNo) || 0));
 
-    const filteredMeals = mealsList.filter(m => {
-        const matchesHostel = selectedHostelFilter === 'ALL' || m.hostelId?.hostelNumber === selectedHostelFilter;
-        return matchesHostel;
-    });
-
+    const filteredMeals = mealsList.filter(m => selectedHostelFilter === 'ALL' || m.hostelId?.hostelNumber === selectedHostelFilter);
     const filteredAdmins = adminsList.filter(a => (a.name && a.name.toLowerCase().includes(searchTerm.toLowerCase())));
+    const filteredComplaints = complaintsList.filter(c => selectedHostelFilter === 'ALL' || c.hostelNo === selectedHostelFilter);
+
     const totalCampusRevenue = filteredMeals.reduce((sum, m) => sum + (m.dailyTotalCost || 0), 0);
     const handlePrintReport = () => window.print();
 
@@ -334,7 +384,7 @@ export default function AdminDashboard({ user, onLogout, onUpdateUser }) {
 
                     <div className="flex items-center gap-3">
                         <button
-                            onClick={() => { fetchUsers(); fetchAllMeals(); fetchAdmins(); }}
+                            onClick={() => { fetchUsers(); fetchAllMeals(); fetchAdmins(); fetchComplaints(); }}
                             className="hidden sm:flex items-center gap-1.5 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-lg transition cursor-pointer border border-slate-200"
                         >
                             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
@@ -385,13 +435,16 @@ export default function AdminDashboard({ user, onLogout, onUpdateUser }) {
                 <div className="bg-white border border-slate-200/80 p-4 rounded-2xl shadow-sm mb-6 flex flex-wrap items-center justify-between gap-4 print:hidden">
                     <div className="flex flex-wrap gap-2">
                         <button onClick={() => setActiveTab('users')} className={`px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${activeTab === 'users' ? 'bg-blue-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
-                            <Users className="w-3.5 h-3.5" /> Student Directory
+                            <Users className="w-3.5 h-3.5" /> Students
                         </button>
                         <button onClick={() => setActiveTab('admins')} className={`px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${activeTab === 'admins' ? 'bg-amber-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
-                            <ShieldCheck className="w-3.5 h-3.5" /> Admin Directory
+                            <ShieldCheck className="w-3.5 h-3.5" /> Admins
                         </button>
                         <button onClick={() => setActiveTab('meals')} className={`px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${activeTab === 'meals' ? 'bg-blue-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
-                            <Utensils className="w-3.5 h-3.5" /> Campus Mess Ledger
+                            <Utensils className="w-3.5 h-3.5" /> Ledger
+                        </button>
+                        <button onClick={() => setActiveTab('complaints')} className={`px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${activeTab === 'complaints' ? 'bg-amber-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
+                            <MessageSquareWarning className="w-3.5 h-3.5" /> Complaints ({complaintsList.filter(c => c.status === 'Pending').length})
                         </button>
                     </div>
 
@@ -518,7 +571,7 @@ export default function AdminDashboard({ user, onLogout, onUpdateUser }) {
                     </div>
                 )}
 
-                {/* TAB 2: MEALS LEDGER (WITH ADMIN EDIT & DELETE) */}
+                {/* TAB 2: MEALS LEDGER */}
                 {activeTab === 'meals' && (
                     <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm overflow-hidden">
                         <div className="flex items-center justify-between mb-5">
@@ -540,54 +593,110 @@ export default function AdminDashboard({ user, onLogout, onUpdateUser }) {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100 text-sm">
-                                    {filteredMeals.length === 0 ? (
-                                        <tr><td colSpan="6" className="text-center py-12 text-slate-400 text-sm">No meal logs found.</td></tr>
-                                    ) : (
-                                        filteredMeals.map((m) => (
-                                            <tr key={m._id} className="hover:bg-blue-50/40 transition">
-                                                <td className="py-3.5 pl-2 font-semibold">{m.date}</td>
-                                                <td className="py-3.5 font-bold uppercase">{m.userId?.rollNo || 'N/A'} <span className="font-normal text-xs text-slate-500">({m.userId?.name})</span></td>
-                                                <td className="py-3.5"><span className="bg-slate-100 px-2 py-0.5 rounded text-xs font-bold uppercase">{m.hostelId?.hostelNumber}</span></td>
-                                                <td className="py-3.5">
-                                                    <div className="flex gap-1">
-                                                        {m.meals?.breakfast && <span className="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-xs font-bold">B</span>}
-                                                        {m.meals?.lunch && <span className="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-xs font-bold">L</span>}
-                                                        {m.meals?.dinner && <span className="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-xs font-bold">D</span>}
-                                                    </div>
-                                                </td>
-                                                <td className="py-3.5 text-xs text-slate-600">{m.extras?.length > 0 ? m.extras.map(e => `${e.itemName}(₹${e.cost})`).join(', ') : 'None'}</td>
-                                                <td className="py-3.5 text-right pr-2">
-                                                    <div className="flex items-center justify-end gap-3">
-                                                        <span className="font-bold text-emerald-600">₹{m.dailyTotalCost || 0}</span>
-                                                        <button onClick={() => openMealEditModal(m)} title="Edit Meal Log" className="p-1 rounded border bg-slate-50 hover:bg-blue-600 hover:text-white transition"><Pencil className="w-3.5 h-3.5" /></button>
-                                                        <button onClick={() => handleRemoveMealLog(m._id)} title="Delete Meal Log" className="p-1 rounded border border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white transition"><Trash2 className="w-3.5 h-3.5" /></button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))
-                                    )}
+                                    {filteredMeals.map((m) => (
+                                        <tr key={m._id} className="hover:bg-blue-50/40 transition">
+                                            <td className="py-3.5 pl-2 font-semibold">{m.date}</td>
+                                            <td className="py-3.5 font-bold uppercase">{m.userId?.rollNo || 'N/A'} <span className="font-normal text-xs text-slate-500">({m.userId?.name})</span></td>
+                                            <td className="py-3.5"><span className="bg-slate-100 px-2 py-0.5 rounded text-xs font-bold uppercase">{m.hostelId?.hostelNumber}</span></td>
+                                            <td className="py-3.5">
+                                                <div className="flex gap-1">
+                                                    {m.meals?.breakfast && <span className="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-xs font-bold">B</span>}
+                                                    {m.meals?.lunch && <span className="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-xs font-bold">L</span>}
+                                                    {m.meals?.dinner && <span className="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-xs font-bold">D</span>}
+                                                </div>
+                                            </td>
+                                            <td className="py-3.5 text-xs text-slate-600">{m.extras?.length > 0 ? m.extras.map(e => `${e.itemName}(₹${e.cost})`).join(', ') : 'None'}</td>
+                                            <td className="py-3.5 text-right pr-2">
+                                                <div className="flex items-center justify-end gap-3">
+                                                    <span className="font-bold text-emerald-600">₹{m.dailyTotalCost || 0}</span>
+                                                    <button onClick={() => openMealEditModal(m)} className="p-1 rounded border bg-slate-50 hover:bg-blue-600 hover:text-white transition"><Pencil className="w-3.5 h-3.5" /></button>
+                                                    <button onClick={() => handleRemoveMealLog(m._id)} className="p-1 rounded border border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white transition"><Trash2 className="w-3.5 h-3.5" /></button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 )}
+
+                {/* --- TAB 3: COMPLAINTS MANAGEMENT --- */}
+                {activeTab === 'complaints' && (
+                    <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm overflow-hidden">
+                        <div className="flex items-center justify-between mb-5">
+                            <h2 className="font-extrabold text-lg text-slate-900 flex items-center gap-2">
+                                <MessageSquareWarning className="w-5 h-5 text-amber-600" /> Campus Complaints Resolution Center
+                            </h2>
+                            <span className="text-xs font-semibold text-amber-800 bg-amber-100 px-3 py-1 rounded-full border">{filteredComplaints.length} Total Complaints</span>
+                        </div>
+
+                        {filteredComplaints.length === 0 ? (
+                            <div className="text-center py-16 text-slate-400 text-sm italic">No student complaints found matching this filter.</div>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {filteredComplaints.map(c => (
+                                    <div key={c._id} className="border border-slate-200 p-5 rounded-2xl bg-slate-50/50 shadow-xs flex flex-col justify-between space-y-3">
+                                        <div className="space-y-1.5">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-xs font-bold bg-white border border-slate-200 px-2.5 py-0.5 rounded uppercase text-slate-700">{c.category} • {c.hostelNo}</span>
+                                                <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase border ${
+                                                    c.status === 'Resolved' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                                                    c.status === 'In Progress' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                                                    'bg-amber-50 text-amber-700 border-amber-200'
+                                                }`}>
+                                                    {c.status}
+                                                </span>
+                                            </div>
+                                            <h3 className="font-extrabold text-slate-900 text-base">{c.subject}</h3>
+                                            <p className="text-xs text-slate-600">{c.description}</p>
+                                        </div>
+
+                                        {/* Photo Proof preview for Admin */}
+                                        {c.photoProof && (
+                                            <div className="bg-white p-2 border border-slate-200 rounded-xl flex items-center gap-3">
+                                                <a href={c.photoProof} target="_blank" rel="noreferrer">
+                                                    <img src={c.photoProof} alt="Issue Proof" className="w-14 h-14 object-cover rounded-lg border hover:opacity-90 transition" title="Click to enlarge" />
+                                                </a>
+                                                <span className="text-[11px] font-semibold text-slate-500">Click thumbnail to inspect proof photo.</span>
+                                            </div>
+                                        )}
+
+                                        <div className="bg-white border border-slate-200 p-3 rounded-xl text-xs space-y-1">
+                                            <p className="font-bold text-slate-700">Student: <span className="font-normal">{c.userId?.name} (Roll No: {c.userId?.rollNo})</span></p>
+                                            <p className="font-bold text-slate-700">Mobile: <span className="font-normal">+91 {c.userId?.mobileNo}</span></p>
+                                                                                        <p className="font-bold text-slate-700">StudentID: <span className="font-normal"> {c?.userId?.studentId}</span></p>
+                                            {c.adminRemark && <p className="font-bold text-amber-900 mt-1">Remark: <span className="font-normal text-slate-700">{c.adminRemark}</span></p>}
+                                        </div>
+
+                                        <div className="flex items-center justify-between pt-2 border-t border-slate-200">
+                                            <span className="text-[10px] text-slate-400">{new Date(c.createdAt).toLocaleDateString()}</span>
+                                            <div className="flex items-center gap-2">
+                                                <button onClick={() => openComplaintModal(c)} className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition cursor-pointer">
+                                                    Resolve / Update
+                                                </button>
+                                                <button onClick={() => handleDeleteComplaint(c._id)} className="p-1.5 rounded-lg border border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white transition cursor-pointer">
+                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
 
-            {/* ========================================== */}
-            {/* STUDENT EDIT MODAL */}
-            {/* ========================================== */}
+            {/* ================= MODALS ================= */}
+
+            {/* Student Edit Modal */}
             {isEditModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
                     <div className="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl relative">
-                        <div className="flex items-center justify-between mb-6">
-                            <h3 className="text-xl font-extrabold text-slate-900">Edit Student Details</h3>
-                            <button onClick={() => setIsEditModalOpen(false)} className="w-8 h-8 flex items-center justify-center bg-slate-100 rounded-full"><X className="w-4 h-4" /></button>
-                        </div>
+                        <div className="flex items-center justify-between mb-6"><h3 className="text-xl font-extrabold text-slate-900">Edit Student Details</h3><button onClick={() => setIsEditModalOpen(false)} className="w-8 h-8 flex items-center justify-center bg-slate-100 rounded-full"><X className="w-4 h-4" /></button></div>
                         <form onSubmit={handleEditSubmit} className="space-y-4">
-                            <div>
-                                <label className="text-xs font-bold text-slate-500 uppercase">Full Name</label>
-                                <input required type="text" value={editFormData.name} onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })} className="w-full border rounded-xl px-4 py-2.5 text-sm outline-none mt-1" />
-                            </div>
+                            <div><label className="text-xs font-bold text-slate-500 uppercase">Full Name</label><input required type="text" value={editFormData.name} onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })} className="w-full border rounded-xl px-4 py-2.5 text-sm outline-none mt-1" /></div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div><label className="text-xs font-bold text-slate-500 uppercase">Student ID</label><input type="text" value={editFormData.studentId} onChange={(e) => setEditFormData({ ...editFormData, studentId: e.target.value })} className="w-full border rounded-xl px-4 py-2.5 text-sm outline-none mt-1" /></div>
                                 <div><label className="text-xs font-bold text-slate-500 uppercase">Mobile No</label><input required type="tel" maxLength="10" value={editFormData.mobileNo} onChange={(e) => setEditFormData({ ...editFormData, mobileNo: e.target.value.replace(/\D/g, '') })} className="w-full border rounded-xl px-4 py-2.5 text-sm outline-none mt-1" /></div>
@@ -598,16 +707,11 @@ export default function AdminDashboard({ user, onLogout, onUpdateUser }) {
                 </div>
             )}
 
-            {/* ========================================== */}
-            {/* ADMIN PROFILE EDIT MODAL */}
-            {/* ========================================== */}
+            {/* Admin Profile Edit Modal */}
             {isAdminEditModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
                     <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl relative">
-                        <div className="flex items-center justify-between mb-6">
-                            <h3 className="text-xl font-extrabold text-slate-900">Admin Profile</h3>
-                            <button onClick={() => setIsAdminEditModalOpen(false)} className="w-8 h-8 flex items-center justify-center bg-slate-100 rounded-full"><X className="w-4 h-4" /></button>
-                        </div>
+                        <div className="flex items-center justify-between mb-6"><h3 className="text-xl font-extrabold text-slate-900">Admin Profile</h3><button onClick={() => setIsAdminEditModalOpen(false)} className="w-8 h-8 flex items-center justify-center bg-slate-100 rounded-full"><X className="w-4 h-4" /></button></div>
                         <form onSubmit={handleAdminEditSubmit} className="space-y-4">
                             <div className="flex flex-col items-center justify-center mb-2">
                                 <div className="relative group cursor-pointer">
@@ -615,9 +719,7 @@ export default function AdminDashboard({ user, onLogout, onUpdateUser }) {
                                         {adminEditFormData.profilePhoto ? <img src={adminEditFormData.profilePhoto} alt="" className="w-full h-full object-cover" /> : <UserIcon className="w-10 h-10 text-slate-400" />}
                                     </div>
                                     <label className="absolute inset-0 bg-black/40 text-white rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-                                        <ImagePlus className="w-5 h-5 mb-0.5" />
-                                        <span className="text-[9px] font-bold">Change</span>
-                                        <input type="file" accept="image/*" className="hidden" onChange={handleAdminPhotoChange} />
+                                        <ImagePlus className="w-5 h-5 mb-0.5" /><span className="text-[9px] font-bold">Change</span><input type="file" accept="image/*" className="hidden" onChange={handleAdminPhotoChange} />
                                     </label>
                                 </div>
                             </div>
@@ -630,31 +732,49 @@ export default function AdminDashboard({ user, onLogout, onUpdateUser }) {
                 </div>
             )}
 
-            {/* ========================================== */}
-            {/* ADMIN MEAL LOG EDIT MODAL */}
-            {/* ========================================== */}
+            {/* Meal Log Edit Modal */}
             {isMealEditModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
                     <div className="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl relative">
-                        <div className="flex items-center justify-between mb-6">
-                            <h3 className="text-xl font-extrabold text-slate-900">Edit Meal Log</h3>
-                            <button onClick={() => setIsMealEditModalOpen(false)} className="w-8 h-8 flex items-center justify-center bg-slate-100 rounded-full"><X className="w-4 h-4" /></button>
-                        </div>
+                        <div className="flex items-center justify-between mb-6"><h3 className="text-xl font-extrabold text-slate-900">Edit Meal Log</h3><button onClick={() => setIsMealEditModalOpen(false)} className="w-8 h-8 flex items-center justify-center bg-slate-100 rounded-full"><X className="w-4 h-4" /></button></div>
                         <form onSubmit={handleMealEditSubmit} className="space-y-4">
-                            <div>
-                                <label className="text-xs font-bold text-slate-500 uppercase">Date</label>
-                                <input type="date" value={mealEditData.date} onChange={(e) => setMealEditData({ ...mealEditData, date: e.target.value })} className="w-full border rounded-xl px-4 py-2 text-sm outline-none mt-1" />
-                            </div>
+                            <div><label className="text-xs font-bold text-slate-500 uppercase">Date</label><input type="date" value={mealEditData.date} onChange={(e) => setMealEditData({ ...mealEditData, date: e.target.value })} className="w-full border rounded-xl px-4 py-2 text-sm outline-none mt-1" /></div>
                             <div className="space-y-2">
                                 <label className="text-xs font-bold text-slate-500 uppercase">Standard Meals</label>
                                 {['breakfast', 'lunch', 'dinner'].map((mKey) => (
                                     <div key={mKey} onClick={() => setMealEditData({ ...mealEditData, meals: { ...mealEditData.meals, [mKey]: !mealEditData.meals[mKey] } })} className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer select-none ${mealEditData.meals[mKey] ? 'bg-blue-50 border-blue-600 text-blue-900' : 'bg-white'}`}>
-                                        <span className="capitalize font-bold text-sm">{mKey}</span>
-                                        <span>{mealEditData.meals[mKey] ? 'Selected' : 'Unselected'}</span>
+                                        <span className="capitalize font-bold text-sm">{mKey}</span><span>{mealEditData.meals[mKey] ? 'Selected' : 'Unselected'}</span>
                                     </div>
                                 ))}
                             </div>
                             <button type="submit" className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl">Update Meal Log</button>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Complaint Resolution Modal */}
+            {isComplaintModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+                    <div className="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl relative">
+                        <div className="flex items-center justify-between mb-6">
+                            <h3 className="text-xl font-extrabold text-slate-900">Resolve Complaint</h3>
+                            <button onClick={() => setIsComplaintModalOpen(false)} className="w-8 h-8 flex items-center justify-center bg-slate-100 rounded-full"><X className="w-4 h-4" /></button>
+                        </div>
+                        <form onSubmit={handleComplaintUpdateSubmit} className="space-y-4">
+                            <div>
+                                <label className="text-xs font-bold text-slate-500 uppercase">Status</label>
+                                <select value={complaintStatus} onChange={e => setComplaintStatus(e.target.value)} className="w-full border rounded-xl px-4 py-2.5 text-sm outline-none mt-1 bg-white">
+                                    <option value="Pending">Pending</option>
+                                    <option value="In Progress">In Progress</option>
+                                    <option value="Resolved">Resolved</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="text-xs font-bold text-slate-500 uppercase">Admin / Warden Remark</label>
+                                <textarea rows="3" placeholder="Type response or action taken..." value={adminRemark} onChange={e => setAdminRemark(e.target.value)} className="w-full border rounded-xl px-4 py-2.5 text-sm outline-none mt-1 resize-none" />
+                            </div>
+                            <button type="submit" className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl cursor-pointer">Save Complaint Status</button>
                         </form>
                     </div>
                 </div>
