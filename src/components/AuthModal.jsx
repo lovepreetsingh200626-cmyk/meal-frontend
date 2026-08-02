@@ -518,7 +518,7 @@ export default function AuthModal({ onLoginSuccess }) {
             <span>Encrypted MERN Authentication • GNDU Amritsar Dining</span>
           </div>
           <div className="flex items-center justify-center gap-2 text-xs font-medium text-slate-500">
-            <span>Forgot Password? Contact :</span>
+            <span>Forgot Password? Please Contact :</span>
             <a
               href="mailto:adminconnect.org@gmail.com?subject=GNDU%20Mess%20Portal%20Issue"
               className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-600 transition-colors duration-150 font-semibold"
