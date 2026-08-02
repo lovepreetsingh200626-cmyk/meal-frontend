@@ -382,6 +382,13 @@ export default function AuthModal({ onLoginSuccess }) {
                     }}
                   />
                 </div>
+                {/* --- WARNING NOTE IN RED COLOR --- */}
+                {isRegistering && (
+                  <p className="text-[11px] font-bold text-rose-600 mt-1.5 flex items-center gap-1">
+                    <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                    Note: If you create an account with a wrong roll number, it will be suspended in 1-2 days.
+                  </p>
+                )}
               </div>
 
               {isRegistering && (
@@ -511,7 +518,7 @@ export default function AuthModal({ onLoginSuccess }) {
             <span>Encrypted MERN Authentication • GNDU Amritsar Dining</span>
           </div>
           <div className="flex items-center justify-center gap-2 text-xs font-medium text-slate-500">
-            <span>Server or system issue?</span>
+            <span>Forgot Password? Contact :</span>
             <a
               href="mailto:adminconnect.org@gmail.com?subject=GNDU%20Mess%20Portal%20Issue"
               className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-600 transition-colors duration-150 font-semibold"

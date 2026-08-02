@@ -15,7 +15,8 @@ import {
   ShieldCheck,
   Wallet,
   MessageSquareWarning,
-  Send
+  Send,
+  BellRing
 } from 'lucide-react';
 
 export default function StudentDashboard({ user, onLogout, onOpenProfile }) {
@@ -31,7 +32,7 @@ export default function StudentDashboard({ user, onLogout, onOpenProfile }) {
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
-  // --- COMPLAINT STATES ---
+  // Complaint States
   const [complaints, setComplaints] = useState([]);
   const [complaintCategory, setComplaintCategory] = useState('Food Quality');
   const [complaintSubject, setComplaintSubject] = useState('');
@@ -39,37 +40,42 @@ export default function StudentDashboard({ user, onLogout, onOpenProfile }) {
   const [complaintPhoto, setComplaintPhoto] = useState('');
   const [submittingComplaint, setSubmittingComplaint] = useState(false);
 
+  // Notice Board States
+  const [notices, setNotices] = useState([]);
+
   useEffect(() => {
     fetchHostelDetails();
     fetchHistory();
     fetchComplaints();
+    fetchNotices();
   }, [user]);
 
   const fetchHostelDetails = async () => {
     try {
       const { data } = await API.get(`/hostels/${user.hostelNo}`);
       setHostelData(data);
-    } catch (err) {
-      console.error('Failed to load hostel details:', err);
-    }
+    } catch (err) { console.error(err); }
   };
 
   const fetchHistory = async () => {
     try {
       const { data } = await API.get(`/meals/user/${user._id}`);
       setHistory(data);
-    } catch (err) {
-      console.error('Failed to load history:', err);
-    }
+    } catch (err) { console.error(err); }
   };
 
   const fetchComplaints = async () => {
     try {
       const { data } = await API.get(`/complaints/user/${user._id}`);
       setComplaints(data || []);
-    } catch (err) {
-      console.error('Failed to load complaints:', err);
-    }
+    } catch (err) { console.error(err); }
+  };
+
+  const fetchNotices = async () => {
+    try {
+      const { data } = await API.get('/notices');
+      setNotices(data || []);
+    } catch (err) { console.error(err); }
   };
 
   const handleMealToggle = (mealType) => {
@@ -95,18 +101,11 @@ export default function StudentDashboard({ user, onLogout, onOpenProfile }) {
 
     const dietRate = 37; 
     let standardMealsCost = 0;
-
-    if (mealCount === 1) {
-      standardMealsCost = dietRate * 2; 
-    } else if (mealCount > 1) {
-      standardMealsCost = mealCount * dietRate;
-    }
+    if (mealCount === 1) standardMealsCost = dietRate * 2; 
+    else if (mealCount > 1) standardMealsCost = mealCount * dietRate;
 
     const extrasCost = extras.reduce((sum, item) => sum + Number(item.cost), 0);
-    return {
-      total: standardMealsCost + extrasCost,
-      mealCount
-    };
+    return { total: standardMealsCost + extrasCost, mealCount };
   };
 
   const handleSaveEntry = async () => {
@@ -138,7 +137,6 @@ export default function StudentDashboard({ user, onLogout, onOpenProfile }) {
     }
   };
 
-  // --- SUBMIT COMPLAINT LOGIC ---
   const handleComplaintSubmit = async (e) => {
     e.preventDefault();
     if (!complaintSubject.trim() || !complaintDesc.trim()) return;
@@ -175,6 +173,9 @@ export default function StudentDashboard({ user, onLogout, onOpenProfile }) {
     .reduce((sum, r) => sum + (r.dailyTotalCost || 0), 0);
 
   const liveCalc = calculateLiveTotal();
+
+  // Filter notices relevant to this student (Campus-wide 'ALL' or matching student's hostel)
+  const relevantNotices = notices.filter(n => n.hostelNo === 'ALL' || n.hostelNo === user.hostelNo);
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 pb-16 font-sans relative overflow-hidden selection:bg-blue-600 selection:text-white">
@@ -236,6 +237,28 @@ export default function StudentDashboard({ user, onLogout, onOpenProfile }) {
 
         {errorMsg && <div className="bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3.5 rounded-xl text-sm mb-6 flex items-center gap-3"><AlertCircle className="w-5 h-5 text-rose-500 shrink-0" /><span>{errorMsg}</span></div>}
         {successMsg && <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3.5 rounded-xl text-sm mb-6 flex items-center gap-3"><CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" /><span>{successMsg}</span></div>}
+
+        {/* --- NOTICE BOARD FEED --- */}
+        {relevantNotices.length > 0 && (
+          <div className="bg-gradient-to-r from-blue-900 to-slate-900 text-white rounded-2xl p-6 mb-8 shadow-md border border-blue-800">
+            <div className="flex items-center gap-2.5 mb-4 border-b border-blue-800/60 pb-3">
+              <BellRing className="w-5 h-5 text-amber-400 animate-bounce" />
+              <h2 className="font-extrabold text-base tracking-wider uppercase">Hostel & Mess Notice Board</h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {relevantNotices.map(notice => (
+                <div key={notice._id} className="bg-white/10 backdrop-blur-sm border border-white/10 p-4 rounded-xl space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-extrabold bg-amber-400 text-slate-950 px-2 py-0.5 rounded uppercase">Target: {notice.hostelNo}</span>
+                    <span className="text-[10px] text-blue-200 font-medium">{new Date(notice.createdAt).toLocaleDateString()}</span>
+                  </div>
+                  <h3 className="font-bold text-sm text-white">{notice.title}</h3>
+                  <p className="text-xs text-slate-200 leading-relaxed whitespace-pre-wrap">{notice.content}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
           
@@ -331,7 +354,7 @@ export default function StudentDashboard({ user, onLogout, onOpenProfile }) {
               )}
             </div>
 
-            {/* --- COMPLAINTS SECTION --- */}
+            {/* Complaints Section */}
             <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm">
               <h2 className="font-extrabold text-lg text-slate-900 flex items-center gap-2 mb-4">
                 <MessageSquareWarning className="w-5 h-5 text-amber-600" />
@@ -342,11 +365,7 @@ export default function StudentDashboard({ user, onLogout, onOpenProfile }) {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Category</label>
-                    <select 
-                      value={complaintCategory} 
-                      onChange={e => setComplaintCategory(e.target.value)}
-                      className="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm outline-none cursor-pointer"
-                    >
+                    <select value={complaintCategory} onChange={e => setComplaintCategory(e.target.value)} className="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm outline-none cursor-pointer">
                       <option value="Food Quality">Food Quality</option>
                       <option value="Cleanliness">Cleanliness & Hygiene</option>
                       <option value="Timing">Mess Timings</option>
@@ -356,63 +375,35 @@ export default function StudentDashboard({ user, onLogout, onOpenProfile }) {
                   </div>
                   <div>
                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Subject</label>
-                    <input 
-                      required
-                      type="text"
-                      placeholder="e.g. Rice was undercooked"
-                      value={complaintSubject}
-                      onChange={e => setComplaintSubject(e.target.value)}
-                      className="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm outline-none"
-                    />
+                    <input required type="text" placeholder="e.g. Rice was undercooked" value={complaintSubject} onChange={e => setComplaintSubject(e.target.value)} className="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm outline-none" />
                   </div>
                 </div>
 
                 <div>
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Description</label>
-                  <textarea 
-                    required
-                    rows="2"
-                    placeholder="Provide detailed information regarding the issue..."
-                    value={complaintDesc}
-                    onChange={e => setComplaintDesc(e.target.value)}
-                    className="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm outline-none resize-none"
-                  />
+                  <textarea required rows="2" placeholder="Provide detailed information..." value={complaintDesc} onChange={e => setComplaintDesc(e.target.value)} className="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm outline-none resize-none" />
                 </div>
 
                 <div>
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Photo Proof (Optional)</label>
                   <div className="flex items-center gap-3">
-                    <input 
-                      type="file" 
-                      accept="image/*" 
-                      onChange={(e) => {
-                        const file = e.target.files[0];
-                        if (!file) return;
-                        if (file.size > 2 * 1024 * 1024) {
-                          alert('Image size must be less than 2MB.');
-                          return;
-                        }
-                        const reader = new FileReader();
-                        reader.onloadend = () => setComplaintPhoto(reader.result);
-                        reader.readAsDataURL(file);
-                      }}
-                      className="text-xs file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100 cursor-pointer"
-                    />
+                    <input type="file" accept="image/*" onChange={(e) => {
+                      const file = e.target.files[0];
+                      if (!file) return;
+                      if (file.size > 2 * 1024 * 1024) { alert('Image size must be less than 2MB.'); return; }
+                      const reader = new FileReader();
+                      reader.onloadend = () => setComplaintPhoto(reader.result);
+                      reader.readAsDataURL(file);
+                    }} className="text-xs file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100 cursor-pointer" />
                     {complaintPhoto && <span className="text-xs text-emerald-600 font-semibold">Image Attached ✓</span>}
                   </div>
                 </div>
 
-                <button 
-                  type="submit"
-                  disabled={submittingComplaint}
-                  className="bg-amber-600 hover:bg-amber-700 text-white font-semibold px-5 py-2.5 rounded-xl text-xs transition flex items-center gap-2 cursor-pointer shadow-sm"
-                >
-                  <Send className="w-3.5 h-3.5" />
-                  <span>{submittingComplaint ? 'Submitting...' : 'Submit Complaint'}</span>
+                <button type="submit" disabled={submittingComplaint} className="bg-amber-600 hover:bg-amber-700 text-white font-semibold px-5 py-2.5 rounded-xl text-xs transition flex items-center gap-2 cursor-pointer shadow-sm">
+                  <Send className="w-3.5 h-3.5" /> <span>{submittingComplaint ? 'Submitting...' : 'Submit Complaint'}</span>
                 </button>
               </form>
 
-              {/* Complaints List */}
               <h3 className="text-xs font-bold uppercase text-slate-400 mb-3 tracking-wider">Your Submitted Complaints</h3>
               {complaints.length === 0 ? (
                 <div className="text-center py-8 text-slate-400 text-xs italic">You have not raised any complaints yet.</div>
@@ -422,27 +413,15 @@ export default function StudentDashboard({ user, onLogout, onOpenProfile }) {
                     <div key={c._id} className="border border-slate-200 p-4 rounded-xl bg-white shadow-xs space-y-2">
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-bold bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded uppercase">{c.category}</span>
-                        <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase border ${
-                          c.status === 'Resolved' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-                          c.status === 'In Progress' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                          'bg-amber-50 text-amber-700 border-amber-200'
-                        }`}>
-                          {c.status}
-                        </span>
+                        <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase border ${c.status === 'Resolved' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : c.status === 'In Progress' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-amber-50 text-amber-700 border-amber-200'}`}>{c.status}</span>
                       </div>
                       <div>
                         <h4 className="font-bold text-slate-900 text-sm">{c.subject}</h4>
                         <p className="text-xs text-slate-600 mt-1">{c.description}</p>
                       </div>
-
                       {c.photoProof && (
-                        <div className="mt-2">
-                          <a href={c.photoProof} target="_blank" rel="noreferrer">
-                            <img src={c.photoProof} alt="Proof" className="w-20 h-20 object-cover rounded-lg border border-slate-200 hover:opacity-90 transition" title="Click to view full image" />
-                          </a>
-                        </div>
+                        <div className="mt-2"><a href={c.photoProof} target="_blank" rel="noreferrer"><img src={c.photoProof} alt="Proof" className="w-20 h-20 object-cover rounded-lg border" /></a></div>
                       )}
-
                       {c.adminRemark && (
                         <div className="bg-amber-50/60 border border-amber-200 p-2.5 rounded-lg text-xs text-amber-900 mt-2">
                           <strong>Warden / Admin Response:</strong> {c.adminRemark}
