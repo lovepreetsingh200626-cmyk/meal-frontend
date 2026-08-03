@@ -36,24 +36,27 @@ export default function AdminDashboard({ user, onLogout, onUpdateUser }) {
     const [errorMsg, setErrorMsg] = useState('');
     const [successMsg, setSuccessMsg] = useState('');
 
-    // UI Tabs & Filters
-    const [activeTab, setActiveTab] = useState('users'); // 'users' | 'admins' | 'meals' | 'complaints' | 'notices'
+    const [activeTab, setActiveTab] = useState('users'); 
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedHostelFilter, setSelectedHostelFilter] = useState('ALL');
 
-    // Student Edit Modal State
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editingRollNo, setEditingRollNo] = useState(null);
     const [editFormData, setEditFormData] = useState({
         name: '',
+        newRollNo: '',
         studentId: '',
         mobileNo: '',
         dob: '',
         gender: 'Male',
-        hostelNo: 'BH1'
+        hostelNo: 'BH1',
+        university: '',
+        department: '',
+        session: '',
+        category: 'General',
+        email: ''
     });
 
-    // Admin Edit Modal State
     const [isAdminEditModalOpen, setIsAdminEditModalOpen] = useState(false);
     const [editingAdmin, setEditingAdmin] = useState(null);
     const [adminEditFormData, setAdminEditFormData] = useState({
@@ -63,7 +66,6 @@ export default function AdminDashboard({ user, onLogout, onUpdateUser }) {
         profilePhoto: ''
     });
 
-    // Meal Log Edit Modal State
     const [isMealEditModalOpen, setIsMealEditModalOpen] = useState(false);
     const [editingMeal, setEditingMeal] = useState(null);
     const [mealEditData, setMealEditData] = useState({
@@ -72,13 +74,11 @@ export default function AdminDashboard({ user, onLogout, onUpdateUser }) {
         extras: []
     });
 
-    // Complaint Resolution Modal State
     const [isComplaintModalOpen, setIsComplaintModalOpen] = useState(false);
     const [activeComplaint, setActiveComplaint] = useState(null);
     const [complaintStatus, setComplaintStatus] = useState('Pending');
     const [adminRemark, setAdminRemark] = useState('');
 
-    // Notice Creation States
     const [noticeTitle, setNoticeTitle] = useState('');
     const [noticeContent, setNoticeContent] = useState('');
     const [noticeHostel, setNoticeHostel] = useState('ALL');
@@ -164,7 +164,20 @@ export default function AdminDashboard({ user, onLogout, onUpdateUser }) {
 
     const openEditModal = (student) => {
         setEditingRollNo(student.rollNo);
-        setEditFormData({ name: student.name || '', studentId: student.studentId || '', mobileNo: student.mobileNo || '', dob: student.dob || '', gender: student.gender || 'Male', hostelNo: student.hostelNo || 'BH1' });
+        setEditFormData({ 
+            name: student.name || '', 
+            newRollNo: student.rollNo || '', 
+            studentId: student.studentId || '', 
+            mobileNo: student.mobileNo || '', 
+            dob: student.dob || '', 
+            gender: student.gender || 'Male', 
+            hostelNo: student.hostelNo || 'BH1',
+            university: student.university || '',
+            department: student.department || '',
+            session: student.session || '',
+            category: student.category || 'General',
+            email: student.email || ''
+        });
         setIsEditModalOpen(true);
     };
 
@@ -176,6 +189,7 @@ export default function AdminDashboard({ user, onLogout, onUpdateUser }) {
             setTimeout(() => setSuccessMsg(''), 4000);
             setUsersList(prev => prev.map(u => u.rollNo === editingRollNo ? data.user : u));
             setIsEditModalOpen(false);
+            fetchUsers();
         } catch (err) { setErrorMsg(err.response?.data?.message || 'Failed'); setTimeout(() => setErrorMsg(''), 4000); }
     };
 
@@ -308,7 +322,6 @@ export default function AdminDashboard({ user, onLogout, onUpdateUser }) {
         }
     };
 
-    // Filters
     const filteredUsers = usersList.filter(u => {
         const matchesSearch = (u.name && u.name.toLowerCase().includes(searchTerm.toLowerCase())) || (u.rollNo && u.rollNo.toString().includes(searchTerm));
         const matchesHostel = selectedHostelFilter === 'ALL' || u.hostelNo === selectedHostelFilter;
@@ -324,8 +337,6 @@ export default function AdminDashboard({ user, onLogout, onUpdateUser }) {
 
     return (
         <div className="min-h-screen bg-slate-50 text-slate-800 pb-16 font-sans relative overflow-hidden selection:bg-blue-600 selection:text-white">
-
-            {/* Top Navigation */}
             <nav className="border-b border-slate-200 bg-white/90 backdrop-blur-md sticky top-0 z-40 shadow-sm print:hidden">
                 <div className="max-w-6xl mx-auto px-4 py-3.5 flex items-center justify-between">
                     <div onClick={() => openAdminEditModal(user)} className="flex items-center gap-3.5 cursor-pointer group hover:opacity-80 transition" title="Edit Profile">
@@ -353,7 +364,6 @@ export default function AdminDashboard({ user, onLogout, onUpdateUser }) {
             </nav>
 
             <div className="max-w-6xl mx-auto px-4 mt-8 relative z-10">
-                {/* Stats Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8 print:grid-cols-3">
                     <div className="bg-white border border-slate-200/80 p-6 rounded-2xl shadow-sm"><p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Registered Students</p><p className="text-3xl font-extrabold text-slate-900 mt-1.5">{usersList.length} <span className="text-xs font-medium text-slate-500">accounts</span></p></div>
                     <div className="bg-white border border-slate-200/80 p-6 rounded-2xl shadow-sm"><p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Meal Entries</p><p className="text-3xl font-extrabold text-blue-600 mt-1.5">{filteredMeals.length} <span className="text-xs font-medium text-slate-500">logs</span></p></div>
@@ -363,7 +373,6 @@ export default function AdminDashboard({ user, onLogout, onUpdateUser }) {
                 {errorMsg && <div className="bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3.5 rounded-xl text-sm mb-6 flex items-center gap-3 print:hidden"><AlertCircle className="w-5 h-5 text-rose-500 shrink-0" /><span>{errorMsg}</span></div>}
                 {successMsg && <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3.5 rounded-xl text-sm mb-6 flex items-center gap-3 print:hidden"><CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" /><span>{successMsg}</span></div>}
 
-                {/* Action Bar */}
                 <div className="bg-white border border-slate-200/80 p-4 rounded-2xl shadow-sm mb-6 flex flex-wrap items-center justify-between gap-4 print:hidden">
                     <div className="flex flex-wrap gap-2">
                         <button onClick={() => setActiveTab('users')} className={`px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${activeTab === 'users' ? 'bg-blue-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
@@ -404,7 +413,6 @@ export default function AdminDashboard({ user, onLogout, onUpdateUser }) {
                     </div>
                 </div>
 
-                {/* TAB 1: USERS (With Student Profile Photos) */}
                 {activeTab === 'users' && (
                     <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm overflow-hidden">
                         <div className="flex items-center justify-between mb-5">
@@ -461,7 +469,6 @@ export default function AdminDashboard({ user, onLogout, onUpdateUser }) {
                     </div>
                 )}
 
-                {/* TAB 1.5: ADMINS */}
                 {activeTab === 'admins' && (
                     <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm overflow-hidden">
                         <div className="flex items-center justify-between mb-5">
@@ -496,7 +503,6 @@ export default function AdminDashboard({ user, onLogout, onUpdateUser }) {
                     </div>
                 )}
 
-                {/* TAB 2: MEALS LEDGER */}
                 {activeTab === 'meals' && (
                     <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm overflow-hidden">
                         <div className="flex items-center justify-between mb-5">
@@ -527,7 +533,6 @@ export default function AdminDashboard({ user, onLogout, onUpdateUser }) {
                     </div>
                 )}
 
-                {/* TAB 3: COMPLAINTS */}
                 {activeTab === 'complaints' && (
                     <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm overflow-hidden">
                         <div className="flex items-center justify-between mb-5">
@@ -573,7 +578,6 @@ export default function AdminDashboard({ user, onLogout, onUpdateUser }) {
                     </div>
                 )}
 
-                {/* TAB 4: NOTICE BOARD MANAGER */}
                 {activeTab === 'notices' && (
                     <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm">
                         <div className="flex items-center justify-between mb-6">
@@ -583,7 +587,6 @@ export default function AdminDashboard({ user, onLogout, onUpdateUser }) {
                             <span className="text-xs font-semibold text-blue-800 bg-blue-100 px-3 py-1 rounded-full border">{noticesList.length} Active Notices</span>
                         </div>
 
-                        {/* Notice Publishing Form */}
                         <form onSubmit={handleNoticeSubmit} className="bg-slate-50 border border-slate-200 p-5 rounded-2xl mb-8 space-y-4">
                             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">Publish New Notice</h3>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -609,7 +612,6 @@ export default function AdminDashboard({ user, onLogout, onUpdateUser }) {
                             </button>
                         </form>
 
-                        {/* Posted Notices Feed */}
                         <h3 className="text-xs font-bold uppercase text-slate-400 mb-3 tracking-wider">Published Notices History</h3>
                         {noticesList.length === 0 ? (
                             <div className="text-center py-12 text-slate-400 text-xs italic">No notices have been published yet.</div>
@@ -636,18 +638,80 @@ export default function AdminDashboard({ user, onLogout, onUpdateUser }) {
                 )}
             </div>
 
-            {/* ================= MODALS ================= */}
             {isEditModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-                    <div className="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl relative">
-                        <div className="flex items-center justify-between mb-6"><h3 className="text-xl font-extrabold text-slate-900">Edit Student Details</h3><button onClick={() => setIsEditModalOpen(false)} className="w-8 h-8 flex items-center justify-center bg-slate-100 rounded-full"><X className="w-4 h-4" /></button></div>
-                        <form onSubmit={handleEditSubmit} className="space-y-4">
-                            <div><label className="text-xs font-bold text-slate-500 uppercase">Full Name</label><input required type="text" value={editFormData.name} onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })} className="w-full border rounded-xl px-4 py-2.5 text-sm outline-none mt-1" /></div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div><label className="text-xs font-bold text-slate-500 uppercase">Student ID</label><input type="text" value={editFormData.studentId} onChange={(e) => setEditFormData({ ...editFormData, studentId: e.target.value })} className="w-full border rounded-xl px-4 py-2.5 text-sm outline-none mt-1" /></div>
-                                <div><label className="text-xs font-bold text-slate-500 uppercase">Mobile No</label><input required type="tel" maxLength="10" value={editFormData.mobileNo} onChange={(e) => setEditFormData({ ...editFormData, mobileNo: e.target.value.replace(/\D/g, '') })} className="w-full border rounded-xl px-4 py-2.5 text-sm outline-none mt-1" /></div>
+                    <div className="bg-white w-full max-w-lg rounded-3xl p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+                        <div className="flex items-center justify-between mb-6">
+                            <div>
+                                <h3 className="text-xl font-extrabold text-slate-900">Edit Student Details</h3>
+                                <p className="text-xs font-semibold text-blue-600 mt-0.5 uppercase">Original Roll No: {editingRollNo}</p>
                             </div>
-                            <button type="submit" className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl">Save Changes</button>
+                            <button onClick={() => setIsEditModalOpen(false)} className="w-8 h-8 flex items-center justify-center bg-slate-100 rounded-full"><X className="w-4 h-4" /></button>
+                        </div>
+                        <form onSubmit={handleEditSubmit} className="space-y-4">
+                            <div>
+                                <label className="text-xs font-bold text-slate-500 uppercase">Full Name</label>
+                                <input required type="text" value={editFormData.name} onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })} className="w-full border rounded-xl px-4 py-2.5 text-sm outline-none mt-1" />
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label className="text-xs font-bold text-slate-500 uppercase">Roll Number</label>
+                                    <input required type="text" value={editFormData.newRollNo} onChange={(e) => setEditFormData({ ...editFormData, newRollNo: e.target.value })} className="w-full border rounded-xl px-4 py-2.5 text-sm outline-none mt-1 uppercase" />
+                                </div>
+                                <div>
+                                    <label className="text-xs font-bold text-slate-500 uppercase">Student ID</label>
+                                    <input type="text" value={editFormData.studentId} onChange={(e) => setEditFormData({ ...editFormData, studentId: e.target.value })} className="w-full border rounded-xl px-4 py-2.5 text-sm outline-none mt-1" />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label className="text-xs font-bold text-slate-500 uppercase">University / College</label>
+                                    <input type="text" value={editFormData.university || ''} onChange={(e) => setEditFormData({ ...editFormData, university: e.target.value })} className="w-full border rounded-xl px-4 py-2 text-sm outline-none mt-1" />
+                                </div>
+                                <div>
+                                    <label className="text-xs font-bold text-slate-500 uppercase">Department</label>
+                                    <input type="text" value={editFormData.department || ''} onChange={(e) => setEditFormData({ ...editFormData, department: e.target.value })} className="w-full border rounded-xl px-4 py-2 text-sm outline-none mt-1" />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-3 gap-3">
+                                <div>
+                                    <label className="text-xs font-bold text-slate-500 uppercase">Session</label>
+                                    <input type="text" placeholder="2024-2028" value={editFormData.session || ''} onChange={(e) => setEditFormData({ ...editFormData, session: e.target.value })} className="w-full border rounded-xl px-3 py-2 text-sm outline-none mt-1" />
+                                </div>
+                                <div>
+                                    <label className="text-xs font-bold text-slate-500 uppercase">Category</label>
+                                    <select value={editFormData.category || 'General'} onChange={(e) => setEditFormData({ ...editFormData, category: e.target.value })} className="w-full border rounded-xl px-2 py-2 text-sm outline-none mt-1 bg-white">
+                                        <option value="General">General</option>
+                                        <option value="SC">SC</option>
+                                        <option value="BC">BC</option>
+                                        <option value="OBC">OBC</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="text-xs font-bold text-slate-500 uppercase">Hostel</label>
+                                    <select value={editFormData.hostelNo} onChange={(e) => setEditFormData({ ...editFormData, hostelNo: e.target.value })} className="w-full border rounded-xl px-2 py-2 text-sm outline-none mt-1 bg-white">
+                                        <option value="BH1">BH1</option><option value="BH2">BH2</option><option value="BH3">BH3</option>
+                                        <option value="GH1">GH1</option><option value="GH2">GH2</option><option value="GH3">GH3</option><option value="GH4">GH4</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label className="text-xs font-bold text-slate-500 uppercase">Email Address</label>
+                                    <input type="email" value={editFormData.email || ''} onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })} className="w-full border rounded-xl px-4 py-2 text-sm outline-none mt-1" />
+                                </div>
+                                <div>
+                                    <label className="text-xs font-bold text-slate-500 uppercase">Mobile No</label>
+                                    <input required type="tel" maxLength="10" value={editFormData.mobileNo} onChange={(e) => setEditFormData({ ...editFormData, mobileNo: e.target.value.replace(/\D/g, '') })} className="w-full border rounded-xl px-4 py-2 text-sm outline-none mt-1" />
+                                </div>
+                            </div>
+
+                            <button type="submit" className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl cursor-pointer">Save Changes (Admin Override)</button>
                         </form>
                     </div>
                 </div>

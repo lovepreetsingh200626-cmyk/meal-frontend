@@ -180,7 +180,7 @@ export default function AuthModal({ onLoginSuccess }) {
     <div className="min-h-screen bg-slate-50 text-slate-800 flex items-center justify-center p-4 relative overflow-hidden font-sans selection:bg-blue-600 selection:text-white">
 
       {/* Soft Background Ambient Glows */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-96 bg-gradient-to-b from-blue-100/60 to-transparent pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-96 bg-linear-to-b from-blue-100/60 to-transparent pointer-events-none" />
 
       {/* Main Card */}
       <div className={`bg-white border w-full max-w-lg rounded-3xl p-8 shadow-xl relative z-10 transition-all duration-300 ${

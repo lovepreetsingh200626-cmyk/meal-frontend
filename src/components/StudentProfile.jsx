@@ -11,7 +11,11 @@ import {
   AlertCircle,
   ShieldCheck,
   Building,
-  IdCard
+  IdCard,
+  GraduationCap,
+  Mail,
+  BookOpen,
+  Layers
 } from 'lucide-react';
 
 export default function StudentProfile({ user, onUpdateSuccess, onBack }) {
@@ -19,14 +23,19 @@ export default function StudentProfile({ user, onUpdateSuccess, onBack }) {
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
-  // Pre-fill the form with existing user data
+  // Pre-fill form with existing user data including academic details
   const [formData, setFormData] = useState({
     name: user.name || '',
     gender: user.gender || 'Male',
     mobileNo: user.mobileNo || '',
     dob: user.dob || '',
     profilePhoto: user.profilePhoto || '',
-    studentId: user.studentId || '' // <-- Add studentId to state
+    studentId: user.studentId || '',
+    university: user.university || '',
+    department: user.department || '',
+    session: user.session || '',
+    category: user.category || 'General',
+    email: user.email || ''
   });
 
   // Handle Photo Upload & Convert to Base64
@@ -66,7 +75,7 @@ export default function StudentProfile({ user, onUpdateSuccess, onBack }) {
 
     try {
       const { data } = await API.put(`/auth/profile/${user._id}`, formData);
-      
+      console.log(data)
       setSuccessMsg('Profile updated successfully!');
       
       setTimeout(() => {
@@ -81,8 +90,13 @@ export default function StudentProfile({ user, onUpdateSuccess, onBack }) {
     }
   };
 
-  // Check if the user already has a student ID saved in the database
+  // Lock checks (True if already filled in database)
   const isStudentIdLocked = !!user.studentId;
+  const isUniversityLocked = !!user.university;
+  const isDepartmentLocked = !!user.department;
+  const isSessionLocked = !!user.session;
+  const isCategoryLocked = !!user.category && user.category !== '';
+  const isEmailLocked = !!user.email;
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 p-4 sm:p-8 font-sans relative overflow-hidden">
@@ -103,7 +117,7 @@ export default function StudentProfile({ user, onUpdateSuccess, onBack }) {
           
           <div className="text-center mb-8">
             <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Edit Profile</h1>
-            <p className="text-slate-500 text-sm mt-1.5">Update your personal information and photo.</p>
+            <p className="text-slate-500 text-sm mt-1.5">Update your personal and academic information.</p>
           </div>
 
           {errorMsg && (
@@ -160,11 +174,11 @@ export default function StudentProfile({ user, onUpdateSuccess, onBack }) {
               </div>
             </div>
 
-            {/* NEW: Student ID Field (Locks after first save) */}
+            {/* Student ID Field (Locks after first save) */}
             <div>
               <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Student ID</label>
               <div className="relative mt-1 group">
-                <IdCard className={`absolute left-3.5 top-3.5 w-4 h-4 transition ${isStudentIdLocked ? 'text-slate-400' : 'text-slate-400 group-focus-within:text-blue-600'}`} />
+                <IdCard className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
                 <input
                   type="text"
                   value={formData.studentId}
@@ -179,10 +193,118 @@ export default function StudentProfile({ user, onUpdateSuccess, onBack }) {
                 />
               </div>
               {!isStudentIdLocked && (
-                <p className="text-[11px] font-semibold text-amber-600 mt-1.5">
-                  * Note: You can only set your Student ID once. It cannot be changed later.
+                <p className="text-[11px] font-semibold text-amber-600 mt-1">
+                  * Note: Can only be set once. Requires admin override to change later.
                 </p>
               )}
+            </div>
+
+            {/* University / College */}
+            <div>
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">University / College</label>
+              <div className="relative mt-1 group">
+                <GraduationCap className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
+                <input
+                  type="text"
+                  value={formData.university}
+                  disabled={isUniversityLocked}
+                  placeholder="e.g. Guru Nanak Dev University Amritsar"
+                  className={`w-full border rounded-xl py-3 pl-11 pr-4 text-sm transition ${
+                    isUniversityLocked 
+                      ? 'bg-slate-100 border-slate-200 text-slate-500 cursor-not-allowed opacity-80' 
+                      : 'bg-slate-50 border-slate-300 text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 focus:bg-white'
+                  }`}
+                  onChange={e => setFormData({ ...formData, university: e.target.value })}
+                />
+              </div>
+              {!isUniversityLocked && <p className="text-[11px] font-semibold text-amber-600 mt-1">* One-time entry. Locked after save.</p>}
+            </div>
+
+            {/* Department */}
+            <div>
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Department / Course</label>
+              <div className="relative mt-1 group">
+                <BookOpen className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
+                <input
+                  type="text"
+                  value={formData.department}
+                  disabled={isDepartmentLocked}
+                  placeholder="e.g. B.Tech Electronics & Communication Engineering"
+                  className={`w-full border rounded-xl py-3 pl-11 pr-4 text-sm transition ${
+                    isDepartmentLocked 
+                      ? 'bg-slate-100 border-slate-200 text-slate-500 cursor-not-allowed opacity-80' 
+                      : 'bg-slate-50 border-slate-300 text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 focus:bg-white'
+                  }`}
+                  onChange={e => setFormData({ ...formData, department: e.target.value })}
+                />
+              </div>
+              {!isDepartmentLocked && <p className="text-[11px] font-semibold text-amber-600 mt-1">* One-time entry. Locked after save.</p>}
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              {/* Session */}
+              <div>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Session / Batch</label>
+                <div className="relative mt-1 group">
+                  <Calendar className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
+                  <input
+                    type="text"
+                    value={formData.session}
+                    disabled={isSessionLocked}
+                    placeholder="e.g. 2024-2028"
+                    className={`w-full border rounded-xl py-3 pl-11 pr-4 text-sm transition ${
+                      isSessionLocked 
+                        ? 'bg-slate-100 border-slate-200 text-slate-500 cursor-not-allowed opacity-80' 
+                        : 'bg-slate-50 border-slate-300 text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 focus:bg-white'
+                    }`}
+                    onChange={e => setFormData({ ...formData, session: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              {/* Category */}
+              <div>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Category</label>
+                <div className="relative mt-1">
+                  <select
+                    value={formData.category}
+                    disabled={isCategoryLocked}
+                    className={`w-full border rounded-xl py-3 px-3.5 text-sm transition cursor-pointer ${
+                      isCategoryLocked 
+                        ? 'bg-slate-100 border-slate-200 text-slate-500 cursor-not-allowed opacity-80' 
+                        : 'bg-slate-50 border-slate-300 text-slate-900 focus:outline-none focus:border-blue-600 focus:bg-white'
+                    }`}
+                    onChange={e => setFormData({ ...formData, category: e.target.value })}
+                  >
+                    <option value="General">General</option>
+                    <option value="SC">SC</option>
+                    <option value="BC">BC</option>
+                    <option value="OBC">OBC</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Email */}
+            <div>
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Email Address</label>
+              <div className="relative mt-1 group">
+                <Mail className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
+                <input
+                  type="email"
+                  value={formData.email}
+                  disabled={isEmailLocked}
+                  placeholder="student@example.com"
+                  className={`w-full border rounded-xl py-3 pl-11 pr-4 text-sm transition ${
+                    isEmailLocked 
+                      ? 'bg-slate-100 border-slate-200 text-slate-500 cursor-not-allowed opacity-80' 
+                      : 'bg-slate-50 border-slate-300 text-slate-900 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 focus:bg-white'
+                  }`}
+                  onChange={e => setFormData({ ...formData, email: e.target.value })}
+                />
+              </div>
+              {!isEmailLocked && <p className="text-[11px] font-semibold text-amber-600 mt-1">* One-time entry. Locked after save.</p>}
             </div>
 
             <div>
