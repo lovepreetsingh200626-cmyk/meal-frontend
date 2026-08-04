@@ -41,7 +41,8 @@ export default function AdminDashboard({ user, onLogout, onUpdateUser }) {
     const [selectedHostelFilter, setSelectedHostelFilter] = useState('ALL');
 
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [editingRollNo, setEditingRollNo] = useState(null);
+    // CHANGED: Track the editing user by Student ID or DB ID, not Roll No
+    const [editingUserId, setEditingUserId] = useState(null);
     const [editFormData, setEditFormData] = useState({
         name: '',
         newRollNo: '',
@@ -132,38 +133,43 @@ export default function AdminDashboard({ user, onLogout, onUpdateUser }) {
         } catch (err) { console.error(err); }
     };
 
-    const handleRoleChange = async (targetRollNo, currentRole) => {
+    // CHANGED: Uses targetId (Student ID or _id) instead of targetRollNo
+    const handleRoleChange = async (targetId, currentRole) => {
         const newRole = currentRole === 'admin' ? 'student' : 'admin';
         try {
-            await API.put('/auth/update-role', { targetRollNo, newRole });
-            setSuccessMsg(`Roll No ${targetRollNo} updated to ${newRole.toUpperCase()}!`);
+            await API.put('/auth/update-role', { targetStudentId: targetId, newRole });
+            setSuccessMsg(`User updated to ${newRole.toUpperCase()}!`);
             setTimeout(() => setSuccessMsg(''), 4000);
-            setUsersList(prev => prev.map(u => u.rollNo === targetRollNo ? { ...u, role: newRole } : u));
+            setUsersList(prev => prev.map(u => (u.studentId === targetId || u._id === targetId) ? { ...u, role: newRole } : u));
         } catch (err) { setErrorMsg(err.response?.data?.message || 'Failed'); setTimeout(() => setErrorMsg(''), 4000); }
     };
 
-    const handleRemoveStudent = async (targetRollNo, targetName) => {
-        if (!window.confirm(`Permanently remove student Roll No ${targetRollNo} (${targetName})?`)) return;
+    // CHANGED: Uses targetId (Student ID or _id) instead of targetRollNo
+    const handleRemoveStudent = async (targetId, targetName) => {
+        if (!window.confirm(`Permanently remove student (${targetName})?`)) return;
         try {
-            await API.delete(`/auth/users/${targetRollNo}`);
+            await API.delete(`/auth/users/${targetId}`);
             setSuccessMsg(`Student removed successfully.`);
             setTimeout(() => setSuccessMsg(''), 4000);
-            setUsersList(prev => prev.filter(u => u.rollNo !== targetRollNo));
+            setUsersList(prev => prev.filter(u => u.studentId !== targetId && u._id !== targetId));
         } catch (err) { setErrorMsg(err.response?.data?.message || 'Failed'); setTimeout(() => setErrorMsg(''), 4000); }
     };
 
-    const handleResetPassword = async (targetRollNo, targetName) => {
-        const newPassword = window.prompt(`Enter new password (min. 8 chars) for Roll No ${targetRollNo} (${targetName}):`);
+    // CHANGED: Uses targetId (Student ID or _id) instead of targetRollNo
+    const handleResetPassword = async (targetId, targetName) => {
+        const newPassword = window.prompt(`Enter new password (min. 8 chars) for (${targetName}):`);
         if (newPassword === null || newPassword.trim().length < 8) return alert('Password must be at least 8 characters long.');
         try {
-            const { data } = await API.put(`/auth/users/${targetRollNo}/password`, { newPassword: newPassword.trim() });
+            const { data } = await API.put(`/auth/users/${targetId}/password`, { newPassword: newPassword.trim() });
             setSuccessMsg(data.message || 'Password reset successfully!');
             setTimeout(() => setSuccessMsg(''), 4000);
         } catch (err) { setErrorMsg(err.response?.data?.message || 'Failed'); setTimeout(() => setErrorMsg(''), 4000); }
     };
 
     const openEditModal = (student) => {
-        setEditingRollNo(student.rollNo);
+        // Set the unique identifier for the API PUT request
+        setEditingUserId(student.studentId || student._id);
+        
         setEditFormData({ 
             name: student.name || '', 
             newRollNo: student.rollNo || '', 
@@ -184,13 +190,15 @@ export default function AdminDashboard({ user, onLogout, onUpdateUser }) {
     const handleEditSubmit = async (e) => {
         e.preventDefault();
         try {
-            const { data } = await API.put(`/auth/users/${editingRollNo}`, editFormData);
+            const { data } = await API.put(`/auth/users/${editingUserId}`, editFormData);
             setSuccessMsg('Student updated successfully!');
             setTimeout(() => setSuccessMsg(''), 4000);
-            setUsersList(prev => prev.map(u => u.rollNo === editingRollNo ? data.user : u));
+            setUsersList(prev => prev.map(u => (u.studentId === editingUserId || u._id === editingUserId) ? data.user : u));
             setIsEditModalOpen(false);
-            fetchUsers();
-        } catch (err) { setErrorMsg(err.response?.data?.message || 'Failed'); setTimeout(() => setErrorMsg(''), 4000); }
+        } catch (err) { 
+            setErrorMsg(err.response?.data?.message || 'Failed to update student.'); 
+            setTimeout(() => setErrorMsg(''), 4000); 
+        }
     };
 
     const openAdminEditModal = (adminAccount) => {
@@ -323,7 +331,9 @@ export default function AdminDashboard({ user, onLogout, onUpdateUser }) {
     };
 
     const filteredUsers = usersList.filter(u => {
-        const matchesSearch = (u.name && u.name.toLowerCase().includes(searchTerm.toLowerCase())) || (u.rollNo && u.rollNo.toString().includes(searchTerm));
+        const matchesSearch = (u.name && u.name.toLowerCase().includes(searchTerm.toLowerCase())) || 
+                              (u.rollNo && u.rollNo.toString().includes(searchTerm)) || 
+                              (u.studentId && u.studentId.includes(searchTerm));
         const matchesHostel = selectedHostelFilter === 'ALL' || u.hostelNo === selectedHostelFilter;
         return matchesSearch && matchesHostel;
     }).sort((a, b) => (Number(a.rollNo) || 0) - (Number(b.rollNo) || 0));
@@ -395,7 +405,7 @@ export default function AdminDashboard({ user, onLogout, onUpdateUser }) {
                     <div className="flex flex-wrap items-center gap-3">
                         <div className="relative">
                             <Search className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
-                            <input type="text" placeholder="Search name or roll..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="bg-slate-50 border border-slate-300 rounded-lg pl-9 pr-3 py-1.5 text-xs font-medium text-slate-800 focus:outline-none w-48" />
+                            <input type="text" placeholder="Search ID, name, roll..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="bg-slate-50 border border-slate-300 rounded-lg pl-9 pr-3 py-1.5 text-xs font-medium text-slate-800 focus:outline-none w-48" />
                         </div>
                         {activeTab !== 'admins' && activeTab !== 'notices' && (
                             <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5">
@@ -455,10 +465,11 @@ export default function AdminDashboard({ user, onLogout, onUpdateUser }) {
                                             <td className="py-3.5"><span className={`px-2 py-0.5 rounded-full text-xs font-bold uppercase border ${u.role === 'admin' ? 'bg-amber-100 text-amber-800' : 'bg-blue-50 text-blue-700'}`}>{u.role}</span></td>
                                             <td className="py-3.5 text-right pr-2">
                                                 <div className="flex items-center justify-end gap-1.5">
-                                                    <button onClick={() => handleRoleChange(u.rollNo, u.role)} className={`text-xs font-bold px-3 py-1.5 rounded-lg border ${u.role === 'admin' ? 'bg-amber-50 text-amber-800' : 'bg-blue-600 text-white'}`}>{u.role === 'admin' ? 'Demote' : 'Promote'}</button>
-                                                    <button onClick={() => openEditModal(u)} className="p-1.5 rounded-lg border bg-slate-50 hover:bg-blue-600 hover:text-white transition" title="Edit Details"><Pencil className="w-3.5 h-3.5" /></button>
-                                                    <button onClick={() => handleResetPassword(u.rollNo, u.name)} className="p-1.5 rounded-lg border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-600 hover:text-white transition" title="Reset Password"><KeyRound className="w-3.5 h-3.5" /></button>
-                                                    <button onClick={() => handleRemoveStudent(u.rollNo, u.name)} className="p-1.5 rounded-lg border border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white transition" title="Remove Student"><Trash2 className="w-3.5 h-3.5" /></button>
+                                                    {/* ALL THESE NOW PASS studentId or _id INSTEAD OF rollNo */}
+                                                    <button onClick={() => handleRoleChange(u.studentId || u._id, u.role)} className={`text-xs font-bold px-3 py-1.5 rounded-lg border cursor-pointer ${u.role === 'admin' ? 'bg-amber-50 text-amber-800 hover:bg-amber-100' : 'bg-blue-600 text-white hover:bg-blue-700'}`}>{u.role === 'admin' ? 'Demote' : 'Promote'}</button>
+                                                    <button onClick={() => openEditModal(u)} className="p-1.5 rounded-lg border bg-slate-50 hover:bg-blue-600 hover:text-white transition cursor-pointer" title="Edit Details"><Pencil className="w-3.5 h-3.5" /></button>
+                                                    <button onClick={() => handleResetPassword(u.studentId || u._id, u.name)} className="p-1.5 rounded-lg border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-600 hover:text-white transition cursor-pointer" title="Reset Password"><KeyRound className="w-3.5 h-3.5" /></button>
+                                                    <button onClick={() => handleRemoveStudent(u.studentId || u._id, u.name)} className="p-1.5 rounded-lg border border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white transition cursor-pointer" title="Remove Student"><Trash2 className="w-3.5 h-3.5" /></button>
                                                 </div>
                                             </td>
                                         </tr>
@@ -644,7 +655,7 @@ export default function AdminDashboard({ user, onLogout, onUpdateUser }) {
                         <div className="flex items-center justify-between mb-6">
                             <div>
                                 <h3 className="text-xl font-extrabold text-slate-900">Edit Student Details</h3>
-                                <p className="text-xs font-semibold text-blue-600 mt-0.5 uppercase">Original Roll No: {editingRollNo}</p>
+                                <p className="text-xs font-semibold text-blue-600 mt-0.5 uppercase">Admin Override</p>
                             </div>
                             <button onClick={() => setIsEditModalOpen(false)} className="w-8 h-8 flex items-center justify-center bg-slate-100 rounded-full"><X className="w-4 h-4" /></button>
                         </div>
@@ -711,7 +722,7 @@ export default function AdminDashboard({ user, onLogout, onUpdateUser }) {
                                 </div>
                             </div>
 
-                            <button type="submit" className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl cursor-pointer">Save Changes (Admin Override)</button>
+                            <button type="submit" className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl cursor-pointer">Save Changes</button>
                         </form>
                     </div>
                 </div>

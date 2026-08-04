@@ -180,7 +180,7 @@ export default function StudentDashboard({ user, onLogout, onOpenProfile }) {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 pb-16 font-sans relative overflow-hidden selection:bg-blue-600 selection:text-white">
       
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-96 bg-linear-to-b from-blue-100/60 to-transparent pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-96 bg-gradient-to-b from-blue-100/60 to-transparent pointer-events-none" />
 
       {/* Top Banner */}
       <nav className="border-b border-slate-200 bg-white/90 backdrop-blur-md sticky top-0 z-50 shadow-sm">
@@ -213,6 +213,16 @@ export default function StudentDashboard({ user, onLogout, onOpenProfile }) {
         </div>
       </nav>
 
+      {/* --- STUNNING MARQUEE BANNER --- */}
+      <div className="bg-gradient-to-r from-rose-500 via-orange-500 to-rose-500 py-2.5 shadow-md relative z-40 border-b border-rose-600">
+        <div className="max-w-6xl mx-auto px-4 flex items-center gap-3">
+          <AlertCircle className="w-5 h-5 shrink-0 text-white animate-pulse drop-shadow-md" />
+          <marquee scrollAmount="8" className="text-sm font-extrabold tracking-wide text-white drop-shadow-md flex-1">
+            ⚠️ MANDATORY MESS POLICY: Even if you do not eat a single meal in a month, you will still have to pay a minimum basic charge of ₹1110 for Boys and ₹1000 for Girls. ⚠️
+          </marquee>
+        </div>
+      </div>
+
       <div className="max-w-6xl mx-auto px-4 mt-8 relative z-10">
         
         {/* Quick Stats Grid */}
@@ -240,7 +250,7 @@ export default function StudentDashboard({ user, onLogout, onOpenProfile }) {
 
         {/* --- NOTICE BOARD FEED --- */}
         {relevantNotices.length > 0 && (
-          <div className="bg-linear-to-r from-blue-900 to-slate-900 text-white rounded-2xl p-6 mb-8 shadow-md border border-blue-800">
+          <div className="bg-gradient-to-r from-blue-900 to-slate-900 text-white rounded-2xl p-6 mb-8 shadow-md border border-blue-800">
             <div className="flex items-center gap-2.5 mb-4 border-b border-blue-800/60 pb-3">
               <BellRing className="w-5 h-5 text-amber-400 animate-bounce" />
               <h2 className="font-extrabold text-base tracking-wider uppercase">Hostel & Mess Notice Board</h2>

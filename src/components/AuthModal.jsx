@@ -28,7 +28,6 @@ export default function AuthModal({ onLoginSuccess }) {
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
-  // 0 = Normal Auth, 1 = Request OTP, 2 = Verify OTP & Reset
   const [forgotPasswordStep, setForgotPasswordStep] = useState(0); 
 
   const [formData, setFormData] = useState({
@@ -66,9 +65,6 @@ export default function AuthModal({ onLoginSuccess }) {
     setSuccessMsg('');
   };
 
-  // ==========================================
-  // NORMAL LOGIN & REGISTER SUBMIT
-  // ==========================================
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -91,26 +87,14 @@ export default function AuthModal({ onLoginSuccess }) {
         return;
       }
     } else {
+      // Student ID is required for both Login and Registration
       if (!formData.studentId.trim()) {
         setError('Student ID is required.');
         setLoading(false);
         return;
       }
-      // FRONTEND VALIDATION: Max 13 digits for Student ID
       if (formData.studentId.trim().length > 13) {
         setError('Student ID cannot exceed 13 digits.');
-        setLoading(false);
-        return;
-      }
-
-      if (!formData.rollNo.trim()) {
-        setError('Roll Number is required.');
-        setLoading(false);
-        return;
-      }
-      // FRONTEND VALIDATION: Max 3 digits for Roll No
-      if (formData.rollNo.trim().length > 3) {
-        setError('Roll Number cannot exceed 3 digits.');
         setLoading(false);
         return;
       }
@@ -121,7 +105,19 @@ export default function AuthModal({ onLoginSuccess }) {
         return;
       }
 
+      // Roll Number and other details are ONLY required when Registering
       if (isRegistering) {
+        if (!formData.rollNo.trim()) {
+          setError('Roll Number is required.');
+          setLoading(false);
+          return;
+        }
+        if (formData.rollNo.trim().length > 3) {
+          setError('Roll Number cannot exceed 3 digits.');
+          setLoading(false);
+          return;
+        }
+
         if (!formData.name.trim() || !/^[a-zA-Z\s]{2,}$/.test(formData.name.trim())) {
           setError('Please enter a valid Full Name using letters only (minimum 2 characters).');
           setLoading(false);
@@ -174,9 +170,6 @@ export default function AuthModal({ onLoginSuccess }) {
               password: formData.password
             };
 
-
-            console.log(payload)
-
         await API.post(endpoint, payload);
         setSuccessMsg(`${isAdminMode ? 'Admin' : 'Student'} account created successfully! Switching to login...`);
         setTimeout(() => {
@@ -186,7 +179,7 @@ export default function AuthModal({ onLoginSuccess }) {
       } else {
         const loginPayload = isAdminMode
           ? { name: formData.name.trim(), password: formData.password, role: 'admin' }
-          : { studentId: formData.studentId.trim(), rollNo: formData.rollNo.trim(), password: formData.password, role: 'student' };
+          : { studentId: formData.studentId.trim(), password: formData.password, role: 'student' }; // REMOVED rollNo from login payload
 
         const { data } = await API.post('/auth/login', loginPayload);
         localStorage.setItem('token', data.token);
@@ -196,7 +189,7 @@ export default function AuthModal({ onLoginSuccess }) {
     } catch (err) {
       const serverMessage = err.response?.data?.message || err.response?.data?.error || (err.message === 'Network Error' ? 'Cannot connect to backend server' : null);
       if (serverMessage && serverMessage.includes('E11000')) {
-        setError(isAdminMode ? 'An account with this Admin Name already exists!' : 'An account with this Student ID or Roll Number already exists!');
+        setError(isAdminMode ? 'An account with this Admin Name already exists!' : 'An account with this Student ID already exists!');
       } else {
         setError(serverMessage || 'Something went wrong. Please try again.');
       }
@@ -205,9 +198,6 @@ export default function AuthModal({ onLoginSuccess }) {
     }
   };
 
-  // ==========================================
-  // FORGOT PASSWORD HANDLERS
-  // ==========================================
   const handleRequestOTP = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -266,7 +256,6 @@ export default function AuthModal({ onLoginSuccess }) {
         isAdminMode ? 'border-amber-200/80' : 'border-slate-200/80'
       }`}>
 
-        {/* HEADER BADGE & TOGGLE */}
         <div className="flex items-center justify-between mb-4">
           <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${
             isAdminMode ? 'bg-amber-50 text-amber-800 border-amber-200' : 'bg-blue-50 text-blue-700 border-blue-200'
@@ -288,7 +277,6 @@ export default function AuthModal({ onLoginSuccess }) {
           )}
         </div>
 
-        {/* TITLE SECTION */}
         <div className="text-center mb-6">
           <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
             {forgotPasswordStep > 0
@@ -307,7 +295,6 @@ export default function AuthModal({ onLoginSuccess }) {
           </p>
         </div>
 
-        {/* ALERTS */}
         {error && (
           <div className="bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-2xl text-sm mb-6 flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
@@ -322,9 +309,6 @@ export default function AuthModal({ onLoginSuccess }) {
           </div>
         )}
 
-        {/* ========================================================
-            FORGOT PASSWORD FLOW
-        ======================================================== */}
         {forgotPasswordStep === 1 && (
           <form onSubmit={handleRequestOTP} className="space-y-4">
             <div>
@@ -348,7 +332,7 @@ export default function AuthModal({ onLoginSuccess }) {
             <div>
               <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">6-Digit OTP</label>
               <div className="relative mt-1 group">
-                <User className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400 group-focus-within:text-blue-600 transition" />
+                <Hash className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400 group-focus-within:text-blue-600 transition" />
                 <input required type="text" maxLength="6" placeholder="Enter OTP received on email" value={resetData.otp} onChange={e => setResetData({ ...resetData, otp: e.target.value.replace(/\D/g, '') })} className="w-full bg-slate-50 border border-slate-300 rounded-xl py-3 pl-11 pr-4 text-slate-900 text-sm focus:outline-none focus:border-blue-600 tracking-widest font-bold" />
               </div>
             </div>
@@ -375,9 +359,6 @@ export default function AuthModal({ onLoginSuccess }) {
           </form>
         )}
 
-        {/* ========================================================
-            NORMAL LOGIN & REGISTER FLOW
-        ======================================================== */}
         {forgotPasswordStep === 0 && (
           <>
             <div className="grid grid-cols-2 p-1 bg-slate-100 border border-slate-200 rounded-2xl mb-6">
@@ -418,6 +399,7 @@ export default function AuthModal({ onLoginSuccess }) {
                 </>
               ) : (
                 <>
+                  {/* FULL NAME & EMAIL (ONLY on Register) */}
                   {isRegistering && (
                     <>
                       <div>
@@ -438,6 +420,7 @@ export default function AuthModal({ onLoginSuccess }) {
                     </>
                   )}
 
+                  {/* STUDENT ID (Login & Register) */}
                   <div>
                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Student ID</label>
                     <div className="relative mt-1 group">
@@ -446,16 +429,17 @@ export default function AuthModal({ onLoginSuccess }) {
                     </div>
                   </div>
 
-                  <div>
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Roll Number</label>
-                    <div className="relative mt-1 group">
-                      <User className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400 group-focus-within:text-blue-600 transition" />
-                      <input required type="text" maxLength="3" placeholder="Enter your Roll Number" value={formData.rollNo} onChange={e => setFormData({ ...formData, rollNo: e.target.value })} className="w-full bg-slate-50 border border-slate-300 rounded-xl py-3 pl-11 pr-4 text-slate-900 text-sm focus:outline-none focus:border-blue-600 uppercase" />
-                    </div>
-                  </div>
-
+                  {/* ROLL NO & HOSTEL DETAILS (ONLY on Register) */}
                   {isRegistering && (
                     <>
+                      <div>
+                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Roll Number</label>
+                        <div className="relative mt-1 group">
+                          <Hash className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400 group-focus-within:text-blue-600 transition" />
+                          <input required type="text" maxLength="3" placeholder="Enter your Roll Number" value={formData.rollNo} onChange={e => setFormData({ ...formData, rollNo: e.target.value })} className="w-full bg-slate-50 border border-slate-300 rounded-xl py-3 pl-11 pr-4 text-slate-900 text-sm focus:outline-none focus:border-blue-600 uppercase" />
+                        </div>
+                      </div>
+
                       <div>
                         <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Assigned Hostel</label>
                         <div className="relative mt-1 group">
@@ -486,6 +470,7 @@ export default function AuthModal({ onLoginSuccess }) {
                     </>
                   )}
 
+                  {/* PASSWORD (Login & Register) */}
                   <div>
                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Password</label>
                     <div className="relative mt-1 group">
@@ -496,7 +481,6 @@ export default function AuthModal({ onLoginSuccess }) {
                 </>
               )}
 
-              {/* Forgot Password Link (Only for students on sign-in mode) */}
               {!isRegistering && !isAdminMode && (
                 <div className="flex justify-end mt-1">
                   <button type="button" onClick={() => { setForgotPasswordStep(1); resetMessages(); }} className="text-xs font-bold text-blue-600 hover:text-blue-800 transition cursor-pointer">
