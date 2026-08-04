@@ -435,7 +435,7 @@ export default function AuthModal({ onLoginSuccess }) {
                       <div>
                         <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Roll Number</label>
                         <div className="relative mt-1 group">
-                          <Hash className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400 group-focus-within:text-blue-600 transition" />
+                          <User className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400 group-focus-within:text-blue-600 transition" />
                           <input required type="text" maxLength="3" placeholder="Enter your Roll Number" value={formData.rollNo} onChange={e => setFormData({ ...formData, rollNo: e.target.value })} className="w-full bg-slate-50 border border-slate-300 rounded-xl py-3 pl-11 pr-4 text-slate-900 text-sm focus:outline-none focus:border-blue-600 uppercase" />
                         </div>
                       </div>
