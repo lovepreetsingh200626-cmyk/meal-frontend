@@ -1,69 +1,110 @@
 import React, { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import AuthModal from './components/AuthModal';
-import StudentDashboard from './components/StudentDashboard';
-import AdminDashboard from './components/AdminDashboard';
-import StudentProfile from './components/StudentProfile';
+import Navbar from './components/Navbar';
+import ProfileModal from './components/ProfileModal';
 
-export default function App() {
+// Student Pages
+import StudentOverview from './pages/student/StudentOverview';
+import StudentLogger from './pages/student/StudentLogger';
+import StudentLedgerPage from './pages/student/StudentLedgerPage';
+import StudentComplaintsPage from './pages/student/StudentComplaintsPage';
+import StudentPaymentPage from './pages/student/StudentPaymentPage';
+
+// Admin Dashboard
+import AdminDashboard from './components/AdminDashboard'; 
+
+function AppRoutes() {
   const [user, setUser] = useState(null);
-  const [currentView, setCurrentView] = useState('dashboard'); // Tracks whether to show 'dashboard' or 'profile'
+  const [loadingUser, setLoadingUser] = useState(true);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   useEffect(() => {
-    // Retain login state across browser refreshes
     const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (e) {
-        console.error('Failed to parse user from localStorage');
-        localStorage.removeItem('user');
-      }
+    const token = localStorage.getItem('token');
+    if (storedUser && token) {
+      try { setUser(JSON.parse(storedUser)); } catch (e) { localStorage.clear(); }
     }
+    setLoadingUser(false);
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setUser(null);
-    setCurrentView('dashboard'); // Reset view on logout
+  const handleLoginSuccess = (userData) => {
+    setUser(userData);
+    localStorage.setItem('user', JSON.stringify(userData));
   };
 
-  // Handle updating the global user state after a profile edit (Used by both Students and Admins)
-  const handleUpdateUser = (updatedUserData) => {
-    setUser(updatedUserData);
-    localStorage.setItem('user', JSON.stringify(updatedUserData));
-    if (user.role !== 'admin') {
-      setCurrentView('dashboard'); // Automatically go back to dashboard after saving (for students)
-    }
+  const handleLogout = () => {
+    localStorage.clear();
+    setUser(null);
   };
+
+  const handleUpdateUser = (updatedUser) => {
+    setUser(updatedUser);
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+  };
+
+  if (loadingUser) {
+    return (
+      <div className="min-h-screen bg-gray-200 flex items-center justify-center font-sans">
+        <div className="text-blue-900 font-black uppercase tracking-widest text-xs animate-pulse">
+          Loading GNDU Institutional Framework...
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div>
-      {/* 1. Not logged in -> Show Authentication Modal */}
-      {!user ? (
-        <AuthModal onLoginSuccess={(userData) => setUser(userData)} />
-      ) : user.role === 'admin' ? (
-        /* 2. Logged in as Admin -> Show Executive Admin Dashboard */
-        <AdminDashboard 
-          user={user} 
-          onLogout={handleLogout} 
-          onUpdateUser={handleUpdateUser} // <-- ADDED THIS PROP HERE
+    <>
+      <Routes>
+        {/* ROOT PATH REDIRECT */}
+        <Route 
+          path="/" 
+          element={<Navigate to={user ? (user.role === 'admin' ? '/admin' : '/student') : '/login'} replace />} 
         />
-      ) : currentView === 'profile' ? (
-        /* 3. Student clicked "Edit Profile" -> Show Profile Form */
-        <StudentProfile 
-          user={user} 
-          onUpdateSuccess={handleUpdateUser} 
-          onBack={() => setCurrentView('dashboard')} 
+
+        <Route 
+          path="/login" 
+          element={!user ? <AuthModal onLoginSuccess={handleLoginSuccess} /> : <Navigate to={user.role === 'admin' ? '/admin' : '/student'} replace />} 
         />
-      ) : (
-        /* 4. Default logged in as Student -> Show Student Mess Dashboard */
-        <StudentDashboard 
+
+        {/* STUDENT MULTI-PAGE ROUTES */}
+        <Route path="/student" element={user && user.role === 'student' ? <><Navbar user={user} onLogout={handleLogout} onOpenProfile={() => setIsProfileModalOpen(true)} /><StudentOverview user={user} /></> : <Navigate to="/login" replace />} />
+        <Route path="/student/logger" element={user && user.role === 'student' ? <><Navbar user={user} onLogout={handleLogout} onOpenProfile={() => setIsProfileModalOpen(true)} /><StudentLogger user={user} /></> : <Navigate to="/login" replace />} />
+        <Route path="/student/ledger" element={user && user.role === 'student' ? <><Navbar user={user} onLogout={handleLogout} onOpenProfile={() => setIsProfileModalOpen(true)} /><StudentLedgerPage user={user} /></> : <Navigate to="/login" replace />} />
+        <Route path="/student/complaints" element={user && user.role === 'student' ? <><Navbar user={user} onLogout={handleLogout} onOpenProfile={() => setIsProfileModalOpen(true)} /><StudentComplaintsPage user={user} /></> : <Navigate to="/login" replace />} />
+        
+        {/* REGISTERED FEE & RECEIPT PAYMENT DESK ROUTE */}
+        <Route path="/student/payments" element={user && user.role === 'student' ? <><Navbar user={user} onLogout={handleLogout} onOpenProfile={() => setIsProfileModalOpen(true)} /><StudentPaymentPage user={user} /></> : <Navigate to="/login" replace />} />
+
+        {/* ADMIN ROUTE */}
+        <Route 
+          path="/admin/*" 
+          element={
+            user && user.role === 'admin' ? (
+              <AdminDashboard user={user} onLogout={handleLogout} onUpdateUser={handleUpdateUser} onOpenProfile={() => setIsProfileModalOpen(true)} />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          } 
+        />
+
+        <Route path="*" element={<Navigate to={user ? (user.role === 'admin' ? '/admin' : '/student') : '/login'} replace />} />
+      </Routes>
+
+      {/* GLOBAL PROFILE MODAL */}
+      {isProfileModalOpen && user && (
+        <ProfileModal 
           user={user} 
-          onLogout={handleLogout} 
-          onOpenProfile={() => setCurrentView('profile')} 
+          onClose={() => setIsProfileModalOpen(false)} 
+          onUpdateUser={handleUpdateUser} 
         />
       )}
-    </div>
+    </>
+  );
+}
+
+export default function App() {
+  return (
+    <BrowserRouter><AppRoutes /></BrowserRouter>
   );
 }

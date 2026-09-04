@@ -1,24 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import API from '../services/api';
-import { 
-  User, 
-  Lock, 
-  Phone, 
-  Building2, 
-  LogIn, 
-  UserPlus, 
-  Sparkles, 
-  AlertCircle, 
-  CheckCircle2, 
-  ArrowRight, 
-  ShieldCheck,
-  Mail,
-  KeyRound,
-  IdCard,
-  Hash,
-  MessageSquareText,
-  Unlock
+import { UNIVERSITY_FACULTIES_HIERARCHY } from '../data/coursesData';
+import { ACADEMIC_SESSIONS } from '../data/sessionsData';
+import { INDIAN_STATES } from '../data/statesData';
+import { WORLD_COUNTRIES } from '../data/countriesData';
+import {
+  User, Lock, Phone, Building2, LogIn, UserPlus,
+  AlertCircle, CheckCircle2, Mail, IdCard, Hash, Unlock,
+  GraduationCap, BookOpen, Layers, ShieldCheck, Camera, ImagePlus,
+  MapPin, Globe, Calendar, Compass, KeyRound, Key, Users, KeySquare, HelpCircle
 } from 'lucide-react';
+
+const ROLL_NUMBERS = Array.from({ length: 999 }, (_, i) => String(i + 1).padStart(3, '0'));
 
 export default function AuthModal({ onLoginSuccess }) {
   const [isRegistering, setIsRegistering] = useState(false);
@@ -27,26 +20,37 @@ export default function AuthModal({ onLoginSuccess }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
-
-  const [forgotPasswordStep, setForgotPasswordStep] = useState(0); 
+  const [forgotPasswordStep, setForgotPasswordStep] = useState(0);
 
   const [formData, setFormData] = useState({
     name: '',
-    email: '', 
+    fatherName: '',
+    motherName: '',
+    dob: '',
+    nationality: 'India',
+    email: '',
     studentId: '',
     rollNo: '',
     hostelNo: 'BH1',
     gender: 'Male',
     mobileNo: '',
+    university: '',
+    facultyId: '',
+    facultyName: '',
+    department: '',
+    session: '',
+    domicileState: 'Punjab',
+    category: 'General',
+    profilePhoto: '',
     password: '',
     adminSecret: ''
   });
 
+  const [availableDepartments, setAvailableDepartments] = useState([]);
+  const [availableProgrammes, setAvailableProgrammes] = useState([]);
+
   const [resetData, setResetData] = useState({
-    studentId: '',
-    otp: '',
-    newPassword: '',
-    confirmPassword: ''
+    studentId: '', otp: '', newPassword: '', confirmPassword: ''
   });
 
   useEffect(() => {
@@ -56,13 +60,85 @@ export default function AuthModal({ onLoginSuccess }) {
           setHostels(res.data);
           setFormData(prev => ({ ...prev, hostelNo: res.data[0].hostelNumber }));
         }
-      })
-      .catch(err => console.error('Could not fetch hostels:', err));
+      }).catch(err => console.error(err));
   }, []);
 
-  const resetMessages = () => {
-    setError('');
-    setSuccessMsg('');
+  const resetMessages = () => { setError(''); setSuccessMsg(''); };
+
+  const handleFacultyChange = (fId) => {
+    const selectedFac = UNIVERSITY_FACULTIES_HIERARCHY.find(f => f.id === fId);
+    const depts = selectedFac ? selectedFac.departments : [];
+    setAvailableDepartments(depts);
+    setAvailableProgrammes([]);
+    setFormData(prev => ({
+      ...prev,
+      facultyId: fId,
+      facultyName: selectedFac ? selectedFac.name : '',
+      department: '',
+      university: ''
+    }));
+  };
+
+  const handleDepartmentChange = (deptName) => {
+    const matchedDept = availableDepartments.find(d => d.name === deptName);
+    const progs = matchedDept ? matchedDept.programmes : [];
+    setAvailableProgrammes(progs);
+    setFormData(prev => ({
+      ...prev,
+      department: deptName,
+      university: ''
+    }));
+  };
+
+  const handleStateChange = (selectedState) => {
+    setFormData(prev => ({
+      ...prev,
+      domicileState: selectedState,
+      category: selectedState === 'Punjab' ? prev.category : 'General'
+    }));
+  };
+
+  const handlePhotoUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setError('Please upload a valid image file (JPG, PNG, WebP).');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target.result;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_DIMENSION = 400;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_DIMENSION) {
+            height *= MAX_DIMENSION / width;
+            width = MAX_DIMENSION;
+          }
+        } else {
+          if (height > MAX_DIMENSION) {
+            width *= MAX_DIMENSION / height;
+            height = MAX_DIMENSION;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.8);
+        setFormData(prev => ({ ...prev, profilePhoto: compressedBase64 }));
+      };
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSubmit = async (e) => {
@@ -71,82 +147,21 @@ export default function AuthModal({ onLoginSuccess }) {
     resetMessages();
 
     if (isAdminMode) {
-      if (!formData.name.trim() || !/^[a-zA-Z\s]{2,}$/.test(formData.name.trim())) {
-        setError('Please enter a valid Admin Name using letters only (minimum 2 characters).');
-        setLoading(false);
-        return;
-      }
-      if (!formData.password || formData.password.length < 8) {
-        setError('Password must be at least 8 characters long.');
-        setLoading(false);
-        return;
-      }
-      if (isRegistering && !formData.adminSecret.trim()) {
-        setError('Please enter the Admin Authorization Secret Code.');
-        setLoading(false);
-        return;
-      }
+      if (!formData.name.trim()) { setError('Admin Name required.'); setLoading(false); return; }
+      if (!formData.password || formData.password.length < 8) { setError('Password minimum 8 characters.'); setLoading(false); return; }
     } else {
-      // Student ID is required for both Login and Registration
-      if (!formData.studentId.trim()) {
-        setError('Student ID is required.');
-        setLoading(false);
-        return;
-      }
-      if (formData.studentId.trim().length > 13) {
-        setError('Student ID cannot exceed 13 digits.');
-        setLoading(false);
-        return;
-      }
-
-      if (!formData.password || formData.password.length < 8) {
-        setError('Password must be at least 8 characters long.');
-        setLoading(false);
-        return;
-      }
-
-      // Roll Number and other details are ONLY required when Registering
+      if (!formData.studentId.trim()) { setError('Student ID required.'); setLoading(false); return; }
+      if (formData.studentId.trim().length > 13) { setError('Max 13 digits for Student ID.'); setLoading(false); return; }
       if (isRegistering) {
-        if (!formData.rollNo.trim()) {
-          setError('Roll Number is required.');
-          setLoading(false);
-          return;
-        }
-        if (formData.rollNo.trim().length > 3) {
-          setError('Roll Number cannot exceed 3 digits.');
-          setLoading(false);
-          return;
-        }
-
-        if (!formData.name.trim() || !/^[a-zA-Z\s]{2,}$/.test(formData.name.trim())) {
-          setError('Please enter a valid Full Name using letters only (minimum 2 characters).');
-          setLoading(false);
-          return;
-        }
-        
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
-          setError('Please enter a valid email address.');
-          setLoading(false);
-          return;
-        }
-
-        if (!/^\d{10}$/.test(formData.mobileNo)) {
-          setError('Mobile number must be exactly 10 numeric digits (0-9).');
-          setLoading(false);
-          return;
-        }
-
-        const hostelPrefix = formData.hostelNo.toUpperCase().substring(0, 2);
-        if (formData.gender === 'Female' && hostelPrefix === 'BH') {
-          setError('Female students cannot select a Boys Hostel (BH). Please select a Girls Hostel.');
-          setLoading(false);
-          return;
-        }
-        if (formData.gender === 'Male' && hostelPrefix === 'GH') {
-          setError('Male students cannot select a Girls Hostel (GH). Please select a Boys Hostel.');
-          setLoading(false);
-          return;
-        }
+        if (!formData.rollNo) { setError('Roll Number is required.'); setLoading(false); return; }
+        if (!formData.fatherName.trim()) { setError("Father's Name is required."); setLoading(false); return; }
+        if (!formData.motherName.trim()) { setError("Mother's Name is required."); setLoading(false); return; }
+        if (!formData.dob) { setError('Date of Birth is required.'); setLoading(false); return; }
+        if (!formData.facultyId) { setError('Faculty selection is required.'); setLoading(false); return; }
+        if (!formData.department.trim()) { setError('Department selection is required.'); setLoading(false); return; }
+        if (!formData.university.trim()) { setError('Course / Programme selection is required.'); setLoading(false); return; }
+        if (!formData.session.trim()) { setError('Academic Session is required.'); setLoading(false); return; }
+        if (!formData.mobileNo.trim() || formData.mobileNo.length !== 10) { setError('Valid 10-digit mobile number is required.'); setLoading(false); return; }
       }
     }
 
@@ -154,32 +169,37 @@ export default function AuthModal({ onLoginSuccess }) {
       if (isRegistering) {
         const endpoint = isAdminMode ? '/auth/register-admin' : '/auth/register';
         const payload = isAdminMode
-          ? {
-              name: formData.name.trim(),
-              password: formData.password,
-              adminSecret: formData.adminSecret.trim()
-            }
+          ? { name: formData.name.trim(), password: formData.password, adminSecret: formData.adminSecret.trim() }
           : {
               name: formData.name.trim(),
-              email: formData.email.trim(), 
+              fatherName: formData.fatherName.trim(),
+              motherName: formData.motherName.trim(),
+              dob: formData.dob,
+              nationality: formData.nationality,
+              email: formData.email.trim(),
               studentId: formData.studentId.trim(),
-              rollNo: formData.rollNo.trim(),
+              rollNo: formData.rollNo,
               hostelNo: formData.hostelNo,
               gender: formData.gender,
               mobileNo: formData.mobileNo.trim(),
+              university: formData.university.trim(),
+              department: formData.department.trim(),
+              faculty: formData.facultyName.trim(),
+              facultyName: formData.facultyName.trim(),
+              session: formData.session.trim(),
+              domicileState: formData.domicileState,
+              category: formData.domicileState === 'Punjab' ? formData.category : 'General',
+              profilePhoto: formData.profilePhoto,
               password: formData.password
             };
 
         await API.post(endpoint, payload);
-        setSuccessMsg(`${isAdminMode ? 'Admin' : 'Student'} account created successfully! Switching to login...`);
-        setTimeout(() => {
-          setIsRegistering(false);
-          resetMessages();
-        }, 1500);
+        setSuccessMsg('Registration Successful. Switching to login.');
+        setTimeout(() => { setIsRegistering(false); resetMessages(); }, 1500);
       } else {
         const loginPayload = isAdminMode
           ? { name: formData.name.trim(), password: formData.password, role: 'admin' }
-          : { studentId: formData.studentId.trim(), password: formData.password, role: 'student' }; // REMOVED rollNo from login payload
+          : { studentId: formData.studentId.trim(), password: formData.password, role: 'student' };
 
         const { data } = await API.post('/auth/login', loginPayload);
         localStorage.setItem('token', data.token);
@@ -187,12 +207,7 @@ export default function AuthModal({ onLoginSuccess }) {
         onLoginSuccess(data.user);
       }
     } catch (err) {
-      const serverMessage = err.response?.data?.message || err.response?.data?.error || (err.message === 'Network Error' ? 'Cannot connect to backend server' : null);
-      if (serverMessage && serverMessage.includes('E11000')) {
-        setError(isAdminMode ? 'An account with this Admin Name already exists!' : 'An account with this Student ID already exists!');
-      } else {
-        setError(serverMessage || 'Something went wrong. Please try again.');
-      }
+      setError(err.response?.data?.message || 'Authentication Failed.');
     } finally {
       setLoading(false);
     }
@@ -204,11 +219,8 @@ export default function AuthModal({ onLoginSuccess }) {
     resetMessages();
     try {
       const { data } = await API.post('/auth/forgot-password', { studentId: resetData.studentId });
-      setSuccessMsg(data.message || 'OTP sent successfully!');
-      setTimeout(() => {
-        setForgotPasswordStep(2);
-        resetMessages();
-      }, 3500); 
+      setSuccessMsg(data.message);
+      setTimeout(() => { setForgotPasswordStep(2); resetMessages(); }, 3500);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to send OTP.');
     } finally {
@@ -218,299 +230,505 @@ export default function AuthModal({ onLoginSuccess }) {
 
   const handleResetPassword = async (e) => {
     e.preventDefault();
-    if (resetData.newPassword.length < 8) {
-      return setError('Password must be at least 8 characters long.');
-    }
-    if (resetData.newPassword !== resetData.confirmPassword) {
-      return setError('New passwords do not match.');
-    }
-
     setLoading(true);
     resetMessages();
     try {
-      const { data } = await API.post('/auth/reset-password', {
-        studentId: resetData.studentId,
-        otp: resetData.otp,
-        newPassword: resetData.newPassword
-      });
-      setSuccessMsg(data.message || 'Password reset successfully!');
-      setTimeout(() => {
-        setForgotPasswordStep(0);
-        setResetData({ studentId: '', otp: '', newPassword: '', confirmPassword: '' });
-        resetMessages();
-      }, 2500);
+      const { data } = await API.post('/auth/reset-password', resetData);
+      setSuccessMsg(data.message);
+      setTimeout(() => { setForgotPasswordStep(0); resetMessages(); }, 2500);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to reset password.');
+      setError(err.response?.data?.message || 'Failed to reset.');
     } finally {
       setLoading(false);
     }
   };
 
-  const selectedHostelObj = hostels.find(h => h.hostelNumber === formData.hostelNo);
+  const isOutsidePunjab = formData.domicileState !== 'Punjab';
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 flex items-center justify-center p-4 relative overflow-hidden font-sans selection:bg-blue-600 selection:text-white">
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-96 bg-gradient-to-b from-blue-100/60 to-transparent pointer-events-none" />
+    <div className="min-h-screen bg-gray-200 text-gray-900 font-sans selection:bg-blue-900 selection:text-white flex flex-col">
 
-      <div className={`bg-white border w-full max-w-lg rounded-3xl p-8 shadow-xl relative z-10 transition-all duration-300 ${
-        isAdminMode ? 'border-amber-200/80' : 'border-slate-200/80'
-      }`}>
-
-        <div className="flex items-center justify-between mb-4">
-          <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${
-            isAdminMode ? 'bg-amber-50 text-amber-800 border-amber-200' : 'bg-blue-50 text-blue-700 border-blue-200'
-          }`}>
-            <Sparkles className="w-3.5 h-3.5" />
-            {isAdminMode ? 'GNDU Executive Admin Portal' : 'Campus Dining & Attendance Portal'}
-          </span>
-
-          {forgotPasswordStep === 0 && (
-            <button
-              type="button"
-              onClick={() => { setIsAdminMode(!isAdminMode); resetMessages(); }}
-              className={`text-xs font-semibold px-3 py-1 rounded-lg border transition cursor-pointer ${
-                isAdminMode ? 'bg-amber-600 text-white border-amber-700 shadow-xs hover:bg-amber-700' : 'bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200'
-              }`}
-            >
-              {isAdminMode ? '← Student Portal' : '👑 Admin Portal'}
-            </button>
-          )}
+      {/* PRIVATE TOP STRIP */}
+      <div className="bg-amber-950 text-white py-1.5 px-4 md:px-8 text-[11px] font-semibold flex justify-between tracking-wide">
+        <div className="uppercase flex items-center gap-1.5">
+          <ShieldCheck className="w-3.5 h-3.5 text-orange-400" />
+          <span>Private &amp; Unofficial Student Utility • Independent Mess Tracker</span>
         </div>
-
-        <div className="text-center mb-6">
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-            {forgotPasswordStep > 0
-              ? 'Reset Password'
-              : isAdminMode
-                ? isRegistering ? 'Register Administrator' : 'Administrator Login'
-                : isRegistering ? 'Join Your Hostel Portal' : 'Welcome Back'}
-          </h1>
-          <p className="text-slate-500 text-sm mt-1.5">
-            {forgotPasswordStep === 1 && 'Enter your Student ID to receive a secure OTP on your registered email.'}
-            {forgotPasswordStep === 2 && 'Enter the OTP and create a new secure password.'}
-            {forgotPasswordStep === 0 && (isAdminMode
-              ? (isRegistering ? 'Create a privileged campus administrator account.' : 'Sign in with your admin credentials.')
-              : (isRegistering ? 'Register once to track your daily meals and attendance.' : 'Sign in to manage your mess ledger.')
-            )}
-          </p>
+        <div className="flex gap-4">
+          <button onClick={() => { setIsAdminMode(!isAdminMode); resetMessages(); }} className="hover:underline uppercase text-orange-300 cursor-pointer flex items-center gap-1">
+            {isAdminMode ? <User className="w-3 h-3" /> : <KeyRound className="w-3 h-3" />}
+            {isAdminMode ? 'Switch to Member Portal' : 'Committee Admin Login'}
+          </button>
         </div>
+      </div>
 
-        {error && (
-          <div className="bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-2xl text-sm mb-6 flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
-            <span>{error}</span>
-          </div>
-        )}
+      {/* PORTAL HEADER */}
+      <div className="bg-white border-b-4 border-orange-600 shadow-sm px-4 py-4 md:px-8 flex flex-col md:flex-row items-center gap-4">
+        <div className="w-16 h-16 bg-blue-900 rounded-full flex items-center justify-center text-white text-xs font-black border-2 border-orange-500 shrink-0 tracking-widest shadow-inner">
+          MESS
+        </div>
+        <div className="text-center md:text-left">
+          <h1 className="text-2xl font-black text-blue-900 uppercase tracking-tight">Student Mess &amp; Diet Ledger System</h1>
+          <h2 className="text-sm font-bold text-gray-600 uppercase">Independent Student Cooperative Committee</h2>
+          <span className="text-[10px] font-bold bg-amber-700 text-white px-2 py-0.5 mt-1 inline-block">Private &amp; Unofficial Utility</span>
+        </div>
+      </div>
 
-        {successMsg && (
-          <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-2xl text-sm mb-6 flex items-center gap-3">
-            <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-            <span>{successMsg}</span>
-          </div>
-        )}
+      <div className="flex-1 flex items-center justify-center p-4 py-10">
+        <div className="bg-white border border-gray-300 w-full max-w-lg shadow-md rounded-sm">
 
-        {forgotPasswordStep === 1 && (
-          <form onSubmit={handleRequestOTP} className="space-y-4">
-            <div>
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Student ID</label>
-              <div className="relative mt-1 group">
-                <IdCard className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400 group-focus-within:text-blue-600 transition" />
-                <input required type="text" maxLength="13" placeholder="Enter your Student ID" value={resetData.studentId} onChange={e => setResetData({ ...resetData, studentId: e.target.value })} className="w-full bg-slate-50 border border-slate-300 rounded-xl py-3 pl-11 pr-4 text-slate-900 text-sm focus:outline-none focus:border-blue-600 focus:ring-1" />
-              </div>
-            </div>
-            <button type="submit" disabled={loading} className="w-full mt-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl transition cursor-pointer text-sm shadow-sm disabled:opacity-50 flex justify-center items-center gap-2">
-              {loading ? 'Sending OTP...' : <><Mail className="w-4 h-4"/> Send OTP via Email</>}
-            </button>
-            <button type="button" onClick={() => { setForgotPasswordStep(0); resetMessages(); }} className="w-full text-sm text-slate-500 font-semibold hover:text-slate-800 transition cursor-pointer">
-              Cancel & Return to Login
-            </button>
-          </form>
-        )}
-
-        {forgotPasswordStep === 2 && (
-          <form onSubmit={handleResetPassword} className="space-y-4">
-            <div>
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">6-Digit OTP</label>
-              <div className="relative mt-1 group">
-                <Hash className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400 group-focus-within:text-blue-600 transition" />
-                <input required type="text" maxLength="6" placeholder="Enter OTP received on email" value={resetData.otp} onChange={e => setResetData({ ...resetData, otp: e.target.value.replace(/\D/g, '') })} className="w-full bg-slate-50 border border-slate-300 rounded-xl py-3 pl-11 pr-4 text-slate-900 text-sm focus:outline-none focus:border-blue-600 tracking-widest font-bold" />
-              </div>
-            </div>
-            <div>
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">New Password</label>
-              <div className="relative mt-1 group">
-                <Unlock className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400 group-focus-within:text-blue-600 transition" />
-                <input required type="password" placeholder="Min 8 characters" value={resetData.newPassword} onChange={e => setResetData({ ...resetData, newPassword: e.target.value })} className="w-full bg-slate-50 border border-slate-300 rounded-xl py-3 pl-11 pr-4 text-slate-900 text-sm focus:outline-none focus:border-blue-600" />
-              </div>
-            </div>
-            <div>
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Confirm Password</label>
-              <div className="relative mt-1 group">
-                <Lock className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400 group-focus-within:text-blue-600 transition" />
-                <input required type="password" placeholder="Confirm your new password" value={resetData.confirmPassword} onChange={e => setResetData({ ...resetData, confirmPassword: e.target.value })} className="w-full bg-slate-50 border border-slate-300 rounded-xl py-3 pl-11 pr-4 text-slate-900 text-sm focus:outline-none focus:border-blue-600" />
-              </div>
-            </div>
-            <button type="submit" disabled={loading} className="w-full mt-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl transition cursor-pointer text-sm shadow-sm disabled:opacity-50">
-              {loading ? 'Verifying...' : 'Verify OTP & Reset Password'}
-            </button>
-            <button type="button" onClick={() => { setForgotPasswordStep(0); resetMessages(); }} className="w-full text-sm text-slate-500 font-semibold hover:text-slate-800 transition cursor-pointer">
-              Cancel & Return to Login
-            </button>
-          </form>
-        )}
-
-        {forgotPasswordStep === 0 && (
-          <>
-            <div className="grid grid-cols-2 p-1 bg-slate-100 border border-slate-200 rounded-2xl mb-6">
-              <button type="button" onClick={() => { setIsRegistering(false); resetMessages(); }} className={`py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer ${!isRegistering ? (isAdminMode ? 'bg-amber-600 text-white shadow-sm' : 'bg-blue-600 text-white shadow-sm') : 'text-slate-600 hover:text-slate-900'}`}>
-                <LogIn className="w-4 h-4" /> Sign In
-              </button>
-              <button type="button" onClick={() => { setIsRegistering(true); resetMessages(); }} className={`py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer ${isRegistering ? (isAdminMode ? 'bg-amber-600 text-white shadow-sm' : 'bg-blue-600 text-white shadow-sm') : 'text-slate-600 hover:text-slate-900'}`}>
-                <UserPlus className="w-4 h-4" /> Register
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {isAdminMode ? (
+          {/* FORM HEADER */}
+          <div className="bg-gray-100 border-b border-gray-300 px-6 py-4 flex justify-between items-center">
+            <h3 className="text-lg font-bold text-blue-900 uppercase tracking-wide flex items-center gap-2">
+              {forgotPasswordStep > 0 ? (
                 <>
-                  <div>
-                    <label className="text-xs font-bold text-amber-800 uppercase tracking-wider">Admin Name</label>
-                    <div className="relative mt-1 group">
-                      <User className="absolute left-3.5 top-3.5 w-4 h-4 text-amber-500 group-focus-within:text-amber-700 transition" />
-                      <input required type="text" placeholder="e.g. Chief Warden" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="w-full bg-amber-50/40 border border-amber-300 rounded-xl py-3 pl-11 pr-4 text-slate-900 text-sm focus:outline-none focus:border-amber-600" />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="text-xs font-bold text-amber-800 uppercase tracking-wider">Password</label>
-                    <div className="relative mt-1 group">
-                      <Lock className="absolute left-3.5 top-3.5 w-4 h-4 text-amber-500 group-focus-within:text-amber-700 transition" />
-                      <input required type="password" placeholder="••••••••" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} className="w-full bg-amber-50/40 border border-amber-300 rounded-xl py-3 pl-11 pr-4 text-slate-900 text-sm focus:outline-none focus:border-amber-600" />
-                    </div>
-                  </div>
-                  {isRegistering && (
-                    <div className="bg-amber-50/80 border border-amber-300 p-3.5 rounded-xl animate-fadeIn">
-                      <label className="text-xs font-bold text-amber-900 uppercase tracking-wider block mb-1">Admin Authorization Secret</label>
-                      <div className="relative group">
-                        <KeyRound className="absolute left-3.5 top-3.5 w-4 h-4 text-amber-600 group-focus-within:text-amber-800 transition" />
-                        <input required type="password" placeholder="Enter Admin Secret Code" value={formData.adminSecret} onChange={e => setFormData({ ...formData, adminSecret: e.target.value })} className="w-full bg-white border border-amber-300 rounded-lg py-2.5 pl-11 pr-4 text-slate-900 text-sm focus:outline-none focus:border-amber-600" />
-                      </div>
-                    </div>
-                  )}
+                  <KeyRound className="w-4 h-4 text-orange-600" /> Password Recovery
+                </>
+              ) : isAdminMode ? (
+                isRegistering ? (
+                  <>
+                    <UserPlus className="w-4 h-4 text-orange-600" /> Committee Admin Registration
+                  </>
+                ) : (
+                  <>
+                    <KeyRound className="w-4 h-4 text-orange-600" /> Committee Admin Login
+                  </>
+                )
+              ) : isRegistering ? (
+                <>
+                  <UserPlus className="w-4 h-4 text-blue-900" /> Member Registration Form
                 </>
               ) : (
                 <>
-                  {/* FULL NAME & EMAIL (ONLY on Register) */}
-                  {isRegistering && (
-                    <>
-                      <div>
-                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Full Name</label>
-                        <div className="relative mt-1 group">
-                          <User className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400 group-focus-within:text-blue-600 transition" />
-                          <input required type="text" placeholder="Lovepreet Singh" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="w-full bg-slate-50 border border-slate-300 rounded-xl py-3 pl-11 pr-4 text-slate-900 text-sm focus:outline-none focus:border-blue-600" />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Email Address</label>
-                        <div className="relative mt-1 group">
-                          <Mail className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400 group-focus-within:text-blue-600 transition" />
-                          <input required type="email" placeholder="student@example.com" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} className="w-full bg-slate-50 border border-slate-300 rounded-xl py-3 pl-11 pr-4 text-slate-900 text-sm focus:outline-none focus:border-blue-600" />
-                        </div>
-                      </div>
-                    </>
-                  )}
-
-                  {/* STUDENT ID (Login & Register) */}
-                  <div>
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Student ID</label>
-                    <div className="relative mt-1 group">
-                      <IdCard className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400 group-focus-within:text-blue-600 transition" />
-                      <input required type="text" maxLength="13" placeholder="Enter your official Student ID" value={formData.studentId} onChange={e => setFormData({ ...formData, studentId: e.target.value })} className="w-full bg-slate-50 border border-slate-300 rounded-xl py-3 pl-11 pr-4 text-slate-900 text-sm focus:outline-none focus:border-blue-600" />
-                    </div>
-                  </div>
-
-                  {/* ROLL NO & HOSTEL DETAILS (ONLY on Register) */}
-                  {isRegistering && (
-                    <>
-                      <div>
-                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Roll Number</label>
-                        <div className="relative mt-1 group">
-                          <User className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400 group-focus-within:text-blue-600 transition" />
-                          <input required type="text" maxLength="3" placeholder="Enter your Roll Number" value={formData.rollNo} onChange={e => setFormData({ ...formData, rollNo: e.target.value })} className="w-full bg-slate-50 border border-slate-300 rounded-xl py-3 pl-11 pr-4 text-slate-900 text-sm focus:outline-none focus:border-blue-600 uppercase" />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Assigned Hostel</label>
-                        <div className="relative mt-1 group">
-                          <Building2 className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400 group-focus-within:text-blue-600 transition" />
-                          <select className="w-full bg-slate-50 border border-slate-300 rounded-xl py-3 pl-11 pr-3 text-slate-900 text-sm focus:outline-none focus:border-blue-600 cursor-pointer" value={formData.hostelNo} onChange={e => setFormData({ ...formData, hostelNo: e.target.value })}>
-                            {hostels.length > 0 ? hostels.map(h => <option key={h._id} value={h.hostelNumber}>{h.hostelNumber} — {h.name} ({h.type.toUpperCase()})</option>) : <><option value="BH1">BH1 (Boys Hostel 1)</option><option value="BH2">BH2 (Boys Hostel 2)</option><option value="GH1">GH1 (Girls Hostel 1)</option></>}
-                          </select>
-                        </div>
-                        {selectedHostelObj && (
-                          <div className="mt-2 flex justify-between text-xs px-3 py-2 bg-blue-50/80 border border-blue-100 rounded-lg text-blue-900">
-                            <span>Standard Daily Rates:</span><span className="font-bold">B: ₹{selectedHostelObj.mealCosts?.breakfast || 40} | L: ₹{selectedHostelObj.mealCosts?.lunch || 60} | D: ₹{selectedHostelObj.mealCosts?.dinner || 60}</span>
-                          </div>
-                        )}
-                      </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Gender</label>
-                          <select className="w-full mt-1 bg-slate-50 border border-slate-300 rounded-xl py-3 px-3.5 text-slate-900 text-sm focus:outline-none focus:border-blue-600 cursor-pointer" value={formData.gender} onChange={e => setFormData({ ...formData, gender: e.target.value })}><option value="Male">Male</option><option value="Female">Female</option><option value="Other">Other</option></select>
-                        </div>
-                        <div>
-                          <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Mobile Number</label>
-                          <div className="relative mt-1 group">
-                            <Phone className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400 group-focus-within:text-blue-600 transition" />
-                            <input required type="tel" maxLength="10" placeholder="10-digit no." value={formData.mobileNo} onChange={e => setFormData({ ...formData, mobileNo: e.target.value.replace(/\D/g, '') })} className="w-full bg-slate-50 border border-slate-300 rounded-xl py-3 pl-11 pr-4 text-slate-900 text-sm focus:outline-none focus:border-blue-600" />
-                          </div>
-                        </div>
-                      </div>
-                    </>
-                  )}
-
-                  {/* PASSWORD (Login & Register) */}
-                  <div>
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Password</label>
-                    <div className="relative mt-1 group">
-                      <Lock className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400 group-focus-within:text-blue-600 transition" />
-                      <input required type="password" placeholder="••••••••" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} className="w-full bg-slate-50 border border-slate-300 rounded-xl py-3 pl-11 pr-4 text-slate-900 text-sm focus:outline-none focus:border-blue-600" />
-                    </div>
-                  </div>
+                  <LogIn className="w-4 h-4 text-blue-900" /> Member Login Portal
                 </>
               )}
+            </h3>
+            {forgotPasswordStep === 0 && (
+              <div className="flex text-xs font-bold border border-gray-400 bg-white rounded-sm overflow-hidden">
+                <button type="button" onClick={() => { setIsRegistering(false); resetMessages(); }} className={`px-4 py-1.5 cursor-pointer flex items-center gap-1.5 ${!isRegistering ? 'bg-blue-900 text-white' : 'text-gray-600 hover:bg-gray-50'}`}>
+                  <LogIn className="w-3.5 h-3.5" /> LOGIN
+                </button>
+                <button type="button" onClick={() => { setIsRegistering(true); resetMessages(); }} className={`px-4 py-1.5 border-l border-gray-400 cursor-pointer flex items-center gap-1.5 ${isRegistering ? 'bg-blue-900 text-white' : 'text-gray-600 hover:bg-gray-50'}`}>
+                  <UserPlus className="w-3.5 h-3.5" /> REGISTER
+                </button>
+              </div>
+            )}
+          </div>
 
-              {!isRegistering && !isAdminMode && (
-                <div className="flex justify-end mt-1">
-                  <button type="button" onClick={() => { setForgotPasswordStep(1); resetMessages(); }} className="text-xs font-bold text-blue-600 hover:text-blue-800 transition cursor-pointer">
-                    Forgot Password?
+          <div className="p-6 md:p-8 max-h-[75vh] overflow-y-auto">
+            {error && <div className="bg-red-50 border-l-4 border-red-700 text-red-900 px-4 py-3 text-sm mb-6 flex gap-3 font-medium"><AlertCircle className="w-5 h-5 shrink-0" /><span>{error}</span></div>}
+            {successMsg && <div className="bg-green-50 border-l-4 border-green-700 text-green-900 px-4 py-3 text-sm mb-6 flex gap-3 font-medium"><CheckCircle2 className="w-5 h-5 shrink-0" /><span>{successMsg}</span></div>}
+
+            {/* FORGOT PASSWORD FLOW */}
+            {forgotPasswordStep === 1 && (
+              <form onSubmit={handleRequestOTP} className="space-y-5">
+                <div>
+                  <label className="text-xs font-bold text-gray-700 uppercase flex items-center gap-1.5">
+                    <IdCard className="w-3.5 h-3.5 text-blue-900" /> Student ID Number <span className="text-red-600">*</span>
+                  </label>
+                  <input required type="text" maxLength="13" value={resetData.studentId} onChange={e => setResetData({ ...resetData, studentId: e.target.value })} className="w-full mt-1 border border-gray-400 p-2.5 text-sm focus:outline-none focus:border-blue-900 focus:ring-1 focus:ring-blue-900 rounded-sm" />
+                </div>
+                <div className="flex gap-3 pt-2">
+                  <button type="button" onClick={() => { setForgotPasswordStep(0); resetMessages(); }} className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2.5 text-sm uppercase rounded-sm border border-gray-300 cursor-pointer">Cancel</button>
+                  <button type="submit" disabled={loading} className="flex-1 bg-blue-900 hover:bg-blue-800 text-white font-bold py-2.5 text-sm uppercase rounded-sm cursor-pointer flex items-center justify-center gap-1.5">
+                    <Mail className="w-3.5 h-3.5" />
+                    <span>{loading ? 'Sending...' : 'Request OTP'}</span>
                   </button>
                 </div>
-              )}
+              </form>
+            )}
 
-              <button type="submit" disabled={loading} className={`w-full mt-4 text-white font-semibold py-3.5 rounded-xl transition-all duration-150 flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 cursor-pointer text-sm ${isAdminMode ? 'bg-amber-600 hover:bg-amber-700 shadow-amber-600/20' : 'bg-blue-600 hover:bg-blue-700 shadow-blue-600/20'}`}>
-                {loading ? <span className="flex items-center gap-2"><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Processing...</span> : isRegistering ? <><span>{isAdminMode ? 'Register Admin Account' : 'Create Student Account'}</span><ArrowRight className="w-4 h-4" /></> : <><span>{isAdminMode ? 'Sign In to Executive Portal' : 'Sign In to Dashboard'}</span><ArrowRight className="w-4 h-4" /></>}
-              </button>
-            </form>
-          </>
-        )}
+            {forgotPasswordStep === 2 && (
+              <form onSubmit={handleResetPassword} className="space-y-4">
+                <div>
+                  <label className="text-xs font-bold text-gray-700 uppercase flex items-center gap-1.5">
+                    <Key className="w-3.5 h-3.5 text-blue-900" /> 6-Digit OTP <span className="text-red-600">*</span>
+                  </label>
+                  <input required type="text" maxLength="6" value={resetData.otp} onChange={e => setResetData({ ...resetData, otp: e.target.value.replace(/\D/g, '') })} className="w-full mt-1 border border-gray-400 p-2.5 text-sm font-bold tracking-widest focus:border-blue-900 focus:ring-1 focus:ring-blue-900 rounded-sm" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-700 uppercase flex items-center gap-1.5">
+                    <Lock className="w-3.5 h-3.5 text-blue-900" /> New Password <span className="text-red-600">*</span>
+                  </label>
+                  <input required type="password" value={resetData.newPassword} onChange={e => setResetData({ ...resetData, newPassword: e.target.value })} className="w-full mt-1 border border-gray-400 p-2.5 text-sm focus:border-blue-900 focus:ring-1 focus:ring-blue-900 rounded-sm" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-700 uppercase flex items-center gap-1.5">
+                    <ShieldCheck className="w-3.5 h-3.5 text-blue-900" /> Confirm Password <span className="text-red-600">*</span>
+                  </label>
+                  <input required type="password" value={resetData.confirmPassword} onChange={e => setResetData({ ...resetData, confirmPassword: e.target.value })} className="w-full mt-1 border border-gray-400 p-2.5 text-sm focus:border-blue-900 focus:ring-1 focus:ring-blue-900 rounded-sm" />
+                </div>
+                <button type="submit" disabled={loading} className="w-full mt-2 bg-green-700 hover:bg-green-800 text-white font-bold py-3 text-sm uppercase rounded-sm cursor-pointer flex items-center justify-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>{loading ? 'Resetting...' : 'Submit & Reset'}</span>
+                </button>
+              </form>
+            )}
 
-        {/* SECURITY FOOTER */}
-        <div className="mt-6 pt-5 border-t border-slate-100 flex flex-col gap-3 items-center justify-center text-xs text-slate-400">
-          <div className="flex items-center gap-1.5">
-            <ShieldCheck className="w-4 h-4 text-blue-600/80" />
-            <span>Encrypted MERN Authentication • GNDU Amritsar Dining</span>
+            {/* NORMAL LOGIN / REGISTER FLOW */}
+            {forgotPasswordStep === 0 && (
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {isAdminMode ? (
+                  <>
+                    <div>
+                      <label className="text-xs font-bold text-gray-700 uppercase flex items-center gap-1.5">
+                        <User className="w-3.5 h-3.5 text-orange-600" /> Designation / Admin Name <span className="text-red-600">*</span>
+                      </label>
+                      <input required type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="w-full mt-1 border border-gray-400 p-2.5 text-sm focus:border-blue-900 focus:ring-1 focus:ring-blue-900 rounded-sm" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-gray-700 uppercase flex items-center gap-1.5">
+                        <Lock className="w-3.5 h-3.5 text-orange-600" /> Secure Password <span className="text-red-600">*</span>
+                      </label>
+                      <input required type="password" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} className="w-full mt-1 border border-gray-400 p-2.5 text-sm focus:border-blue-900 focus:ring-1 focus:ring-blue-900 rounded-sm" />
+                    </div>
+                    {isRegistering && (
+                      <div className="bg-orange-50 border border-orange-200 p-4 mt-2 rounded-sm">
+                        <label className="text-xs font-bold text-orange-900 uppercase flex items-center gap-1.5">
+                          <KeySquare className="w-3.5 h-3.5 text-orange-700" /> Authorization Secret Code <span className="text-red-600">*</span>
+                        </label>
+                        <input required type="password" value={formData.adminSecret} onChange={e => setFormData({ ...formData, adminSecret: e.target.value })} className="w-full mt-1 border border-orange-400 p-2.5 text-sm focus:border-orange-600 rounded-sm" />
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    {isRegistering && (
+                      <>
+                        {/* PHOTO UPLOAD BOX */}
+                        <div className="border border-gray-300 p-3 bg-gray-50 flex items-center gap-4">
+                          <div className="w-16 h-16 bg-gray-200 border-2 border-blue-900 overflow-hidden flex items-center justify-center shrink-0">
+                            {formData.profilePhoto ? (
+                              <img src={formData.profilePhoto} alt="Upload Preview" className="w-full h-full object-cover" />
+                            ) : (
+                              <User className="w-8 h-8 text-gray-400" />
+                            )}
+                          </div>
+                          <div>
+                            <label className="text-xs font-bold text-gray-800 uppercase block mb-1 flex items-center gap-1.5">
+                              <Camera className="w-3.5 h-3.5 text-blue-900" /> Member Photograph <span className="text-red-600">*</span>
+                            </label>
+                            <label className="inline-flex items-center gap-1.5 bg-blue-900 hover:bg-blue-800 text-white px-3 py-1.5 text-[11px] font-bold uppercase rounded-xs cursor-pointer shadow-xs">
+                              <ImagePlus className="w-3.5 h-3.5" />
+                              <span>{formData.profilePhoto ? 'Change Image' : 'Select Photo'}</span>
+                              <input type="file" accept="image/*" required={!formData.profilePhoto} className="hidden" onChange={handlePhotoUpload} />
+                            </label>
+                            <p className="text-[9px] text-gray-500 uppercase mt-1">Automatic compression enabled (Max 400px)</p>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="text-xs font-bold text-gray-700 uppercase flex items-center gap-1.5">
+                            <User className="w-3.5 h-3.5 text-blue-900" /> Candidate Full Name <span className="text-red-600">*</span>
+                          </label>
+                          <input required type="text" placeholder="e.g. Lovepreet Singh" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="w-full mt-1 border border-gray-400 p-2.5 text-sm uppercase focus:border-blue-900 focus:ring-1 focus:ring-blue-900 rounded-sm" />
+                        </div>
+
+                        {/* PARENTAL DETAILS */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <label className="text-xs font-bold text-gray-700 uppercase flex items-center gap-1.5">
+                              <User className="w-3.5 h-3.5 text-blue-900" /> Father's Name <span className="text-red-600">*</span>
+                            </label>
+                            <input required type="text" placeholder="e.g. Gurdeep Singh" value={formData.fatherName} onChange={e => setFormData({ ...formData, fatherName: e.target.value })} className="w-full mt-1 border border-gray-400 p-2.5 text-sm uppercase focus:border-blue-900 rounded-sm" />
+                          </div>
+                          <div>
+                            <label className="text-xs font-bold text-gray-700 uppercase flex items-center gap-1.5">
+                              <Users className="w-3.5 h-3.5 text-blue-900" /> Mother's Name <span className="text-red-600">*</span>
+                            </label>
+                            <input required type="text" placeholder="e.g. Harpreet Kaur" value={formData.motherName} onChange={e => setFormData({ ...formData, motherName: e.target.value })} className="w-full mt-1 border border-gray-400 p-2.5 text-sm uppercase focus:border-blue-900 rounded-sm" />
+                          </div>
+                        </div>
+
+                        {/* DOB & NATIONALITY */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <label className="text-xs font-bold text-gray-700 uppercase flex items-center gap-1.5">
+                              <Calendar className="w-3.5 h-3.5 text-blue-900" /> Date of Birth <span className="text-red-600">*</span>
+                            </label>
+                            <input 
+                              required 
+                              type="date" 
+                              max="2010-12-31"
+                              value={formData.dob} 
+                              onChange={e => setFormData({ ...formData, dob: e.target.value })} 
+                              className="w-full mt-1 border border-gray-400 p-2 text-sm bg-white focus:border-blue-900 focus:ring-1 focus:ring-blue-900 rounded-sm cursor-pointer" 
+                            />
+                          </div>
+                          <div>
+                            <label className="text-xs font-bold text-gray-700 uppercase flex items-center gap-1.5">
+                              <Globe className="w-3.5 h-3.5 text-blue-900" /> Nationality <span className="text-red-600">*</span>
+                            </label>
+                            <select
+                              required
+                              value={formData.nationality}
+                              onChange={e => setFormData({ ...formData, nationality: e.target.value })}
+                              className="w-full mt-1 border border-gray-400 p-2.5 text-sm bg-white uppercase focus:border-blue-900 rounded-sm cursor-pointer"
+                            >
+                              {WORLD_COUNTRIES.map(country => (
+                                <option key={country} value={country}>
+                                  {country}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="text-xs font-bold text-gray-700 uppercase flex items-center gap-1.5">
+                            <Mail className="w-3.5 h-3.5 text-blue-900" /> Registered Email ID <span className="text-red-600">*</span>
+                          </label>
+                          <input required type="email" placeholder="student@mess.coop" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} className="w-full mt-1 border border-gray-400 p-2.5 text-sm focus:border-blue-900 focus:ring-1 focus:ring-blue-900 rounded-sm" />
+                          <p className="text-[10px] font-bold text-red-600 mt-1 uppercase tracking-tight flex items-center gap-1">
+                            <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                            <span>Important: Enter an active, accurate email address. It is strictly required to receive OTP for password recovery.</span>
+                          </p>
+                        </div>
+                      </>
+                    )}
+
+                    <div>
+                      <label className="text-xs font-bold text-gray-700 uppercase flex items-center gap-1.5">
+                        <IdCard className="w-3.5 h-3.5 text-blue-900" /> Student ID Number <span className="text-red-600">*</span>
+                      </label>
+                      <input required type="text" maxLength="13" placeholder="e.g. 2024ECE102" value={formData.studentId} onChange={e => setFormData({ ...formData, studentId: e.target.value })} className="w-full mt-1 border border-gray-400 p-2.5 text-sm uppercase focus:border-blue-900 focus:ring-1 focus:ring-blue-900 rounded-sm" />
+                    </div>
+
+                    {isRegistering && (
+                      <>
+                        {/* 3-TIER HIERARCHY SELECTORS */}
+                        <div className="space-y-4">
+                          <div>
+                            <label className="text-xs font-bold text-gray-700 uppercase flex items-center gap-1.5">
+                              <Compass className="w-3.5 h-3.5 text-blue-900" /> 1. Select Faculty <span className="text-red-600">*</span>
+                            </label>
+                            <select
+                              required
+                              value={formData.facultyId}
+                              onChange={e => handleFacultyChange(e.target.value)}
+                              className="w-full mt-1 border border-gray-400 p-2.5 text-xs bg-white uppercase focus:border-blue-900 rounded-sm cursor-pointer"
+                            >
+                              <option value="">-- SELECT FACULTY --</option>
+                              {UNIVERSITY_FACULTIES_HIERARCHY.map(f => (
+                                <option key={f.id} value={f.id}>
+                                  {f.name}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          <div>
+                            <label className="text-xs font-bold text-gray-700 uppercase flex items-center gap-1.5">
+                              <BookOpen className="w-3.5 h-3.5 text-blue-900" /> 2. Select Department <span className="text-red-600">*</span>
+                            </label>
+                            <select
+                              required
+                              disabled={!formData.facultyId}
+                              value={formData.department}
+                              onChange={e => handleDepartmentChange(e.target.value)}
+                              className={`w-full mt-1 border border-gray-400 p-2.5 text-xs uppercase rounded-sm ${
+                                !formData.facultyId 
+                                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                                  : 'bg-white focus:border-blue-900 cursor-pointer'
+                              }`}
+                            >
+                              <option value="">{formData.facultyId ? '-- SELECT DEPARTMENT --' : '-- FIRST CHOOSE FACULTY --'}</option>
+                              {availableDepartments.map((dept, idx) => (
+                                <option key={idx} value={dept.name}>
+                                  {dept.name}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          <div>
+                            <label className="text-xs font-bold text-gray-700 uppercase flex items-center gap-1.5">
+                              <GraduationCap className="w-3.5 h-3.5 text-blue-900" /> 3. Course / Programme Name <span className="text-red-600">*</span>
+                            </label>
+                            <select
+                              required
+                              disabled={!formData.department}
+                              value={formData.university}
+                              onChange={e => setFormData({ ...formData, university: e.target.value })}
+                              className={`w-full mt-1 border border-gray-400 p-2.5 text-sm uppercase rounded-sm ${
+                                !formData.department 
+                                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                                  : 'bg-white focus:border-blue-900 cursor-pointer'
+                              }`}
+                            >
+                              <option value="">{formData.department ? '-- SELECT COURSE / DEGREE --' : '-- FIRST CHOOSE DEPARTMENT --'}</option>
+                              {availableProgrammes.map(course => (
+                                <option key={course.id} value={course.name}>
+                                  [{course.id}] {course.name}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+
+                        {/* ACADEMIC SESSION */}
+                        <div>
+                          <label className="text-xs font-bold text-gray-700 uppercase flex items-center gap-1.5">
+                            <Layers className="w-3.5 h-3.5 text-blue-900" /> Academic Session <span className="text-red-600">*</span>
+                          </label>
+                          <select
+                            required
+                            value={formData.session}
+                            onChange={e => setFormData({ ...formData, session: e.target.value })}
+                            className="w-full mt-1 border border-gray-400 p-2.5 text-xs bg-white uppercase focus:border-blue-900 rounded-sm cursor-pointer"
+                          >
+                            <option value="">-- SELECT ACADEMIC SESSION --</option>
+                            {ACADEMIC_SESSIONS.map(s => (
+                              <option key={s.id} value={s.id}>
+                                {s.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* DOMICILE STATE & SOCIAL CATEGORY */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <label className="text-xs font-bold text-gray-700 uppercase flex items-center gap-1.5">
+                              <MapPin className="w-3.5 h-3.5 text-blue-900" /> Domicile State <span className="text-red-600">*</span>
+                            </label>
+                            <select
+                              required
+                              value={formData.domicileState}
+                              onChange={e => handleStateChange(e.target.value)}
+                              className="w-full mt-1 border border-gray-400 p-2.5 text-sm bg-white uppercase focus:border-blue-900 rounded-sm cursor-pointer"
+                            >
+                              {INDIAN_STATES.map(st => (
+                                <option key={st} value={st}>
+                                  {st}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="text-xs font-bold text-gray-700 uppercase flex items-center gap-1.5">
+                              <ShieldCheck className="w-3.5 h-3.5 text-blue-900" /> Category <span className="text-red-600">*</span>
+                            </label>
+                            <select
+                              value={formData.category}
+                              disabled={isOutsidePunjab}
+                              onChange={e => setFormData({ ...formData, category: e.target.value })}
+                              className={`w-full mt-1 border border-gray-400 p-2.5 text-sm uppercase rounded-sm ${
+                                isOutsidePunjab
+                                  ? 'bg-gray-100 text-gray-500 cursor-not-allowed border-gray-300'
+                                  : 'bg-white text-gray-900 focus:border-blue-900 cursor-pointer'
+                              }`}
+                            >
+                              <option value="General">General</option>
+                              <option value="SC">SC</option>
+                              <option value="BC">BC</option>
+                              <option value="OBC">OBC</option>
+                              <option value="Other">Other</option>
+                            </select>
+                            {isOutsidePunjab ? (
+                              <p className="text-[10px] font-bold text-amber-700 mt-1 uppercase tracking-tight">
+                                * Out-of-Punjab candidates are treated as General category by state norms.
+                              </p>
+                            ) : (
+                              <p className="text-[10px] text-gray-500 mt-1 uppercase">
+                                Punjab Domicile: Select your state reservation category.
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* ROLL NUMBER (001 TO 999) & RESIDENCE HALL */}
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="text-xs font-bold text-gray-700 uppercase flex items-center gap-1.5">
+                              <Hash className="w-3.5 h-3.5 text-blue-900" /> Roll Number <span className="text-red-600">*</span>
+                            </label>
+                            <select
+                              required
+                              value={formData.rollNo}
+                              onChange={e => setFormData({ ...formData, rollNo: e.target.value })}
+                              className="w-full mt-1 border border-gray-400 p-2.5 text-sm bg-white uppercase focus:border-blue-900 rounded-sm cursor-pointer"
+                            >
+                              <option value="">-- ROLL (001-999) --</option>
+                              {ROLL_NUMBERS.map(num => (
+                                <option key={num} value={num}>
+                                  {num}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="text-xs font-bold text-gray-700 uppercase flex items-center gap-1.5">
+                              <Building2 className="w-3.5 h-3.5 text-blue-900" /> Residence Hall <span className="text-red-600">*</span>
+                            </label>
+                            <select value={formData.hostelNo} onChange={e => setFormData({ ...formData, hostelNo: e.target.value })} className="w-full mt-1 border border-gray-400 p-2.5 text-sm bg-white focus:border-blue-900 rounded-sm cursor-pointer">
+                              {hostels.length > 0 ? hostels.map(h => <option key={h._id} value={h.hostelNumber}>{h.hostelNumber} ({h.type.toUpperCase()})</option>) : <><option value="BH1">BH1</option><option value="GH1">GH1</option></>}
+                            </select>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="text-xs font-bold text-gray-700 uppercase flex items-center gap-1.5">
+                              <User className="w-3.5 h-3.5 text-blue-900" /> Gender <span className="text-red-600">*</span>
+                            </label>
+                            <select value={formData.gender} onChange={e => setFormData({ ...formData, gender: e.target.value })} className="w-full mt-1 border border-gray-400 p-2.5 text-sm bg-white focus:border-blue-900 rounded-sm cursor-pointer">
+                              <option value="Male">Male</option><option value="Female">Female</option><option value="Other">Other</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="text-xs font-bold text-gray-700 uppercase flex items-center gap-1.5">
+                              <Phone className="w-3.5 h-3.5 text-blue-900" /> Mobile No. <span className="text-red-600">*</span>
+                            </label>
+                            <input required type="tel" maxLength="10" placeholder="10-digit mobile" value={formData.mobileNo} onChange={e => setFormData({ ...formData, mobileNo: e.target.value.replace(/\D/g, '') })} className="w-full mt-1 border border-gray-400 p-2.5 text-sm focus:border-blue-900 rounded-sm" />
+                          </div>
+                        </div>
+                      </>
+                    )}
+
+                    <div>
+                      <label className="text-xs font-bold text-gray-700 uppercase flex items-center gap-1.5">
+                        <Lock className="w-3.5 h-3.5 text-blue-900" /> Account Password <span className="text-red-600">*</span>
+                      </label>
+                      <input required type="password" placeholder="••••••••" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} className="w-full mt-1 border border-gray-400 p-2.5 text-sm focus:border-blue-900 focus:ring-1 focus:ring-blue-900 rounded-sm" />
+                    </div>
+                  </>
+                )}
+
+                {!isRegistering && !isAdminMode && (
+                  <div className="text-right">
+                    <button type="button" onClick={() => { setForgotPasswordStep(1); resetMessages(); }} className="text-xs font-bold text-blue-800 hover:underline cursor-pointer inline-flex items-center gap-1">
+                      <HelpCircle className="w-3.5 h-3.5" />
+                      <span>Forgot Password?</span>
+                    </button>
+                  </div>
+                )}
+
+                <button type="submit" disabled={loading} className="w-full mt-6 bg-blue-900 hover:bg-blue-800 text-white font-bold py-3 text-sm uppercase tracking-wide rounded-sm shadow-sm disabled:opacity-70 transition-colors cursor-pointer flex items-center justify-center gap-2">
+                  {loading ? (
+                    <span>Processing Request...</span>
+                  ) : isRegistering ? (
+                    <>
+                      <UserPlus className="w-4 h-4" />
+                      <span>Submit Registration Form</span>
+                    </>
+                  ) : (
+                    <>
+                      <LogIn className="w-4 h-4" />
+                      <span>Login to Portal</span>
+                    </>
+                  )}
+                </button>
+              </form>
+            )}
           </div>
-          <div className="flex items-center justify-center gap-2 text-xs font-medium text-slate-500">
-            <span>Need Tech Support? Contact:</span>
-            <a href="mailto:adminconnect.org@gmail.com?subject=GNDU%20Mess%20Portal%20Issue" className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-600 transition-colors duration-150 font-semibold">
-              <Mail className="w-3.5 h-3.5 text-blue-600" />
-              <span>adminconnect.org@gmail.com</span>
-            </a>
+
+          <div className="bg-gray-50 border-t border-gray-300 p-4 text-center text-[10px] text-gray-500 uppercase tracking-wide flex items-center justify-center gap-1.5">
+            <ShieldCheck className="w-3.5 h-3.5 text-gray-400" />
+            <span>© {new Date().getFullYear()} Student Mess Cooperative. All Rights Reserved. (Private Unofficial Utility)</span>
           </div>
         </div>
-
       </div>
     </div>
   );
