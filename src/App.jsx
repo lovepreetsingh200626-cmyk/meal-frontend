@@ -11,8 +11,11 @@ import StudentLedgerPage from './pages/student/StudentLedgerPage';
 import StudentComplaintsPage from './pages/student/StudentComplaintsPage';
 import StudentPaymentPage from './pages/student/StudentPaymentPage';
 
-// Admin Dashboard
-import AdminDashboard from './components/AdminDashboard'; 
+// NEW: Separated Admin Dashboard Pages
+import AdminLayout from './pages/admin/AdminLayout';
+import AdminOverview from './pages/admin/AdminOverview';
+import AdminUsers from './pages/admin/AdminUsers';
+import AdminMeals from './pages/admin/AdminMeals';
 
 function AppRoutes() {
   const navigate = useNavigate();
@@ -155,22 +158,28 @@ function AppRoutes() {
           } 
         />
 
-        {/* ADMIN ROUTE */}
+        {/* ======================================= */}
+        {/* EXECUTIVE ADMIN PORTAL ROUTING (NESTED) */}
+        {/* ======================================= */}
         <Route 
-          path="/admin/*" 
+          path="/admin" 
           element={
-            user && user.role === 'admin' ? (
-              <AdminDashboard 
-                user={user} 
-                onLogout={handleLogout} 
-                onUpdateUser={handleUpdateUser} 
-                onOpenProfile={() => setIsProfileModalOpen(true)} 
-              />
-            ) : (
-              <Navigate to="/login" replace />
-            )
+            user && user.role === 'admin' 
+              ? <AdminLayout user={user} onLogout={handleLogout} /> 
+              : <Navigate to="/login" replace />
           } 
-        />
+        >
+          {/* These are the sub-pages that inject into AdminLayout's <Outlet /> */}
+          <Route index element={<AdminOverview />} />
+          <Route path="users" element={<AdminUsers />} />
+          <Route path="meals" element={<AdminMeals />} />
+          
+          {/* We will build these next! */}
+          {/* <Route path="payments" element={<AdminPayments />} /> */}
+          {/* <Route path="complaints" element={<AdminComplaints />} /> */}
+          {/* <Route path="notices" element={<AdminNotices />} /> */}
+          {/* <Route path="settings" element={<AdminSettings />} /> */}
+        </Route>
 
         {/* CATCH-ALL REDIRECT */}
         <Route path="*" element={<Navigate to={user ? (user.role === 'admin' ? '/admin' : '/student') : '/login'} replace />} />

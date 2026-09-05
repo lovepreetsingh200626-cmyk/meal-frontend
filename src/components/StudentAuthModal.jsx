@@ -237,20 +237,20 @@ export default function StudentAuthModal({ onLoginSuccess, onSwitchToAdmin }) {
     <div className="min-h-screen bg-slate-100 text-slate-900 font-sans selection:bg-blue-950 selection:text-white flex flex-col">
       
       {/* 1. STATE GOVERNMENT & STATUTORY EMBLEM STRIP */}
-      <div className="bg-slate-950 text-slate-300 text-[10px] font-bold px-4 md:px-8 py-2 border-b-2 border-amber-500/80 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-1.5 z-50 select-none">
+      <div className="bg-slate-950 text-slate-300 text-[10px] font-bold px-4 md:px-8 py-2 border-b-2 border-orange-500/80 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-1.5 z-50 select-none">
         <div className="flex items-center gap-2 uppercase tracking-widest text-slate-200">
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
           <span>Government of Punjab • Department of Higher Education</span>
           <span className="text-slate-600 hidden md:inline">|</span>
-          <span className="text-amber-300 font-black hidden md:inline">Candidate Residential Access Gate</span>
+          <span className="text-orange-300 font-black hidden md:inline">Candidate Residential Access Gate</span>
         </div>
         <div>
           <button 
             type="button"
             onClick={onSwitchToAdmin} 
-            className="text-[9px] font-mono font-black uppercase text-amber-400 hover:text-amber-300 transition cursor-pointer flex items-center gap-1.5 bg-slate-900 px-2.5 py-1 border border-amber-500/40 shadow-xs"
+            className="text-[9px] font-mono font-black uppercase text-orange-400 hover:text-orange-300 transition cursor-pointer flex items-center gap-1.5 bg-slate-900 px-2.5 py-1 border border-orange-500/40 shadow-xs"
           >
-            <ShieldCheck className="w-3 h-3 text-amber-400" />
+            <ShieldCheck className="w-3 h-3 text-orange-400" />
             <span>Switch to Executive Officer Gateway</span>
           </button>
         </div>
@@ -258,9 +258,9 @@ export default function StudentAuthModal({ onLoginSuccess, onSwitchToAdmin }) {
 
       {/* 2. PORTAL HEADER WITH THEME MATCHED STYLING */}
       <header className="bg-white border-b-2 border-slate-300 shadow-xs px-4 md:px-8 py-4 flex flex-col md:flex-row items-center gap-4 select-none">
-        <div className="w-16 h-16 bg-gradient-to-br from-blue-950 via-slate-900 to-blue-900 border-2 border-amber-600 rounded-xs flex flex-col items-center justify-center text-white shrink-0 shadow-xs">
-          <Landmark className="w-6 h-6 text-amber-400 mb-0.5" />
-          <span className="text-[6px] font-black tracking-widest text-amber-200 uppercase">SEAL</span>
+        <div className="w-16 h-16 bg-gradient-to-br from-blue-950 via-slate-900 to-blue-900 border-2 border-orange-600 rounded-xs flex flex-col items-center justify-center text-white shrink-0 shadow-xs">
+          <Landmark className="w-6 h-6 text-orange-400 mb-0.5" />
+          <span className="text-[6px] font-black tracking-widest text-orange-200 uppercase">SEAL</span>
         </div>
         <div className="text-center md:text-left">
           <div className="flex flex-wrap items-center gap-2 justify-center md:justify-start">

@@ -166,7 +166,6 @@ export default function StudentPaymentPage({ user }) {
       doc.text('* Official Statutory Notice: Online payment gateway is suspended for reconciliation. Present this slip at the treasury desk.', 14, finalY);
       doc.text('* Candidate must preserve counterfoil with treasury clerk initial as legal clearance verification.', 14, finalY + 4);
 
-      // Signature lines
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(8);
       doc.setTextColor(15, 23, 42);
@@ -196,49 +195,47 @@ export default function StudentPaymentPage({ user }) {
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-6 sm:py-10 font-sans text-slate-900 selection:bg-blue-900 selection:text-white">
+    <div className="max-w-5xl mx-auto px-3 sm:px-6 py-6 sm:py-10 font-sans text-slate-900 selection:bg-blue-900 selection:text-white">
       
       {/* 1. OFFICIAL TOP EMBLEM & CONTEXT HEADER */}
-      <div className="print:hidden space-y-6">
+      <div className="print:hidden space-y-5">
         
         {/* Institutional Statutory Lead Banner */}
-        <div className="bg-slate-950 text-slate-300 text-[10px] font-bold px-4 py-2 border-b-2 border-amber-500/70 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-1">
-          <div className="flex items-center gap-2 uppercase tracking-widest text-slate-200">
-            <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-            <span>Autonomous Student Cooperative Association</span>
-            <span className="text-slate-600 hidden md:inline">|</span>
-            <span className="text-amber-300 font-extrabold hidden md:inline">Financial Audit & Dues Clearance Division</span>
+        <div className="bg-slate-950 text-slate-300 text-[9px] sm:text-[10px] font-bold px-3 sm:px-4 py-2 border-b-2 border-amber-500/70 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-1">
+          <div className="flex items-center gap-2 uppercase tracking-widest text-slate-200 truncate">
+            <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shrink-0"></span>
+            <span className="truncate">Autonomous Student Cooperative Association</span>
           </div>
-          <div className="text-[9px] font-mono text-slate-400 uppercase tracking-tight">
+          <div className="text-[8px] sm:text-[9px] font-mono text-slate-400 uppercase tracking-tight">
             Fiscal Period: {currentMonthPrefix} • Statute 7.4
           </div>
         </div>
 
         {/* Primary Operational Card */}
-        <div className="bg-white border border-slate-300 shadow-sm p-5 sm:p-7 border-t-4 border-t-blue-950">
+        <div className="bg-white border border-slate-300 shadow-sm p-4 sm:p-7 border-t-4 border-t-blue-950">
           
-          <div className="border-b border-slate-200 pb-5 mb-6 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5">
-            <div className="flex items-start gap-3.5">
-              <div className="p-2.5 bg-blue-950 text-amber-400 border border-blue-900 shrink-0 mt-0.5">
-                <Landmark className="w-6 h-6" />
+          <div className="border-b border-slate-200 pb-5 mb-5 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <div className="p-2 sm:p-2.5 bg-blue-950 text-amber-400 border border-blue-900 shrink-0 mt-0.5">
+                <Landmark className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
               <div>
-                <div className="flex items-center gap-2">
-                  <h2 className="text-base sm:text-lg font-black text-blue-950 uppercase tracking-tight font-serif">
-                    Statutory Fee Invoicing & Assessment Desk
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h2 className="text-sm sm:text-lg font-black text-blue-950 uppercase tracking-tight font-serif">
+                    Statutory Fee Invoicing &amp; Assessment Desk
                   </h2>
-                  <span className="hidden sm:inline-block text-[9px] font-black bg-slate-100 text-slate-700 border border-slate-300 px-2 py-0.5 uppercase tracking-wider">
+                  <span className="text-[8px] sm:text-[9px] font-black bg-slate-100 text-slate-700 border border-slate-300 px-2 py-0.5 uppercase tracking-wider">
                     Official Voucher
                   </span>
                 </div>
-                <p className="text-xs text-slate-600 font-semibold uppercase tracking-wide mt-1">
-                  Autonomous Hostel Committee • Certified Consumption & Maintenance Assessment
+                <p className="text-[11px] sm:text-xs text-slate-600 font-semibold uppercase tracking-wide mt-1">
+                  Autonomous Hostel Committee • Certified Consumption Assessment
                 </p>
               </div>
             </div>
             
             {/* Total Due Metric Display Box */}
-            <div className="w-full lg:w-auto bg-slate-50 border-2 border-blue-950 p-3 sm:px-6 sm:py-3 text-left lg:text-right min-w-[220px]">
+            <div className="w-full lg:w-auto bg-slate-50 border-2 border-blue-950 p-3 sm:px-6 sm:py-3 text-left lg:text-right min-w-[200px]">
               <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest block">
                 Net Assessed Monthly Dues
               </span>
@@ -249,10 +246,10 @@ export default function StudentPaymentPage({ user }) {
                 </div>
               ) : (
                 <div className="flex lg:flex-col items-baseline justify-between lg:justify-end gap-2 mt-0.5">
-                  <span className="text-2xl font-black text-blue-950 font-serif tracking-tight">
+                  <span className="text-xl sm:text-2xl font-black text-blue-950 font-serif tracking-tight">
                     ₹{billAmountToPay.toLocaleString()}/-
                   </span>
-                  <span className="text-[9px] font-bold text-amber-800 uppercase tracking-wider bg-amber-100 border border-amber-300 px-1.5 py-0.5">
+                  <span className="text-[8px] sm:text-[9px] font-bold text-amber-800 uppercase tracking-wider bg-amber-100 border border-amber-300 px-1.5 py-0.5">
                     Pending Clearance
                   </span>
                 </div>
@@ -262,8 +259,8 @@ export default function StudentPaymentPage({ user }) {
 
           {/* Success Banner */}
           {successMsg && (
-            <div className="bg-emerald-50 border-l-4 border-emerald-700 text-emerald-950 p-4 text-xs font-bold uppercase mb-6 flex items-start gap-3 shadow-xs">
-              <CheckCircle2 className="w-5 h-5 text-emerald-700 shrink-0 mt-0.5" />
+            <div className="bg-emerald-50 border-l-4 border-emerald-700 text-emerald-950 p-3.5 text-xs font-bold uppercase mb-5 flex items-start gap-2.5 shadow-xs">
+              <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
               <div>
                 <p className="font-black tracking-wide">Action Certified</p>
                 <p className="text-[11px] font-medium text-emerald-900 mt-0.5 leading-relaxed">{successMsg}</p>
@@ -272,13 +269,13 @@ export default function StudentPaymentPage({ user }) {
           )}
 
           {/* OFFICIAL ADVISORY DIRECTIVE - RECONCILIATION NOTICE */}
-          <div className="bg-amber-50 border border-amber-300 border-l-4 border-l-amber-600 text-amber-950 p-5 mb-6">
-            <div className="flex items-start gap-3.5">
+          <div className="bg-amber-50 border border-amber-300 border-l-4 border-l-amber-600 text-amber-950 p-4 sm:p-5 mb-5">
+            <div className="flex items-start gap-3">
               <AlertTriangle className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
               <div className="space-y-2">
                 <div className="flex flex-wrap items-center gap-2">
                   <h3 className="text-xs font-black uppercase tracking-wider text-amber-950 font-serif">
-                    Official Executive Notice: National Gateway Reconciliation Underway
+                    Official Executive Notice: Gateway Reconciliation Underway
                   </h3>
                   <span className="bg-amber-200 text-amber-950 text-[8px] px-2 py-0.5 font-black uppercase border border-amber-400">
                     Statute Notice Ref #MESS-2026/04
@@ -286,10 +283,10 @@ export default function StudentPaymentPage({ user }) {
                 </div>
                 
                 <p className="text-xs text-amber-950/90 leading-relaxed font-medium">
-                  The automated Unified Payments Interface (UPI / NetBanking) settlement gateway is presently reserved for institutional auditing and cooperative account reconciliation. <strong>Direct checkout is temporarily restricted to prevent dual debits.</strong>
+                  The automated Unified Payments Interface (UPI / NetBanking) settlement gateway is presently reserved for institutional auditing. <strong>Direct checkout is temporarily restricted to prevent dual debits.</strong>
                 </p>
 
-                <div className="bg-white/80 border border-amber-300 p-3 text-[11px] font-bold text-amber-900 uppercase tracking-wide space-y-1">
+                <div className="bg-white/80 border border-amber-300 p-2.5 text-[11px] font-bold text-amber-900 uppercase tracking-wide space-y-1">
                   <p className="flex items-center gap-1.5 text-amber-950">
                     <Check className="w-3.5 h-3.5 text-emerald-700" />
                     <span>Mandatory Desk Clearance Protocol:</span>
@@ -302,11 +299,10 @@ export default function StudentPaymentPage({ user }) {
             </div>
           </div>
 
-          {/* PAYMENT CLEARANCE CHANNELS (OFFICIAL AUDIT STATUS) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          {/* PAYMENT CLEARANCE CHANNELS */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
             
-            {/* Channel 1: Online UPI (Deactivated Status) */}
-            <div className="p-4 border border-slate-300 bg-slate-50/70 relative">
+            <div className="p-3.5 border border-slate-300 bg-slate-50/70">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2 text-slate-600">
                   <CreditCard className="w-4 h-4 text-slate-500" />
@@ -323,8 +319,7 @@ export default function StudentPaymentPage({ user }) {
               </p>
             </div>
 
-            {/* Channel 2: Physical Desk Counter (Active Status) */}
-            <div className="p-4 border-2 border-blue-950 bg-blue-50/50 relative">
+            <div className="p-3.5 border-2 border-blue-950 bg-blue-50/50">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2 text-blue-950">
                   <Landmark className="w-4 h-4 text-amber-600" />
@@ -343,37 +338,33 @@ export default function StudentPaymentPage({ user }) {
           </div>
 
           {/* ACTION BAR & CONTROLS */}
-          <div className="border border-slate-300 bg-slate-100 p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="border border-slate-300 bg-slate-100 p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <div className="text-xs font-black uppercase text-slate-900 tracking-wide">
-                Total Payable Amount: <span className="text-blue-950 text-base font-serif font-black">₹{billAmountToPay.toLocaleString()}/-</span>
+                Total Payable Amount: <span className="text-blue-950 text-base sm:text-lg font-serif font-black">₹{billAmountToPay.toLocaleString()}/-</span>
               </div>
               <div className="text-[10px] font-bold text-slate-500 uppercase mt-0.5">
                 Authorized Mode: Physical Cash Counterfoil Deposit
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-              
-              {/* Online Button (Locked State) */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
               <button 
                 type="button"
                 disabled={true}
-                className="flex-1 sm:flex-initial bg-slate-200 text-slate-500 border border-slate-300 font-bold px-5 py-3 text-xs uppercase tracking-wider cursor-not-allowed flex items-center justify-center gap-2 select-none shadow-none"
-                title="Online gateway temporarily suspended under audit reconciliation."
+                className="bg-slate-200 text-slate-500 border border-slate-300 font-bold px-4 py-3 text-xs uppercase tracking-wider cursor-not-allowed flex items-center justify-center gap-2 select-none"
               >
                 <CreditCard className="w-4 h-4 opacity-40" />
                 <span>UPI Clearance Paused</span>
               </button>
 
-              {/* Active PDF Assessment Generator Button */}
               <button 
                 type="button"
                 onClick={handlePrintReceipt}
-                className="flex-1 sm:flex-initial bg-blue-950 hover:bg-blue-900 active:bg-blue-950 text-white font-black px-6 py-3 text-xs uppercase tracking-widest transition cursor-pointer flex items-center justify-center gap-2 border-b-2 border-amber-500 shadow-sm"
+                className="bg-blue-950 hover:bg-blue-900 active:bg-blue-950 text-white font-black px-5 py-3 text-xs uppercase tracking-widest transition cursor-pointer flex items-center justify-center gap-2 border-b-2 border-amber-500 shadow-sm active:scale-95"
               >
                 <Printer className="w-4 h-4 text-amber-400" />
-                <span>Print Due Assessment Slip (PDF)</span>
+                <span>Print Assessment Slip (PDF)</span>
               </button>
             </div>
           </div>
@@ -381,26 +372,26 @@ export default function StudentPaymentPage({ user }) {
       </div>
 
       {/* ========================================================================= */}
-      {/* 2. AUTHENTIC ON-SCREEN STATUTORY DUE ASSESSMENT VOUCHER (PRINT PREVIEW)    */}
+      {/* 2. AUTHENTIC ON-SCREEN STATUTORY DUE ASSESSMENT VOUCHER                   */}
       {/* ========================================================================= */}
-      <div className="mt-8 bg-white border-2 border-slate-400 shadow-md p-6 sm:p-10 relative">
+      <div className="mt-8 bg-white border-2 border-slate-400 shadow-md p-5 sm:p-10 relative">
         
         {/* Official Header Banner */}
-        <div className="border-b-4 border-amber-600 pb-5 mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 bg-blue-950 border-2 border-amber-500 text-white flex flex-col items-center justify-center text-center shrink-0 shadow-xs">
+        <div className="border-b-4 border-amber-600 pb-5 mb-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 bg-blue-950 border-2 border-amber-500 text-white flex flex-col items-center justify-center text-center shrink-0 shadow-xs">
               <ShieldCheck className="w-5 h-5 text-amber-400" />
-              <span className="text-[6px] font-black uppercase tracking-widest text-amber-200">SEAL</span>
+              <span className="text-[5px] sm:text-[6px] font-black uppercase tracking-widest text-amber-200">SEAL</span>
             </div>
             <div>
               <span className="text-[8px] font-black bg-slate-900 text-amber-300 px-2 py-0.5 uppercase tracking-widest inline-block mb-1">
                 Statutory Student Cooperative Voucher
               </span>
-              <h1 className="text-lg sm:text-xl font-black text-blue-950 uppercase tracking-tight font-serif">
-                Student Mess & Diet Ledger System
+              <h1 className="text-base sm:text-xl font-black text-blue-950 uppercase tracking-tight font-serif">
+                Student Mess &amp; Diet Ledger System
               </h1>
-              <h2 className="text-xs font-bold text-slate-600 uppercase tracking-wide">
-                Independent Mess Committee • Official Due Assessment & Invoice Slip
+              <h2 className="text-[11px] sm:text-xs font-bold text-slate-600 uppercase tracking-wide">
+                Independent Mess Committee • Official Due Assessment
               </h2>
             </div>
           </div>
@@ -416,14 +407,14 @@ export default function StudentPaymentPage({ user }) {
         </div>
 
         {/* Metadata Registry Strip */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-slate-50 border border-slate-300 p-3.5 mb-6 text-xs uppercase font-bold text-slate-800 font-mono">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 bg-slate-50 border border-slate-300 p-3 mb-5 text-xs uppercase font-bold text-slate-800 font-mono">
           <div>
             <span className="text-[8px] text-slate-500 block uppercase font-sans">Assessment Slip Serial</span>
             <span className="font-black text-blue-950">{receiptToDisplay.receiptNo}</span>
           </div>
           <div>
             <span className="text-[8px] text-slate-500 block uppercase font-sans">Clearance Audit Token</span>
-            <span className="text-slate-700 text-[11px]">{receiptToDisplay.txnId}</span>
+            <span className="text-slate-700 text-[11px] truncate block">{receiptToDisplay.txnId}</span>
           </div>
           <div>
             <span className="text-[8px] text-slate-500 block uppercase font-sans">Assessment Issued On</span>
@@ -432,112 +423,116 @@ export default function StudentPaymentPage({ user }) {
         </div>
 
         {/* Member Academic Dossier */}
-        <div className="mb-6">
+        <div className="mb-5">
           <div className="flex items-center justify-between border-b border-slate-300 pb-1.5 mb-2">
             <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 font-serif flex items-center gap-1.5">
               <FileText className="w-3.5 h-3.5 text-amber-700" />
-              <span>Member Academic Dossier & Residence Identification</span>
+              <span>Member Academic Dossier &amp; Residence Identification</span>
             </h3>
             <span className="text-[8px] font-bold text-slate-500 uppercase">Registry Statute 3.1</span>
           </div>
 
-          <table className="w-full text-left border-collapse border border-slate-300 text-xs uppercase">
-            <tbody>
-              <tr className="border-b border-slate-300">
-                <td className="p-2.5 bg-slate-100 font-bold w-1/3 border-r border-slate-300 text-slate-700">Candidate Full Name</td>
-                <td className="p-2.5 font-black text-blue-950 font-serif">{user?.name || 'N/A'}</td>
-              </tr>
-              <tr className="border-b border-slate-300">
-                <td className="p-2.5 bg-slate-100 font-bold border-r border-slate-300 text-slate-700">Campus Roll Number</td>
-                <td className="p-2.5 font-bold text-slate-900">{user?.rollNo || 'N/A'}</td>
-              </tr>
-              <tr className="border-b border-slate-300">
-                <td className="p-2.5 bg-slate-100 font-bold border-r border-slate-300 text-slate-700">Student ID Number</td>
-                <td className="p-2.5 font-bold text-slate-900">{user?.studentId || 'N/A'}</td>
-              </tr>
-              <tr className="border-b border-slate-300">
-                <td className="p-2.5 bg-slate-100 font-bold border-r border-slate-300 text-slate-700">Allotted Residence Hall</td>
-                <td className="p-2.5 font-black text-blue-950">{user?.hostelNo || 'N/A'}</td>
-              </tr>
-              <tr className="border-b border-slate-300">
-                <td className="p-2.5 bg-slate-100 font-bold border-r border-slate-300 text-slate-700">Course / Academic Program</td>
-                <td className="p-2.5 font-bold text-slate-800">{user?.university || 'B.Tech'}</td>
-              </tr>
-              <tr className="border-b border-slate-300">
-                <td className="p-2.5 bg-slate-100 font-bold border-r border-slate-300 text-slate-700">Department Branch</td>
-                <td className="p-2.5 font-bold text-slate-800">{user?.department || 'N/A'}</td>
-              </tr>
-              <tr className="border-b border-slate-300">
-                <td className="p-2.5 bg-slate-100 font-bold border-r border-slate-300 text-slate-700">Active Session Batch</td>
-                <td className="p-2.5 font-bold text-slate-800">{user?.session || '2024-2028'}</td>
-              </tr>
-              <tr>
-                <td className="p-2.5 bg-slate-100 font-bold border-r border-slate-300 text-slate-700">Social Audit Category</td>
-                <td className="p-2.5 font-black text-amber-800">{user?.category || 'General'}</td>
-              </tr>
-            </tbody>
-          </table>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse border border-slate-300 text-xs uppercase min-w-[450px]">
+              <tbody>
+                <tr className="border-b border-slate-300">
+                  <td className="p-2.5 bg-slate-100 font-bold w-1/3 border-r border-slate-300 text-slate-700">Candidate Full Name</td>
+                  <td className="p-2.5 font-black text-blue-950 font-serif">{user?.name || 'N/A'}</td>
+                </tr>
+                <tr className="border-b border-slate-300">
+                  <td className="p-2.5 bg-slate-100 font-bold border-r border-slate-300 text-slate-700">Campus Roll Number</td>
+                  <td className="p-2.5 font-bold text-slate-900">{user?.rollNo || 'N/A'}</td>
+                </tr>
+                <tr className="border-b border-slate-300">
+                  <td className="p-2.5 bg-slate-100 font-bold border-r border-slate-300 text-slate-700">Student ID Number</td>
+                  <td className="p-2.5 font-bold text-slate-900">{user?.studentId || 'N/A'}</td>
+                </tr>
+                <tr className="border-b border-slate-300">
+                  <td className="p-2.5 bg-slate-100 font-bold border-r border-slate-300 text-slate-700">Allotted Residence Hall</td>
+                  <td className="p-2.5 font-black text-blue-950">{user?.hostelNo || 'N/A'}</td>
+                </tr>
+                <tr className="border-b border-slate-300">
+                  <td className="p-2.5 bg-slate-100 font-bold border-r border-slate-300 text-slate-700">Course / Academic Program</td>
+                  <td className="p-2.5 font-bold text-slate-800">{user?.university || 'B.Tech'}</td>
+                </tr>
+                <tr className="border-b border-slate-300">
+                  <td className="p-2.5 bg-slate-100 font-bold border-r border-slate-300 text-slate-700">Department Branch</td>
+                  <td className="p-2.5 font-bold text-slate-800">{user?.department || 'N/A'}</td>
+                </tr>
+                <tr className="border-b border-slate-300">
+                  <td className="p-2.5 bg-slate-100 font-bold border-r border-slate-300 text-slate-700">Active Session Batch</td>
+                  <td className="p-2.5 font-bold text-slate-800">{user?.session || '2024-2028'}</td>
+                </tr>
+                <tr>
+                  <td className="p-2.5 bg-slate-100 font-bold border-r border-slate-300 text-slate-700">Social Audit Category</td>
+                  <td className="p-2.5 font-black text-amber-800">{user?.category || 'General'}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
         {/* Financial Assessment Particulars */}
-        <div className="mb-8">
+        <div className="mb-6">
           <div className="flex items-center justify-between border-b border-slate-300 pb-1.5 mb-2">
             <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 font-serif flex items-center gap-1.5">
               <Landmark className="w-3.5 h-3.5 text-amber-700" />
-              <span>Assessment Dues & Statutory Ledger Particulars</span>
+              <span>Assessment Dues &amp; Statutory Ledger Particulars</span>
             </h3>
             <span className="text-[8px] font-bold text-slate-500 uppercase">Billing Cycle: {currentMonthPrefix}</span>
           </div>
 
-          <table className="w-full text-left border-collapse border border-slate-300 text-xs uppercase">
-            <thead className="bg-blue-950 text-white font-black">
-              <tr>
-                <th className="p-2.5 border-r border-slate-700">Statutory Head of Expense</th>
-                <th className="p-2.5 border-r border-slate-700">Authorization / Clearance Channel</th>
-                <th className="p-2.5 text-right">Computed Amount</th>
-              </tr>
-            </thead>
-            <tbody className="font-semibold divide-y divide-slate-300">
-              <tr>
-                <td className="p-2.5 border-r border-slate-300 text-slate-900">
-                  Mandatory Residence Mess Maintenance Charge
-                </td>
-                <td className="p-2.5 border-r border-slate-300 text-slate-700">
-                  Compulsory Fixed Monthly Levy
-                </td>
-                <td className="p-2.5 text-right text-slate-900 font-bold">
-                  ₹{baseMaintenanceFee.toLocaleString()}/-
-                </td>
-              </tr>
-              <tr>
-                <td className="p-2.5 border-r border-slate-300 text-slate-900">
-                  Actual Recorded Diets & Approved Consumable Extras
-                </td>
-                <td className="p-2.5 border-r border-slate-300 text-slate-700">
-                  {currentMonthMealsCost > baseMaintenanceFee ? 'Inclusive Diet Excess Applied' : 'Covered Under Base Allowance'}
-                </td>
-                <td className="p-2.5 text-right text-slate-900 font-bold">
-                  ₹{currentMonthMealsCost.toLocaleString()}/-
-                </td>
-              </tr>
-              <tr className="bg-slate-100 font-black">
-                <td className="p-2.5 border-r border-slate-300 text-blue-950">
-                  Total Assessed Dues to Remit
-                </td>
-                <td className="p-2.5 border-r border-slate-300 text-amber-800">
-                  Physical Desk / In-Person Treasury Counter
-                </td>
-                <td className="p-2.5 text-right text-blue-950 text-sm font-serif">
-                  ₹{Number(receiptToDisplay.amount).toLocaleString()}/-
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse border border-slate-300 text-xs uppercase min-w-[500px]">
+              <thead className="bg-blue-950 text-white font-black">
+                <tr>
+                  <th className="p-2.5 border-r border-slate-700">Statutory Head of Expense</th>
+                  <th className="p-2.5 border-r border-slate-700">Authorization / Clearance Channel</th>
+                  <th className="p-2.5 text-right">Computed Amount</th>
+                </tr>
+              </thead>
+              <tbody className="font-semibold divide-y divide-slate-300">
+                <tr>
+                  <td className="p-2.5 border-r border-slate-300 text-slate-900">
+                    Mandatory Residence Mess Maintenance Charge
+                  </td>
+                  <td className="p-2.5 border-r border-slate-300 text-slate-700">
+                    Compulsory Fixed Monthly Levy
+                  </td>
+                  <td className="p-2.5 text-right text-slate-900 font-bold whitespace-nowrap">
+                    ₹{baseMaintenanceFee.toLocaleString()}/-
+                  </td>
+                </tr>
+                <tr>
+                  <td className="p-2.5 border-r border-slate-300 text-slate-900">
+                    Actual Recorded Diets &amp; Approved Consumable Extras
+                  </td>
+                  <td className="p-2.5 border-r border-slate-300 text-slate-700">
+                    {currentMonthMealsCost > baseMaintenanceFee ? 'Inclusive Diet Excess Applied' : 'Covered Under Base Allowance'}
+                  </td>
+                  <td className="p-2.5 text-right text-slate-900 font-bold whitespace-nowrap">
+                    ₹{currentMonthMealsCost.toLocaleString()}/-
+                  </td>
+                </tr>
+                <tr className="bg-slate-100 font-black">
+                  <td className="p-2.5 border-r border-slate-300 text-blue-950">
+                    Total Assessed Dues to Remit
+                  </td>
+                  <td className="p-2.5 border-r border-slate-300 text-amber-800">
+                    Physical Desk / In-Person Treasury Counter
+                  </td>
+                  <td className="p-2.5 text-right text-blue-950 text-sm font-serif whitespace-nowrap">
+                    ₹{Number(receiptToDisplay.amount).toLocaleString()}/-
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
         {/* Tear-off Perforation Divider for Physical Desk Submission */}
-        <div className="relative my-8 border-t-2 border-dashed border-slate-400">
-          <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white px-4 text-[8px] font-mono uppercase text-slate-400 font-bold tracking-widest">
+        <div className="relative my-6 border-t-2 border-dashed border-slate-400">
+          <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white px-3 text-[7px] sm:text-[8px] font-mono uppercase text-slate-400 font-bold tracking-widest whitespace-nowrap">
             ✂ Tear-off Voucher Counterfoil for Treasury Desk Reconciliation ✂
           </span>
         </div>
@@ -546,25 +541,25 @@ export default function StudentPaymentPage({ user }) {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 pt-2 text-[10px] text-slate-600 uppercase font-bold">
           <div className="space-y-1">
             <p className="text-slate-800 font-black flex items-center gap-1.5">
-              <ShieldCheck className="w-4 h-4 text-emerald-700 inline" />
+              <ShieldCheck className="w-4 h-4 text-emerald-700 shrink-0 inline" />
               <span>Legally Audited under Independent Mess Cooperative Bylaws</span>
             </p>
-            <p className="text-amber-800">Clearance Status: DESK DEPOSIT & STAMP PENDING</p>
+            <p className="text-amber-800">Clearance Status: DESK DEPOSIT &amp; STAMP PENDING</p>
             <p className="text-[9px] text-slate-500 normal-case font-medium">
               * The candidate must retain this stamped counterfoil until the conclusion of the academic session.
             </p>
           </div>
 
-          <div className="flex items-center gap-8 w-full sm:w-auto justify-between sm:justify-end">
+          <div className="flex items-center gap-6 sm:gap-8 w-full sm:w-auto justify-between sm:justify-end">
             <div className="text-center">
-              <div className="h-10 border-b border-slate-400 w-32"></div>
+              <div className="h-10 border-b border-slate-400 w-28 sm:w-32"></div>
               <p className="pt-1 text-slate-700 font-black text-[9px]">Candidate Member</p>
               <p className="text-[8px] text-slate-400 font-mono">Signatory</p>
             </div>
 
             <div className="text-right">
-              <div className="h-10 border-b border-slate-400 w-40"></div>
-              <p className="pt-1 text-blue-950 font-black text-[9px]">Mess Treasurer & Committee Desk</p>
+              <div className="h-10 border-b border-slate-400 w-36 sm:w-40"></div>
+              <p className="pt-1 text-blue-950 font-black text-[9px]">Mess Treasurer &amp; Committee Desk</p>
               <p className="text-[8px] text-slate-500 font-mono">Hostel Cooperative Audit Seal</p>
             </div>
           </div>

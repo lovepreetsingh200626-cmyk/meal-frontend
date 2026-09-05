@@ -168,46 +168,46 @@ export default function StudentLogger({ user }) {
   const allMealsLocked = lockedMeals.breakfast && lockedMeals.lunch && lockedMeals.dinner;
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-6 sm:py-10 font-sans text-slate-900 selection:bg-blue-950 selection:text-white">
+    <div className="max-w-3xl mx-auto px-3 sm:px-4 py-6 sm:py-10 font-sans text-slate-900 selection:bg-blue-950 selection:text-white">
       
       {/* 1. OFFICIAL TOP EMBLEM & STATUTORY STRIP */}
-      <div className="bg-slate-950 text-slate-300 text-[10px] font-bold px-4 py-2 border-b-2 border-amber-500/80 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-1 shadow-xs">
+      <div className="bg-slate-950 text-slate-300 text-[9px] sm:text-[10px] font-bold px-3 sm:px-4 py-2 border-b-2 border-amber-500/80 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-1.5 shadow-xs">
         <div className="flex items-center gap-2 uppercase tracking-widest text-slate-200">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
           <span>Central Hostel Cooperative Registry</span>
           <span className="text-slate-600 hidden md:inline">|</span>
-          <span className="text-amber-300 font-black hidden md:inline">Daily Diet & Attendance Log</span>
+          <span className="text-amber-300 font-black hidden md:inline">Daily Diet &amp; Attendance Log</span>
         </div>
-        <div className="text-[9px] font-mono text-slate-400 uppercase tracking-wider">
+        <div className="text-[8px] sm:text-[9px] font-mono text-slate-400 uppercase tracking-wider">
           Statute 4.2 • Verified Log
         </div>
       </div>
 
       {/* 2. PRIMARY OPERATIONAL CARD */}
-      <div className="bg-white border border-slate-300 shadow-sm p-5 sm:p-7 border-t-4 border-t-blue-950">
+      <div className="bg-white border border-slate-300 shadow-sm p-4 sm:p-7 border-t-4 border-t-blue-950">
         
         {/* Header Ribbon */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-slate-200 pb-4 mb-6 gap-4">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between border-b border-slate-200 pb-4 mb-5 sm:mb-6 gap-4">
           <div className="flex items-start gap-3">
             <div className="p-2.5 bg-blue-950 text-amber-400 border border-blue-900 shrink-0 mt-0.5 shadow-xs">
-              <Landmark className="w-5 h-5" />
+              <Landmark className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <h2 className="font-black text-sm sm:text-base text-blue-950 uppercase tracking-tight font-serif">
-                  Statutory Daily Diet & Consumption Register
+                  Statutory Daily Diet &amp; Consumption Register
                 </h2>
                 <span className="hidden sm:inline-block text-[8px] font-black uppercase bg-slate-100 text-slate-700 border border-slate-300 px-2 py-0.5">
                   Official Record
                 </span>
               </div>
-              <p className="text-[11px] text-slate-600 font-semibold uppercase tracking-wide mt-1">
+              <p className="text-[10px] sm:text-[11px] text-slate-600 font-semibold uppercase tracking-wide mt-1 leading-relaxed">
                 Jurisdiction: <span className="text-slate-900 font-mono font-bold">{user?.hostelNo || user?.hostelId?.hostelNumber || 'CAMPUS RESIDENCE'}</span> • Candidate: <span className="text-blue-950 font-black font-serif">{user?.name}</span> (Roll: <span className="font-mono text-slate-900 font-bold">{user?.rollNo || 'N/A'}</span>)
               </p>
             </div>
           </div>
 
-          <div className="text-left sm:text-right w-full sm:w-auto">
+          <div className="text-left w-full md:w-auto md:text-right">
             <span className="text-[9px] font-black uppercase bg-blue-50 text-blue-950 border border-blue-200 px-2.5 py-1 tracking-wider inline-block">
               Statute 4.2 • Dual-Diet Quota
             </span>
@@ -216,33 +216,33 @@ export default function StudentLogger({ user }) {
 
         {/* NOTIFICATION MESSAGES */}
         {errorMsg && (
-          <div className="bg-red-50 border border-red-300 border-l-4 border-l-red-800 text-red-950 p-3.5 text-xs font-bold uppercase mb-5 flex items-start gap-3 shadow-xs">
+          <div className="bg-red-50 border border-red-300 border-l-4 border-l-red-800 text-red-950 p-3.5 text-[11px] sm:text-xs font-bold uppercase mb-5 flex items-start gap-3 shadow-xs">
             <AlertCircle className="w-4 h-4 shrink-0 text-red-800 mt-0.5" />
             <div>
               <p className="font-black tracking-wide">Ledger Constraint Warning</p>
-              <p className="text-[11px] font-medium text-red-900 mt-0.5 normal-case">{errorMsg}</p>
+              <p className="text-[10px] sm:text-[11px] font-medium text-red-900 mt-0.5 normal-case">{errorMsg}</p>
             </div>
           </div>
         )}
         {successMsg && (
-          <div className="bg-emerald-50 border border-emerald-300 border-l-4 border-l-emerald-700 text-emerald-950 p-3.5 text-xs font-bold uppercase mb-5 flex items-start gap-3 shadow-xs">
+          <div className="bg-emerald-50 border border-emerald-300 border-l-4 border-l-emerald-700 text-emerald-950 p-3.5 text-[11px] sm:text-xs font-bold uppercase mb-5 flex items-start gap-3 shadow-xs">
             <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-700 mt-0.5" />
             <div>
               <p className="font-black tracking-wide">Transaction Ratified</p>
-              <p className="text-[11px] font-medium text-emerald-900 mt-0.5 normal-case">{successMsg}</p>
+              <p className="text-[10px] sm:text-[11px] font-medium text-emerald-900 mt-0.5 normal-case">{successMsg}</p>
             </div>
           </div>
         )}
 
         {/* STATUTORY REGISTRY DATE SELECTOR */}
-        <div className="bg-slate-50 border border-slate-300 p-4 mb-6 shadow-xs">
+        <div className="bg-slate-50 border border-slate-300 p-4 mb-5 sm:mb-6 shadow-xs">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div>
               <label className="text-[10px] font-black text-slate-700 uppercase tracking-widest block flex items-center gap-1.5 font-serif">
                 <Calendar className="w-3.5 h-3.5 text-amber-700" />
                 <span>Attendance Log Date</span>
               </label>
-              <p className="text-[10px] text-slate-500 font-medium mt-0.5">
+              <p className="text-[9px] sm:text-[10px] text-slate-500 font-medium mt-0.5">
                 Diet records are sealed daily at conclusion of service.
               </p>
             </div>
@@ -258,11 +258,11 @@ export default function StudentLogger({ user }) {
         {/* STATUTORY MEAL TILES (RATIFIED / ACTIVE / UNRECORDED) */}
         <div className="space-y-3 mb-6">
           <div className="flex items-center justify-between border-b border-slate-300 pb-1.5 mb-2">
-            <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 font-serif flex items-center gap-1.5">
+            <h3 className="text-[11px] sm:text-xs font-black uppercase tracking-wider text-slate-900 font-serif flex items-center gap-1.5">
               <Utensils className="w-3.5 h-3.5 text-amber-700" />
               <span>Standard Dietary Rations Attendance</span>
             </h3>
-            <span className="text-[9px] font-mono text-slate-500 uppercase font-bold">Standard Tariff Schedule</span>
+            <span className="hidden sm:inline-block text-[9px] font-mono text-slate-500 uppercase font-bold">Standard Tariff Schedule</span>
           </div>
 
           {mealTiers.map(m => {
@@ -273,7 +273,7 @@ export default function StudentLogger({ user }) {
               <div
                 key={m.key}
                 onClick={() => handleMealToggle(m.key)}
-                className={`flex items-center justify-between p-4 border-2 transition-all select-none ${
+                className={`flex flex-col sm:flex-row items-start sm:items-center justify-between p-3.5 sm:p-4 border-2 transition-all select-none gap-3 sm:gap-0 ${
                   isLocked
                     ? 'bg-emerald-50/70 border-emerald-600 text-emerald-950 cursor-not-allowed shadow-xs'
                     : isChecked
@@ -281,7 +281,7 @@ export default function StudentLogger({ user }) {
                     : 'bg-white border-slate-300 hover:bg-slate-50 hover:border-slate-400 cursor-pointer'
                 }`}
               >
-                <div className="flex items-start sm:items-center gap-3">
+                <div className="flex items-start sm:items-center gap-3 w-full sm:w-auto">
                   <div
                     className={`w-5 h-5 border-2 flex items-center justify-center transition-colors shrink-0 mt-0.5 sm:mt-0 ${
                       isLocked
@@ -294,7 +294,7 @@ export default function StudentLogger({ user }) {
                     {(isChecked || isLocked) && <Check className="w-3.5 h-3.5 stroke-[3]" />}
                   </div>
 
-                  <div>
+                  <div className="flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="font-black text-xs uppercase font-serif tracking-tight">{m.label}</span>
                       <span className="text-[10px] font-mono font-bold text-slate-700 bg-slate-100 border border-slate-300 px-1.5 py-0.2">
@@ -307,7 +307,7 @@ export default function StudentLogger({ user }) {
                   </div>
                 </div>
 
-                <div className="text-right shrink-0">
+                <div className="text-left sm:text-right w-full sm:w-auto shrink-0 pl-8 sm:pl-0">
                   {isLocked ? (
                     <span className="inline-flex items-center gap-1 text-[8px] font-black uppercase bg-emerald-800 text-white px-2 py-1 tracking-widest border border-emerald-950 shadow-xs">
                       <Lock className="w-2.5 h-2.5" /> Sealed in Ledger
@@ -330,33 +330,33 @@ export default function StudentLogger({ user }) {
         {/* STATUTORY SUPPLEMENTARY EXTRAS REGISTER */}
         <div className="border border-slate-300 bg-slate-50/50 p-4 mb-6 shadow-xs">
           <div className="flex items-center justify-between border-b border-slate-300 pb-2 mb-3">
-            <h3 className="text-[10px] font-black uppercase text-blue-950 tracking-wider font-serif flex items-center gap-1.5">
+            <h3 className="text-[10px] sm:text-[11px] font-black uppercase text-blue-950 tracking-wider font-serif flex items-center gap-1.5">
               <PlusCircle className="w-3.5 h-3.5 text-amber-700" />
               <span>Approved Supplementary Extras Registry</span>
             </h3>
-            <span className="text-[8px] font-mono text-slate-500 uppercase font-bold">Ad-hoc Diet Adjustments</span>
+            <span className="hidden sm:inline-block text-[8px] font-mono text-slate-500 uppercase font-bold">Ad-hoc Diet Adjustments</span>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-2 mb-3">
+          <div className="flex flex-col sm:flex-row gap-2.5 mb-3">
             <input
               type="text"
               placeholder="Designate item (e.g. Boiled Egg, Milk, Curd, Special Diet)"
               value={extraName}
               onChange={e => setExtraName(e.target.value)}
-              className="w-full border border-slate-400 p-2 text-xs font-bold text-slate-900 outline-none focus:border-blue-950 bg-white uppercase placeholder:normal-case placeholder:font-normal"
+              className="flex-1 border border-slate-400 p-2 text-xs font-bold text-slate-900 outline-none focus:border-blue-950 bg-white uppercase placeholder:normal-case placeholder:font-normal"
             />
-            <div className="flex gap-2 shrink-0">
+            <div className="flex gap-2.5 w-full sm:w-auto shrink-0">
               <input
                 type="number"
                 placeholder="₹ Tariff"
                 value={extraCost}
                 onChange={e => setExtraCost(e.target.value)}
-                className="w-28 border border-slate-400 p-2 text-xs font-mono font-bold text-slate-900 outline-none focus:border-blue-950 bg-white"
+                className="w-1/3 sm:w-24 border border-slate-400 p-2 text-xs font-mono font-bold text-slate-900 outline-none focus:border-blue-950 bg-white"
               />
               <button
                 type="button"
                 onClick={addExtraItem}
-                className="bg-blue-950 hover:bg-blue-900 text-white font-black px-4 py-2 text-[10px] uppercase tracking-wider cursor-pointer transition flex items-center gap-1 border-b border-amber-500 active:scale-95 shadow-xs"
+                className="flex-1 sm:flex-auto bg-blue-950 hover:bg-blue-900 text-white font-black px-4 py-2 text-[10px] uppercase tracking-wider cursor-pointer transition flex items-center justify-center gap-1.5 border-b-2 border-amber-500 active:scale-95 shadow-xs"
                 title="Append extra item to daily assessment"
               >
                 <PlusCircle className="w-3.5 h-3.5 text-amber-400" />
@@ -369,13 +369,13 @@ export default function StudentLogger({ user }) {
             <div className="space-y-1.5 max-h-36 overflow-y-auto border border-slate-300 p-2 bg-white">
               {extras.map((ex, i) => (
                 <div key={i} className="flex justify-between items-center bg-slate-50 p-2 border border-slate-200 text-xs font-bold text-slate-800 font-mono">
-                  <span className="uppercase font-sans font-black text-slate-900">{ex.itemName}</span>
-                  <div className="flex items-center gap-3">
+                  <span className="uppercase font-sans font-black text-slate-900 truncate">{ex.itemName}</span>
+                  <div className="flex items-center gap-3 shrink-0 ml-2">
                     <span className="text-blue-950 font-black">₹{ex.cost}/-</span>
                     <button 
                       type="button" 
                       onClick={() => removeExtraItem(i)} 
-                      className="text-red-700 font-black hover:text-red-900 cursor-pointer p-0.5 border border-red-200 bg-red-50 hover:bg-red-100 text-[10px]"
+                      className="text-red-700 font-black hover:text-red-900 cursor-pointer p-1 border border-red-200 bg-red-50 hover:bg-red-100 text-[10px] flex items-center justify-center rounded-xs"
                       title="Remove Item"
                     >
                       ✕
@@ -393,15 +393,15 @@ export default function StudentLogger({ user }) {
 
         {/* COMPUTED STATUTORY LEVY ASSESSMENT BOX */}
         <div className="bg-slate-100 border-2 border-slate-300 p-4 mb-6">
-          <div className="flex justify-between items-center text-xs font-black uppercase font-serif">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center text-xs font-black uppercase font-serif gap-1 sm:gap-0">
             <span className="text-slate-800 tracking-wider">Computed Statutory Daily Dietary Levy:</span>
             <span className="text-2xl text-blue-950 font-serif font-black">₹{liveCalc.total}/-</span>
           </div>
 
           {liveCalc.mealCount === 1 && (
-            <div className="mt-2.5 pt-2 border-t border-slate-300 flex items-start gap-2 text-amber-950 bg-amber-50/80 p-2 border border-amber-200">
+            <div className="mt-3 sm:mt-2.5 pt-2 sm:border-t border-slate-300 flex items-start gap-2 text-amber-950 bg-amber-50/80 p-2.5 sm:p-2 border border-amber-200">
               <AlertTriangle className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
-              <p className="text-[10px] font-bold uppercase leading-relaxed font-mono">
+              <p className="text-[9px] sm:text-[10px] font-bold uppercase leading-relaxed font-mono">
                 Statute 4.2 Minimum Quota Assessment: Single-meal attendance incurs mandatory ₹{liveCalc.penaltyCost} unselected meal charge appended to balance minimum residential diet requirement.
               </p>
             </div>
@@ -413,27 +413,27 @@ export default function StudentLogger({ user }) {
           type="button"
           onClick={handleSaveEntry}
           disabled={saving || (allMealsLocked && extras.length === 0 && !extraName.trim())}
-          className="w-full bg-blue-950 hover:bg-blue-900 active:bg-blue-950 text-white font-black py-3.5 text-xs uppercase tracking-widest cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed transition-all shadow-sm border-b-2 border-amber-500 flex items-center justify-center gap-2"
+          className="w-full bg-blue-950 hover:bg-blue-900 active:bg-blue-950 text-white font-black py-3.5 sm:py-4 text-[11px] sm:text-xs uppercase tracking-widest cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed transition-all shadow-sm border-b-2 border-amber-500 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-2 text-center leading-snug"
         >
           {saving ? (
             <>
-              <Loader2 className="w-4 h-4 animate-spin text-amber-400" />
-              <span>Authenticating & Committing Ledger Entry...</span>
+              <Loader2 className="w-4 h-4 animate-spin text-amber-400 shrink-0" />
+              <span>Authenticating &amp; Committing Ledger Entry...</span>
             </>
           ) : allMealsLocked && extras.length === 0 && !extraName.trim() ? (
             <>
-              <ShieldCheck className="w-4 h-4 text-emerald-400" />
-              <span>Statutory Attendance Ratified • Entries Sealed Under Statute 4.2</span>
+              <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span>Statutory Attendance Ratified • Entries Sealed</span>
             </>
           ) : (
             <>
-              <CheckCircle2 className="w-4 h-4 text-amber-400" />
+              <CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0" />
               <span>Commit Entry to Statutory Ledger • Authenticate</span>
             </>
           )}
         </button>
 
-        <p className="text-center text-[9px] font-mono text-slate-400 uppercase mt-3 tracking-wider font-semibold">
+        <p className="text-center text-[8px] sm:text-[9px] font-mono text-slate-400 uppercase mt-4 tracking-wider font-semibold">
           * Certified entries are immediately synchronized with the Master Comptroller Audit Register.
         </p>
       </div>

@@ -114,41 +114,37 @@ export default function StudentComplaintsPage({ user }) {
     <div className="min-h-screen bg-slate-100 text-slate-900 pb-16 font-sans selection:bg-blue-950 selection:text-white">
       
       {/* 1. TOP STATUTORY AUDIT STRIP */}
-      <div className="bg-slate-950 text-slate-300 text-[10px] font-bold px-4 md:px-8 py-2 border-b-2 border-amber-500/80 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-1 z-50 select-none">
+      <div className="bg-slate-950 text-slate-300 text-[9px] sm:text-[10px] font-bold px-3 sm:px-8 py-2 border-b-2 border-amber-500/80 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-1 z-50 select-none">
         <div className="flex items-center gap-2 uppercase tracking-widest text-slate-200">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span>Central Residential Mess Cooperative</span>
-          <span className="text-slate-600 hidden md:inline">|</span>
-          <span className="text-amber-300 font-black hidden md:inline">Student Welfare Board &bull; Grievance Docket</span>
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
+          <span className="truncate">Central Residential Mess Cooperative</span>
         </div>
-        <div className="flex items-center gap-3 text-[9px] font-mono uppercase tracking-wider text-slate-400">
-          <span>Adjudication Code: <strong className="text-white">STATUTE 5.1</strong></span>
-          <span className="text-slate-600">•</span>
-          <span>Jurisdiction: <strong className="text-emerald-400">HEARINGS ACTIVE</strong></span>
+        <div className="flex items-center gap-2 text-[8px] sm:text-[9px] font-mono uppercase tracking-wider text-slate-400">
+          <span>Statute: <strong className="text-white">STATUTE 5.1</strong></span>
         </div>
       </div>
 
-      <main className="max-w-6xl mx-auto px-4 py-8 space-y-6">
+      <main className="max-w-6xl mx-auto px-3 sm:px-6 py-6 space-y-5">
         
         {/* 2. DOCKET HEADER */}
-        <div className="bg-white border-2 border-slate-300 shadow-xs p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 border-t-4 border-t-blue-950">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 bg-blue-950 border-2 border-amber-500 text-amber-300 flex items-center justify-center font-serif shrink-0 shadow-xs mt-0.5">
-              <Landmark className="w-6 h-6 text-amber-400" />
+        <div className="bg-white border-2 border-slate-300 shadow-xs p-4 sm:p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-t-4 border-t-blue-950">
+          <div className="flex items-start gap-3 sm:gap-4">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-950 border-2 border-amber-500 text-amber-300 flex items-center justify-center font-serif shrink-0 shadow-xs mt-0.5">
+              <Landmark className="w-5 h-5 sm:w-6 sm:h-6 text-amber-400" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <span className="text-[9px] font-black uppercase bg-blue-50 text-blue-950 border border-blue-200 px-2 py-0.5 font-mono">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-[8px] sm:text-[9px] font-black uppercase bg-blue-50 text-blue-950 border border-blue-200 px-2 py-0.5 font-mono">
                   Official Record
                 </span>
-                <span className="text-[9px] font-mono font-bold text-slate-500 uppercase">
-                  Statute 5.1 Redressal Protocol
+                <span className="text-[8px] sm:text-[9px] font-mono font-bold text-slate-500 uppercase">
+                  Statute 5.1 Redressal
                 </span>
               </div>
-              <h1 className="text-lg md:text-xl font-black text-blue-950 uppercase tracking-tight font-serif mt-1">
+              <h1 className="text-base sm:text-xl font-black text-blue-950 uppercase tracking-tight font-serif mt-1">
                 Grievance &amp; Redressal Adjudication Docket
               </h1>
-              <p className="text-xs font-mono font-bold text-slate-600 uppercase mt-0.5">
+              <p className="text-[11px] sm:text-xs font-mono font-bold text-slate-600 uppercase mt-0.5 break-words">
                 Member: <span className="text-blue-950 font-serif font-black">{user?.name}</span> &bull; Roll: <span className="text-slate-900">{user?.rollNo || 'N/A'}</span> &bull; Residence: <span className="text-slate-900">{hostelNo}</span>
               </p>
             </div>
@@ -158,8 +154,7 @@ export default function StudentComplaintsPage({ user }) {
             type="button"
             onClick={handleRefresh}
             disabled={refreshing}
-            className="bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 font-black py-2.5 px-4 text-xs uppercase tracking-wider flex items-center gap-2 transition cursor-pointer shadow-xs active:scale-95 disabled:opacity-60"
-            title="Synchronize Adjudication Findings"
+            className="w-full md:w-auto bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 font-black py-2.5 px-4 text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition cursor-pointer shadow-xs active:scale-95 disabled:opacity-60"
           >
             <RefreshCw className={`w-3.5 h-3.5 text-amber-600 ${refreshing ? 'animate-spin' : ''}`} />
             <span>{refreshing ? 'Syncing...' : 'Sync Docket'}</span>
@@ -167,35 +162,35 @@ export default function StudentComplaintsPage({ user }) {
         </div>
 
         {/* 3. DOCKET METRICS SUMMARY */}
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-          <div className="bg-white border border-slate-300 p-4 border-l-4 border-l-blue-950 shadow-xs">
-            <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest font-mono">Logged Petitions</p>
-            <p className="text-2xl font-black text-slate-950 font-serif mt-1">{complaints.length}</p>
-            <p className="text-[9px] font-mono text-slate-400 uppercase mt-1">Total Submissions</p>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+          <div className="bg-white border border-slate-300 p-3 sm:p-4 border-l-4 border-l-blue-950 shadow-xs">
+            <p className="text-[8px] sm:text-[9px] font-black text-slate-500 uppercase tracking-widest font-mono">Logged Petitions</p>
+            <p className="text-xl sm:text-2xl font-black text-slate-950 font-serif mt-1">{complaints.length}</p>
+            <p className="text-[8px] sm:text-[9px] font-mono text-slate-400 uppercase mt-1">Total Submissions</p>
           </div>
 
-          <div className="bg-white border border-slate-300 p-4 border-l-4 border-l-red-700 shadow-xs">
-            <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest font-mono">Pending Review</p>
-            <p className="text-2xl font-black text-red-700 font-serif mt-1">{pendingCount}</p>
-            <p className="text-[9px] font-mono text-slate-400 uppercase mt-1">Awaiting Inquiry</p>
+          <div className="bg-white border border-slate-300 p-3 sm:p-4 border-l-4 border-l-red-700 shadow-xs">
+            <p className="text-[8px] sm:text-[9px] font-black text-slate-500 uppercase tracking-widest font-mono">Pending Review</p>
+            <p className="text-xl sm:text-2xl font-black text-red-700 font-serif mt-1">{pendingCount}</p>
+            <p className="text-[8px] sm:text-[9px] font-mono text-slate-400 uppercase mt-1">Awaiting Inquiry</p>
           </div>
 
-          <div className="bg-white border border-slate-300 p-4 border-l-4 border-l-amber-600 shadow-xs">
-            <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest font-mono">Under Review</p>
-            <p className="text-2xl font-black text-amber-700 font-serif mt-1">{inProgressCount}</p>
-            <p className="text-[9px] font-mono text-slate-400 uppercase mt-1">Designated Inspector</p>
+          <div className="bg-white border border-slate-300 p-3 sm:p-4 border-l-4 border-l-amber-600 shadow-xs">
+            <p className="text-[8px] sm:text-[9px] font-black text-slate-500 uppercase tracking-widest font-mono">Under Review</p>
+            <p className="text-xl sm:text-2xl font-black text-amber-700 font-serif mt-1">{inProgressCount}</p>
+            <p className="text-[8px] sm:text-[9px] font-mono text-slate-400 uppercase mt-1">Inspector</p>
           </div>
 
-          <div className="bg-white border border-slate-300 p-4 border-l-4 border-l-emerald-700 shadow-xs">
-            <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest font-mono">Ratified &amp; Resolved</p>
-            <p className="text-2xl font-black text-emerald-800 font-serif mt-1">{resolvedCount}</p>
-            <p className="text-[9px] font-mono text-slate-400 uppercase mt-1">Directives Executed</p>
+          <div className="bg-white border border-slate-300 p-3 sm:p-4 border-l-4 border-l-emerald-700 shadow-xs">
+            <p className="text-[8px] sm:text-[9px] font-black text-slate-500 uppercase tracking-widest font-mono">Resolved</p>
+            <p className="text-xl sm:text-2xl font-black text-emerald-800 font-serif mt-1">{resolvedCount}</p>
+            <p className="text-[8px] sm:text-[9px] font-mono text-slate-400 uppercase mt-1">Executed</p>
           </div>
         </div>
 
         {/* NOTIFICATIONS */}
         {errorMsg && (
-          <div className="bg-red-50 border border-red-300 border-l-4 border-l-red-800 text-red-950 p-4 text-xs font-bold uppercase flex items-start gap-3 shadow-xs">
+          <div className="bg-red-50 border border-red-300 border-l-4 border-l-red-800 text-red-950 p-3.5 text-xs font-bold uppercase flex items-start gap-2.5 shadow-xs">
             <AlertCircle className="w-4 h-4 shrink-0 text-red-800 mt-0.5" />
             <div>
               <p className="font-black">Docket Notice</p>
@@ -204,7 +199,7 @@ export default function StudentComplaintsPage({ user }) {
           </div>
         )}
         {successMsg && (
-          <div className="bg-emerald-50 border border-emerald-300 border-l-4 border-l-emerald-700 text-emerald-950 p-4 text-xs font-bold uppercase flex items-start gap-3 shadow-xs">
+          <div className="bg-emerald-50 border border-emerald-300 border-l-4 border-l-emerald-700 text-emerald-950 p-3.5 text-xs font-bold uppercase flex items-start gap-2.5 shadow-xs">
             <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-700 mt-0.5" />
             <div>
               <p className="font-black">Submission Confirmed</p>
@@ -214,11 +209,11 @@ export default function StudentComplaintsPage({ user }) {
         )}
 
         {/* 4. FORM AND LOGGED DOCKET SPLIT */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
           
           {/* PETITION SUBMISSION FORM */}
           <div className="lg:col-span-5 bg-white border-2 border-slate-300 shadow-xs">
-            <div className="bg-slate-50 border-b border-slate-300 px-5 py-3.5 flex items-center justify-between">
+            <div className="bg-slate-50 border-b border-slate-300 px-4 sm:px-5 py-3.5 flex items-center justify-between">
               <h2 className="font-black text-xs text-blue-950 uppercase tracking-widest flex items-center gap-2 font-serif">
                 <FileText className="w-4 h-4 text-amber-600" /> Lodge Grievance Petition
               </h2>
@@ -227,7 +222,7 @@ export default function StudentComplaintsPage({ user }) {
               </span>
             </div>
 
-            <form onSubmit={handleComplaintSubmit} className="p-5 space-y-4">
+            <form onSubmit={handleComplaintSubmit} className="p-4 sm:p-5 space-y-4">
               <div className="bg-amber-50 border border-amber-300 p-3 text-[11px] text-amber-950 leading-relaxed font-medium">
                 <span className="font-black uppercase font-serif block text-amber-900 mb-0.5 flex items-center gap-1 text-[10px]">
                   <ShieldAlert className="w-3.5 h-3.5 text-amber-700" /> Statute 5.1 Protocol:
@@ -284,8 +279,8 @@ export default function StudentComplaintsPage({ user }) {
                 <label className="text-[9px] font-black text-slate-700 uppercase tracking-wider block mb-1">
                   Photographic Evidence (Optional, Max 2MB)
                 </label>
-                <div className="flex items-center gap-3">
-                  <label className="inline-flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 border border-slate-400 text-slate-800 px-3 py-1.5 text-[10px] font-black uppercase cursor-pointer transition shadow-xs">
+                <div className="flex flex-wrap items-center gap-3">
+                  <label className="inline-flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 border border-slate-400 text-slate-800 px-3 py-2 text-[10px] font-black uppercase cursor-pointer transition shadow-xs">
                     <Paperclip className="w-3.5 h-3.5 text-slate-600" />
                     <span>{complaintPhoto ? 'Change Attachment' : 'Attach Proof Document'}</span>
                     <input
@@ -301,7 +296,7 @@ export default function StudentComplaintsPage({ user }) {
                       <button
                         type="button"
                         onClick={() => setComplaintPhoto('')}
-                        className="text-red-700 hover:text-red-900 text-xs font-black"
+                        className="text-red-700 hover:text-red-900 text-xs font-black p-1"
                         title="Remove attachment"
                       >
                         ✕
@@ -319,7 +314,7 @@ export default function StudentComplaintsPage({ user }) {
                 {submittingComplaint ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin text-amber-400" />
-                    <span>Transmitting to Welfare Board...</span>
+                    <span>Transmitting...</span>
                   </>
                 ) : (
                   <>
@@ -333,7 +328,7 @@ export default function StudentComplaintsPage({ user }) {
 
           {/* DOCKET HISTORY LIST */}
           <div className="lg:col-span-7 bg-white border-2 border-slate-300 shadow-xs">
-            <div className="bg-slate-50 border-b border-slate-300 px-5 py-3.5 flex items-center justify-between">
+            <div className="bg-slate-50 border-b border-slate-300 px-4 sm:px-5 py-3.5 flex items-center justify-between">
               <div>
                 <h2 className="font-black text-xs text-blue-950 uppercase tracking-widest flex items-center gap-2 font-serif">
                   <MessageSquareWarning className="w-4 h-4 text-amber-600" /> Registered Docket Inquiries
@@ -347,7 +342,7 @@ export default function StudentComplaintsPage({ user }) {
               </span>
             </div>
 
-            <div className="p-5">
+            <div className="p-4 sm:p-5">
               {loading ? (
                 <div className="text-center py-12 text-slate-500 text-xs font-mono font-bold uppercase tracking-wider">
                   Retrieving docket records from committee database...
@@ -367,7 +362,7 @@ export default function StudentComplaintsPage({ user }) {
                   {complaints.map((c) => (
                     <div 
                       key={c._id} 
-                      className="border-2 border-slate-300 p-4 bg-white space-y-3 border-l-4 border-l-blue-950 shadow-xs"
+                      className="border-2 border-slate-300 p-3.5 sm:p-4 bg-white space-y-3 border-l-4 border-l-blue-950 shadow-xs"
                     >
                       {/* Status and Ref */}
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 pb-2 gap-1.5">
@@ -376,7 +371,7 @@ export default function StudentComplaintsPage({ user }) {
                             Classification: {c.category}
                           </span>
                           <span className="text-[9px] font-mono text-slate-400 font-bold uppercase">
-                            Docket Ref: #{String(c._id).substring(String(c._id).length - 6).toUpperCase()}
+                            Ref: #{String(c._id).substring(String(c._id).length - 6).toUpperCase()}
                           </span>
                         </div>
 
@@ -453,8 +448,8 @@ export default function StudentComplaintsPage({ user }) {
 
       {/* 5. IMAGE PREVIEW MODAL */}
       {previewModalImg && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-xs p-4 select-none">
-          <div className="bg-white border-2 border-slate-300 shadow-2xl max-w-xl w-full p-4 space-y-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-xs p-3 sm:p-4 select-none">
+          <div className="bg-white border-2 border-slate-300 shadow-2xl max-w-xl w-full p-3 sm:p-4 space-y-3 mx-2">
             <div className="flex items-center justify-between border-b border-slate-200 pb-2">
               <span className="text-xs font-black uppercase text-blue-950 font-serif">
                 Evidentiary Attachment Inspection
@@ -462,7 +457,7 @@ export default function StudentComplaintsPage({ user }) {
               <button
                 type="button"
                 onClick={() => setPreviewModalImg(null)}
-                className="w-6 h-6 flex items-center justify-center bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold"
+                className="w-7 h-7 flex items-center justify-center bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold"
               >
                 ✕
               </button>
@@ -475,9 +470,8 @@ export default function StudentComplaintsPage({ user }) {
       )}
 
       {/* 6. STATUTORY FOOTER */}
-      <footer className="mt-8 text-center text-[9px] font-mono text-slate-500 uppercase tracking-widest flex items-center justify-center gap-1.5 select-none print:hidden">
-        <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
-        <span>Central Autonomous Cooperative Registry &bull; Certified Student Residential Records</span>
+      <footer className="mt-8 text-center text-[9px] font-mono text-slate-500 uppercase tracking-widest px-4 select-none print:hidden">
+        Central Autonomous Cooperative Registry &bull; Certified Student Residential Records
       </footer>
     </div>
   );
