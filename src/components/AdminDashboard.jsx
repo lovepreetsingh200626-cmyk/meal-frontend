@@ -12,7 +12,7 @@ import {
     Calendar, Printer, CheckCircle2, AlertCircle, Filter, RefreshCw, Trash2,
     KeyRound, Pencil, X, ImagePlus, User as UserIcon, Phone, MessageSquareWarning,
     BellRing, Send, TrendingUp, FileText, Download, Settings, Save, GraduationCap,
-    BookOpen, Layers, CreditCard, Receipt, Compass, Globe, MapPin
+    BookOpen, Layers, CreditCard, Receipt, Compass, Globe, MapPin, Check
 } from 'lucide-react';
 
 export default function AdminDashboard({ user, onLogout, onUpdateUser }) {
@@ -51,7 +51,6 @@ export default function AdminDashboard({ user, onLogout, onUpdateUser }) {
         session: '', category: 'General', email: '', fatherName: '', motherName: '', facultyId: '', facultyName: '', domicileState: 'Punjab', nationality: 'India'
     });
 
-    // Cascading dropdown states for Edit Modal
     const [adminAvailableDepartments, setAdminAvailableDepartments] = useState([]);
     const [adminAvailableProgrammes, setAdminAvailableProgrammes] = useState([]);
 
@@ -121,14 +120,14 @@ export default function AdminDashboard({ user, onLogout, onUpdateUser }) {
         const currentMonth = now.getMonth(); 
         const currentMonthPrefix = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`;
 
-        const isPaid = paymentsList.some(p => {
+        const matchingPayment = paymentsList.find(p => {
             const matchUser = p.userId === student._id || p.userId?._id === student._id || p.studentId === student.studentId || p.rollNo === student.rollNo;
             const matchMonth = p.month === currentMonthPrefix || (p.createdAt && p.createdAt.startsWith(currentMonthPrefix));
             return matchUser && matchMonth;
         });
 
-        if (isPaid) {
-            return { isPaid: true, fine: 0, statusLabel: 'PAID' };
+        if (matchingPayment) {
+            return { isPaid: true, paymentRecord: matchingPayment, fine: 0, statusLabel: 'PAID' };
         }
 
         const deadlineDate = new Date(currentYear, currentMonth + 1, 15, 23, 59, 59);
@@ -139,7 +138,70 @@ export default function AdminDashboard({ user, onLogout, onUpdateUser }) {
             fine = Math.max(1, monthsOverdue) * 10;
         }
 
-        return { isPaid: false, fine, statusLabel: 'UNPAID' };
+        return { isPaid: false, paymentRecord: null, fine, statusLabel: 'UNPAID' };
+    };
+
+    // MANUAL DESK SETTLEMENT HANDLER
+    const handleRecordDeskSettlement = (student) => {
+        const baseCharge = (student.gender === 'female' || student.category?.toLowerCase().includes('girl')) ? 1000 : 1100;
+        const currentMonthPrefix = new Date().toISOString().substring(0, 7);
+        
+        // Sum meals for this student for the month
+        const studentMeals = mealsList.filter(m => {
+            const matchUser = m.userId === student._id || m.userId?._id === student._id;
+            return matchUser && m.date && m.date.startsWith(currentMonthPrefix);
+        });
+        const mealsCost = studentMeals.reduce((sum, m) => sum + (Number(m.dailyTotalCost) || 0), 0);
+        const totalPayable = mealsCost > baseCharge ? baseCharge + mealsCost : baseCharge;
+
+        setConfirmModal({
+            isOpen: true,
+            title: 'Confirm Desk Cash Settlement',
+            message: `Record physical desk clearance of ₹${totalPayable} for ${student.name} (${student.rollNo})?`,
+            onConfirm: async () => {
+                try {
+                    const payload = {
+                        userId: student._id,
+                        studentName: student.name,
+                        rollNo: student.rollNo,
+                        hostelNo: student.hostelNo || 'BH1',
+                        receiptNo: `DESK/REC/${Math.floor(100000 + Math.random() * 900000)}`,
+                        txnId: `CASH-DESK-${Date.now().toString().slice(-6)}`,
+                        paymentChannel: 'Physical Desk Cash Settlement',
+                        amount: totalPayable,
+                        month: currentMonthPrefix,
+                        date: new Date().toLocaleString()
+                    };
+                    await API.post('/payments/record', payload);
+                    setSuccessMsg(`Desk payment recorded for ${student.name}!`);
+                    setTimeout(() => setSuccessMsg(''), 4000);
+                    fetchPayments();
+                } catch (err) {
+                    setErrorMsg('Failed to record settlement.');
+                    setTimeout(() => setErrorMsg(''), 4000);
+                }
+            }
+        });
+    };
+
+    // REVOKE SETTLEMENT / RESET TO UNPAID
+    const handleRevokeSettlement = (paymentId, studentName) => {
+        setConfirmModal({
+            isOpen: true,
+            title: 'Revoke Payment / Reset to Unpaid',
+            message: `Are you sure you want to remove this transaction record for ${studentName}? This will reset their status back to UNPAID.`,
+            onConfirm: async () => {
+                try {
+                    await API.delete(`/payments/${paymentId}`);
+                    setSuccessMsg('Payment record purged. Student marked UNPAID.');
+                    setTimeout(() => setSuccessMsg(''), 4000);
+                    setPaymentsList(prev => prev.filter(p => p._id !== paymentId));
+                } catch (err) {
+                    setErrorMsg('Failed to remove record.');
+                    setTimeout(() => setErrorMsg(''), 4000);
+                }
+            }
+        });
     };
 
     const promptRemoveStudent = (targetId, targetName) => {
@@ -578,7 +640,7 @@ export default function AdminDashboard({ user, onLogout, onUpdateUser }) {
                                         <th className="p-3 border-r border-gray-300">Academic Dossier</th>
                                         <th className="p-3 border-r border-gray-300 w-24 text-center">Residence</th>
                                         <th className="p-3 border-r border-gray-300">Contact</th>
-                                        <th className="p-3 border-r border-gray-300 text-center w-36">This Month Fees</th>
+                                        <th className="p-3 border-r border-gray-300 text-center w-48">Fee Status & Desk Settlement</th>
                                         <th className="p-3 text-right print:hidden">Action Commands</th>
                                     </tr>
                                 </thead>
@@ -610,23 +672,37 @@ export default function AdminDashboard({ user, onLogout, onUpdateUser }) {
                                                 </td>
                                                 <td className="p-3 border-r border-gray-300 text-center">
                                                     {feeStatus.isPaid ? (
-                                                        <span className="bg-emerald-100 text-emerald-900 border border-emerald-300 px-2.5 py-1 text-[10px] font-black uppercase inline-block">
-                                                            ✓ PAID
-                                                        </span>
+                                                        <div className="flex flex-col items-center gap-1">
+                                                            <span className="bg-emerald-100 text-emerald-900 border border-emerald-300 px-2 py-0.5 text-[10px] font-black uppercase inline-block">
+                                                                ✓ PAID
+                                                            </span>
+                                                            <span className="text-[8px] text-gray-500 uppercase font-bold">
+                                                                {feeStatus.paymentRecord?.paymentChannel?.includes('Desk') ? 'Desk Cash Clearance' : 'Digital Clearance'}
+                                                            </span>
+                                                            <button 
+                                                                onClick={() => handleRevokeSettlement(feeStatus.paymentRecord._id, u.name)} 
+                                                                className="text-[8px] font-bold text-red-700 hover:underline uppercase cursor-pointer"
+                                                            >
+                                                                [Reset to Unpaid]
+                                                            </button>
+                                                        </div>
                                                     ) : (
-                                                        <div className="flex flex-col items-center gap-0.5">
-                                                            <span className="bg-red-100 text-red-900 border border-red-300 px-2.5 py-0.5 text-[10px] font-black uppercase">
+                                                        <div className="flex flex-col items-center gap-1">
+                                                            <span className="bg-red-100 text-red-900 border border-red-300 px-2 py-0.5 text-[10px] font-black uppercase">
                                                                 ✕ UNPAID
                                                             </span>
-                                                            {feeStatus.fine > 0 ? (
-                                                                <span className="text-[9px] font-bold text-red-700 bg-red-50 border border-red-200 px-1.5 py-0.2 rounded-xs mt-0.5">
+                                                            {feeStatus.fine > 0 && (
+                                                                <span className="text-[9px] font-bold text-red-700">
                                                                     Fine: +₹{feeStatus.fine}
                                                                 </span>
-                                                            ) : (
-                                                                <span className="text-[8px] font-bold text-gray-500 uppercase mt-0.5">
-                                                                    Grace Till 15th
-                                                                </span>
                                                             )}
+                                                            <button 
+                                                                onClick={() => handleRecordDeskSettlement(u)} 
+                                                                className="mt-1 bg-blue-900 hover:bg-blue-800 text-white px-2 py-1 text-[9px] font-black uppercase tracking-wider rounded-xs cursor-pointer shadow-xs"
+                                                                title="Student brought slip: record cash deposit at desk"
+                                                            >
+                                                                Accept Cash at Desk
+                                                            </button>
                                                         </div>
                                                     )}
                                                 </td>
@@ -749,8 +825,8 @@ export default function AdminDashboard({ user, onLogout, onUpdateUser }) {
                                         <th className="p-3 border-r border-gray-300">Member Particulars</th>
                                         <th className="p-3 border-r border-gray-300 text-center w-20">Residence</th>
                                         <th className="p-3 border-r border-gray-300">Payment Channel</th>
-                                        <th className="p-3 border-r border-gray-300 text-center">Status</th>
-                                        <th className="p-3 text-right">Settled Amount</th>
+                                        <th className="p-3 border-r border-gray-300 text-center">Settled Amount</th>
+                                        <th className="p-3 text-right">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-300 font-medium">
@@ -768,11 +844,17 @@ export default function AdminDashboard({ user, onLogout, onUpdateUser }) {
                                                     {p.studentName || p.userId?.name} <span className="text-[10px] text-gray-500">({p.rollNo || p.userId?.rollNo})</span>
                                                 </td>
                                                 <td className="p-3 border-r border-gray-300 text-center"><span className="bg-white border border-gray-400 px-1.5 py-0.5 text-[9px] font-black uppercase text-gray-800">{p.hostelNo}</span></td>
-                                                <td className="p-3 border-r border-gray-300 font-bold uppercase text-orange-800">{p.paymentChannel || p.paymentMode || 'Online UPI'}</td>
-                                                <td className="p-3 border-r border-gray-300 text-center">
-                                                    <span className="bg-emerald-100 text-emerald-900 border border-emerald-300 px-2 py-0.5 text-[9px] font-black uppercase">CLEARED</span>
+                                                <td className="p-3 border-r border-gray-300 font-bold uppercase text-orange-800">{p.paymentChannel || p.paymentMode || 'Desk Cash'}</td>
+                                                <td className="p-3 border-r border-gray-300 text-center font-black text-blue-900 text-sm">₹{Number(p.amount).toLocaleString()}/-</td>
+                                                <td className="p-3 text-right">
+                                                    <button 
+                                                        onClick={() => handleRevokeSettlement(p._id, p.studentName || 'Student')} 
+                                                        className="p-1 border border-red-300 bg-red-50 text-red-700 hover:bg-red-800 hover:text-white transition cursor-pointer"
+                                                        title="Delete Record (Reset Student to Unpaid)"
+                                                    >
+                                                        <Trash2 className="w-3.5 h-3.5" />
+                                                    </button>
                                                 </td>
-                                                <td className="p-3 text-right font-black text-blue-900 text-sm">₹{Number(p.amount).toLocaleString()}/-</td>
                                             </tr>
                                         ))
                                     )}

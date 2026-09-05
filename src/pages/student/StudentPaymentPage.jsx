@@ -4,7 +4,7 @@ import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { 
   CreditCard, Printer, CheckCircle2, 
-  Receipt, AlertCircle, Check, Loader2 
+  Receipt, AlertCircle, Check, Loader2, Clock, AlertTriangle 
 } from 'lucide-react';
 
 export default function StudentPaymentPage({ user }) {
@@ -33,44 +33,21 @@ export default function StudentPaymentPage({ user }) {
   };
 
   const currentMonthPrefix = new Date().toISOString().substring(0, 7);
-  const currentMonthBill = history
+  
+  // 1. Sum up all meal and extra costs logged for the current month
+  const currentMonthMealsCost = history
     .filter(r => r && r.date && r.date.startsWith(currentMonthPrefix))
     .reduce((sum, r) => sum + (Number(r.dailyTotalCost) || 0), 0);
 
-  const minBasicCharge = (user?.gender === 'female' || user?.category?.toLowerCase().includes('girl')) ? 1000 : 1100;
-  const billAmountToPay = currentMonthBill > 0 ? currentMonthBill : minBasicCharge;
+  // 2. Determine base maintenance fee (1000 for girls, 1100 for boys)
+  const baseMaintenanceFee = (user?.gender === 'female' || user?.category?.toLowerCase().includes('girl')) ? 1000 : 1100;
 
-  const handleProcessMockPayment = async () => {
-    setProcessingMockPay(true);
-    setSuccessMsg('');
+  // 3. Minimum Bill Logic: If consumed diets exceed base fee, add them. Otherwise, default to base fee.
+  const billAmountToPay = currentMonthMealsCost > baseMaintenanceFee 
+    ? baseMaintenanceFee + currentMonthMealsCost 
+    : baseMaintenanceFee;
 
-    const paymentPayload = {
-      userId: user._id || user.id,
-      studentName: user.name,
-      rollNo: user.rollNo,
-      hostelNo: user.hostelNo || 'BH1',
-      receiptNo: `MESS/REC/${Math.floor(100000 + Math.random() * 900000)}`,
-      txnId: `UPI-TXN-${Date.now()}`,
-      paymentChannel: 'Online UPI / NetBanking',
-      amount: billAmountToPay,
-      month: currentMonthPrefix,
-      date: new Date().toLocaleString()
-    };
-
-    try {
-      await API.post('/payments/record', paymentPayload);
-      setPaidReceiptData(paymentPayload);
-      setSuccessMsg(`Payment registered successfully via Online UPI! Synced with Cooperative Ledger.`);
-    } catch (err) {
-      console.error('Failed to save payment record to backend:', err);
-      setPaidReceiptData(paymentPayload);
-      setSuccessMsg(`Payment registered locally (Offline simulation mode).`);
-    } finally {
-      setProcessingMockPay(false);
-    }
-  };
-
-  // Inlined PDF Generator (Safe Private Utility Format)
+  // Inlined PDF Generator (Invoice & Settlement Slip)
   const handlePrintReceipt = () => {
     try {
       const doc = new jsPDF();
@@ -87,15 +64,15 @@ export default function StudentPaymentPage({ user }) {
 
       doc.setFontSize(8.5);
       doc.setFont('helvetica', 'normal');
-      doc.text('INDEPENDENT MESS COMMITTEE • PRIVATE FEE & VOUCHER RECEIPT', 105, 18, { align: 'center' });
+      doc.text('INDEPENDENT MESS COMMITTEE • DUE ASSESSMENT & INVOICE SLIP', 105, 18, { align: 'center' });
 
       // 2. Receipt Metadata
       doc.setTextColor(15, 23, 42);
       doc.setFontSize(10);
       doc.setFont('helvetica', 'bold');
-      doc.text(`Receipt No: ${paymentDetails?.receiptNo || 'N/A'}`, 14, 34);
-      doc.text(`Transaction Ref: ${paymentDetails?.txnId || 'N/A'}`, 14, 40);
-      doc.text(`Date & Time: ${paymentDetails?.date || new Date().toLocaleString()}`, 14, 46);
+      doc.text(`Invoice / Slip No: ${paymentDetails?.receiptNo || 'N/A'}`, 14, 34);
+      doc.text(`Reference Token: ${paymentDetails?.txnId || 'N/A'}`, 14, 40);
+      doc.text(`Assessment Date: ${paymentDetails?.date || new Date().toLocaleString()}`, 14, 46);
 
       // 3. Member Dossier Table
       autoTable(doc, {
@@ -116,18 +93,16 @@ export default function StudentPaymentPage({ user }) {
         styles: { fontSize: 8.5, cellPadding: 2.2 }
       });
 
-      const paymentModeText = (paymentDetails?.paymentChannel || paymentDetails?.mode || 'Online UPI / NetBanking').toUpperCase();
-
       // 4. Transaction & Fee Particulars Table
       autoTable(doc, {
         startY: doc.lastAutoTable ? doc.lastAutoTable.finalY + 6 : 120,
         theme: 'striped',
         headStyles: { fillColor: [30, 58, 138], textColor: 255, fontStyle: 'bold' },
-        head: [['Fee Particulars', 'Mode of Clearance', 'Total Settled Amount']],
+        head: [['Fee Particulars', 'Payment Status / Channel', 'Assessed Total Amount']],
         body: [
           [
             'Monthly Mess Maintenance & Dining Dues',
-            paymentModeText,
+            'PENDING (OFFLINE DESK DEPOSIT)',
             `INR ${Number(paymentDetails?.amount || 0).toLocaleString()}/-`
           ]
         ],
@@ -138,14 +113,14 @@ export default function StudentPaymentPage({ user }) {
       const finalY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 16 : 180;
       doc.setFontSize(8);
       doc.setFont('helvetica', 'italic');
-      doc.text('* This is a computer-verified digital receipt generated via Student Mess Cooperative Portal.', 14, finalY);
-      doc.text(`Settlement Status: CLEARED (${paymentModeText})`, 14, finalY + 5);
+      doc.text('* Online UPI Gateway is currently undergoing maintenance. Submit this slip directly at the Mess Desk.', 14, finalY);
+      doc.text('Clearance Mode: Physical Desk Submission / Treasurer Cash Counter', 14, finalY + 5);
 
       doc.setFont('helvetica', 'bold');
       doc.text('Mess Treasurer & Committee Desk', 195, finalY + 12, { align: 'right' });
       doc.text('Student Mess Cooperative Utility', 195, finalY + 16, { align: 'right' });
 
-      doc.save(`Student_Mess_Receipt_${user?.rollNo || user?.studentId || 'Student'}_${new Date().toISOString().slice(0, 10)}.pdf`);
+      doc.save(`Student_Mess_Invoice_${user?.rollNo || user?.studentId || 'Student'}_${new Date().toISOString().slice(0, 10)}.pdf`);
     } catch (err) {
       console.error('PDF generation crash caught:', err);
       alert('Could not generate PDF.');
@@ -153,9 +128,9 @@ export default function StudentPaymentPage({ user }) {
   };
 
   const receiptToDisplay = paidReceiptData || {
-    receiptNo: `MESS/REC/${Math.floor(100000 + Math.random() * 900000)}`,
-    txnId: `VERIFIED-INVOICE-${Date.now().toString().slice(-6)}`,
-    paymentChannel: 'Online UPI Clearance',
+    receiptNo: `MESS/INV/${Math.floor(100000 + Math.random() * 900000)}`,
+    txnId: `DESK-PENDING-${Date.now().toString().slice(-6)}`,
+    paymentChannel: 'Desk Deposit (Online UPI Paused)',
     amount: billAmountToPay,
     date: new Date().toLocaleString()
   };
@@ -167,15 +142,15 @@ export default function StudentPaymentPage({ user }) {
           <div className="border-b border-gray-200 pb-4 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <h2 className="text-base font-black text-blue-900 uppercase tracking-tight flex items-center gap-2">
-                <Receipt className="w-5 h-5 text-orange-600" /> Fee Invoicing & Payment Desk
+                <Receipt className="w-5 h-5 text-orange-600" /> Fee Invoicing & Assessment Desk
               </h2>
               <p className="text-xs text-gray-500 uppercase mt-0.5">
-                Clear Mess Dues Online & Print Cooperative Clearance Voucher
+                Verify Monthly Mess Dues & Download Official Invoice Slip
               </p>
             </div>
             
             <div className="bg-blue-50 border border-blue-300 px-4 py-2 text-right min-w-[180px]">
-              <span className="text-[10px] font-bold text-gray-600 uppercase block">Pending Settlement Dues</span>
+              <span className="text-[10px] font-bold text-gray-600 uppercase block">Total Assessed Dues</span>
               {loading ? (
                 <div className="flex items-center justify-end gap-1.5 py-1 text-blue-900">
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -187,89 +162,109 @@ export default function StudentPaymentPage({ user }) {
             </div>
           </div>
 
-          {successMsg && (
-            <div className="bg-green-50 border-l-4 border-green-700 text-green-900 p-3 text-xs font-bold uppercase mb-6 flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-green-700 shrink-0" />
-              <span>{successMsg}</span>
-            </div>
-          )}
-
-          <div className="mb-6">
-            <div className="p-5 border border-blue-900 bg-blue-50/70 ring-2 ring-blue-900 rounded-sm">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <CreditCard className="w-5 h-5 text-blue-900" />
-                  <h3 className="font-black text-xs uppercase text-blue-950">Pay Online via UPI / NetBanking (Instant Clearance)</h3>
-                </div>
-                <Check className="w-4 h-4 text-blue-900 font-bold" />
+          {/* OFFICIAL ADVISORY BANNER - ONLINE UPI UNDER PROCESS */}
+          <div className="bg-amber-50 border-l-4 border-amber-600 text-amber-950 p-4 mb-6 rounded-sm">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
+              <div>
+                <h3 className="text-xs font-black uppercase tracking-wider text-amber-900 flex items-center gap-2">
+                  <span>Advisory: Online UPI Payment Gateway Under Maintenance</span>
+                  <span className="bg-amber-200 text-amber-900 text-[9px] px-2 py-0.5 font-bold uppercase rounded-xs">
+                    Temporary Notice
+                  </span>
+                </h3>
+                <p className="text-xs text-amber-900 mt-1 leading-relaxed">
+                  The automated National UPI / NetBanking clearance module is currently undergoing system upgrades and banking reconciliation. <strong>Direct online checkout is temporarily disabled.</strong>
+                </p>
+                <p className="text-[11px] font-bold text-amber-800 mt-2 uppercase tracking-wide">
+                  👉 To clear dues: Download and print your <span className="underline">Due Assessment Slip (PDF)</span> below and submit payment directly to the <strong>Mess Committee Desk / Treasurer</strong>.
+                </p>
               </div>
-              <p className="text-[11px] text-gray-600 leading-relaxed">
-                Clear your monthly mess bill securely online via UPI, Google Pay, PhonePe, Debit Card, or NetBanking. Generates an instant digital verified clearance voucher.
-              </p>
-              <span className="inline-block mt-3 text-[9px] font-black bg-emerald-700 text-white px-2 py-0.5 uppercase tracking-wider">
-                Instant Online Clearance Simulation
-              </span>
             </div>
           </div>
 
+          {/* PAYMENT METHOD STRIP (DEACTIVATED STATUS) */}
+          <div className="mb-6 opacity-85">
+            <div className="p-5 border border-gray-300 bg-gray-50 rounded-sm relative overflow-hidden">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 text-gray-500" />
+                  <h3 className="font-black text-xs uppercase text-gray-700">
+                    Online UPI / NetBanking Clearance
+                  </h3>
+                </div>
+                <span className="inline-flex items-center gap-1 text-[9px] font-black bg-amber-700 text-white px-2 py-0.5 uppercase tracking-wider rounded-xs">
+                  <Clock className="w-3 h-3" /> Under Setup / Paused
+                </span>
+              </div>
+              <p className="text-[11px] text-gray-500 leading-relaxed">
+                Direct online collection via Google Pay, PhonePe, and NetBanking is temporarily restricted while gateway configuration is being completed.
+              </p>
+            </div>
+          </div>
+
+          {/* ACTION BAR */}
           <div className="border border-gray-300 bg-gray-50 p-5 rounded-sm flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
             <div>
               <div className="text-xs font-black uppercase text-gray-800">
-                Total Due: <span className="text-blue-900 text-sm">₹{billAmountToPay.toLocaleString()}</span>
+                Total Payable Dues: <span className="text-blue-900 text-sm">₹{billAmountToPay.toLocaleString()}</span>
               </div>
               <div className="text-[11px] font-bold text-gray-500 uppercase mt-0.5">
-                Channel: National UPI / Online Banking Portal
+                Clearance Channel: In-Person Committee Desk Deposit
               </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+              {/* DISABLED ONLINE BUTTON */}
               <button 
                 type="button"
-                onClick={handleProcessMockPayment}
-                disabled={processingMockPay || loading}
-                className="flex-1 sm:flex-initial bg-blue-900 hover:bg-blue-800 text-white font-black px-6 py-3 text-xs uppercase tracking-wider transition cursor-pointer shadow-sm disabled:opacity-60"
+                disabled={true}
+                className="flex-1 sm:flex-initial bg-gray-300 text-gray-600 border border-gray-400 font-black px-6 py-3 text-xs uppercase tracking-wider cursor-not-allowed shadow-none flex items-center justify-center gap-2 select-none"
+                title="Online payments are temporarily paused for maintenance."
               >
-                {processingMockPay ? 'Confirming...' : 'Confirm & Settle Online'}
+                <CreditCard className="w-4 h-4 opacity-50" />
+                <span>Online UPI Paused</span>
               </button>
 
+              {/* ACTIVE PRINT INVOICE BUTTON */}
               <button 
                 type="button"
                 onClick={handlePrintReceipt}
-                className="flex-1 sm:flex-initial bg-green-700 hover:bg-green-800 text-white font-black px-6 py-3 text-xs uppercase tracking-wider transition cursor-pointer flex items-center justify-center gap-2 shadow-sm"
+                className="flex-1 sm:flex-initial bg-blue-900 hover:bg-blue-800 text-white font-black px-6 py-3 text-xs uppercase tracking-wider transition cursor-pointer flex items-center justify-center gap-2 shadow-sm"
               >
                 <Printer className="w-4 h-4" />
-                <span>Print / Save PDF Receipt</span>
+                <span>Print Due Assessment Slip (PDF)</span>
               </button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* PRIVATE COOPERATIVE VOUCHER */}
+      {/* PRIVATE COOPERATIVE VOUCHER / INVOICE SLIP */}
       <div className="mt-6 bg-white border-2 border-gray-400 p-8 shadow-md rounded-sm">
         <div className="border-b-4 border-orange-600 pb-4 mb-6 flex justify-between items-center">
           <div>
             <span className="text-[9px] font-black bg-amber-950 text-white px-2 py-0.5 uppercase tracking-widest">Private Student Utility</span>
             <h1 className="text-xl font-black text-blue-900 uppercase tracking-tight mt-1">Student Mess & Diet Ledger System</h1>
-            <h2 className="text-xs font-bold text-gray-600 uppercase">Independent Mess Committee • E-Receipt Voucher</h2>
+            <h2 className="text-xs font-bold text-gray-600 uppercase">Independent Mess Committee • Due Invoice Voucher</h2>
           </div>
           <div className="text-right">
-            <span className="text-[10px] font-black bg-emerald-700 text-white px-2 py-0.5 uppercase">Verified</span>
-            <div className="text-[9px] font-bold text-gray-500 uppercase mt-1">Status: CLEARED</div>
+            <span className="text-[10px] font-black bg-amber-700 text-white px-2 py-0.5 uppercase">Desk Deposit Required</span>
+            <div className="text-[9px] font-bold text-gray-500 uppercase mt-1">Online Gateway: Offline</div>
           </div>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-gray-50 border border-gray-300 p-3 mb-6 text-xs uppercase font-bold text-gray-800">
           <div>
-            <span className="text-[9px] text-gray-500 block">Receipt Serial</span>
+            <span className="text-[9px] text-gray-500 block">Assessment Serial</span>
             <span className="font-black text-blue-900">{receiptToDisplay.receiptNo}</span>
           </div>
           <div>
-            <span className="text-[9px] text-gray-500 block">Transaction Token</span>
+            <span className="text-[9px] text-gray-500 block">Desk Clearance Ref</span>
             <span className="font-mono text-[11px] text-gray-700">{receiptToDisplay.txnId}</span>
           </div>
           <div>
-            <span className="text-[9px] text-gray-500 block">Generated On</span>
+            <span className="text-[9px] text-gray-500 block">Issued On</span>
             <span>{receiptToDisplay.date}</span>
           </div>
         </div>
@@ -315,20 +310,20 @@ export default function StudentPaymentPage({ user }) {
         </table>
 
         <h3 className="text-xs font-black uppercase tracking-wider text-gray-800 border-b border-gray-300 pb-1 mb-2">
-          Financial Clearance Particulars
+          Assessment Dues Particulars
         </h3>
         <table className="w-full text-left border-collapse border border-gray-300 text-xs uppercase mb-8">
           <thead className="bg-blue-950 text-white font-black">
             <tr>
               <th className="p-2 border-r border-gray-700">Fee Particulars</th>
               <th className="p-2 border-r border-gray-700">Clearance Channel</th>
-              <th className="p-2 text-right">Settled Amount</th>
+              <th className="p-2 text-right">Computed Amount</th>
             </tr>
           </thead>
           <tbody className="font-bold">
             <tr className="border-b border-gray-300">
-              <td className="p-2 border-r border-gray-300 text-gray-900">Monthly Mess Dues & Maintenance Charges</td>
-              <td className="p-2 border-r border-gray-300 text-gray-700">{receiptToDisplay.paymentChannel}</td>
+              <td className="p-2 border-r border-gray-300 text-gray-900">Monthly Mess Dues & Base Maintenance Charges</td>
+              <td className="p-2 border-r border-gray-300 text-amber-800">Direct Desk / In-Person Deposit</td>
               <td className="p-2 text-right text-blue-900 font-black">₹{Number(receiptToDisplay.amount).toLocaleString()}/-</td>
             </tr>
           </tbody>
@@ -336,8 +331,8 @@ export default function StudentPaymentPage({ user }) {
 
         <div className="flex justify-between items-end pt-4 border-t-2 border-gray-300 text-[10px] text-gray-600 uppercase font-bold">
           <div>
-            <p>* Private computer-generated cooperative receipt.</p>
-            <p className="text-green-700">Authorization Status: CLEARED & RECONCILED</p>
+            <p>* Present this computer-calculated assessment slip at the Mess Office.</p>
+            <p className="text-amber-800">Clearance Status: DESK SETTLEMENT PENDING</p>
           </div>
           <div className="text-right">
             <div className="h-10"></div>

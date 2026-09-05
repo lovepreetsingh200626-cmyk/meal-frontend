@@ -41,7 +41,6 @@ export default function StudentLogger({ user }) {
           dinner: Boolean(dayRecord.meals.dinner)
         };
         setMeals(recordedMeals);
-        // Any meal that is already saved as true is locked from student unchecking
         setLockedMeals(recordedMeals);
         setExtras(Array.isArray(dayRecord.extras) ? dayRecord.extras : []);
       } else {
@@ -108,8 +107,21 @@ export default function StudentLogger({ user }) {
   };
 
   const handleSaveEntry = async () => {
-    if (!meals.breakfast && !meals.lunch && !meals.dinner) {
-      setErrorMsg('Cooperative Rule: Select at least one diet to register daily entry.');
+    // If the student typed an extra item and clicked Submit without clicking "+", auto-include it
+    let activeExtras = [...extras];
+    if (extraName.trim() && Number(extraCost) > 0) {
+      activeExtras.push({ itemName: extraName.trim(), cost: Number(extraCost) });
+      setExtras(activeExtras);
+      setExtraName('');
+      setExtraCost('');
+    }
+
+    const hasAnyMeal = meals.breakfast || meals.lunch || meals.dinner;
+    const hasAnyExtra = activeExtras.length > 0;
+
+    // Allows submission if an extra item is added alone, even when 0 meals are selected
+    if (!hasAnyMeal && !hasAnyExtra) {
+      setErrorMsg('Cooperative Rule: Select at least one diet or add an extra item to submit entry.');
       setTimeout(() => setErrorMsg(''), 4000);
       return;
     }
@@ -129,7 +141,7 @@ export default function StudentLogger({ user }) {
         hostelId: typeof user?.hostelId === 'object' ? (user.hostelId?._id || user.hostelId?.hostelNumber || 'BH1') : (user?.hostelId || user?.hostelNo || 'BH1'),
         date: selectedDate,
         meals,
-        extras,
+        extras: activeExtras,
         role: 'student'
       });
       setSuccessMsg('Meal attendance registered and locked successfully in cooperative ledger!');
@@ -306,12 +318,12 @@ export default function StudentLogger({ user }) {
         <button
           type="button"
           onClick={handleSaveEntry}
-          disabled={saving || (allMealsLocked && extras.length === 0)}
+          disabled={saving || (allMealsLocked && extras.length === 0 && !extraName.trim())}
           className="w-full bg-blue-900 hover:bg-blue-800 text-white font-black py-3 text-xs uppercase tracking-wider cursor-pointer disabled:opacity-60 transition-colors shadow-xs flex items-center justify-center gap-2"
         >
           {saving ? (
             'Recording in Cooperative Ledger...'
-          ) : allMealsLocked && extras.length === 0 ? (
+          ) : allMealsLocked && extras.length === 0 && !extraName.trim() ? (
             <>
               <ShieldCheck className="w-4 h-4 text-emerald-400" />
               <span>All Diets Locked & Cleared</span>
