@@ -8,7 +8,8 @@ import {
   User, Lock, Phone, Building2, LogIn, UserPlus,
   AlertCircle, CheckCircle2, Mail, IdCard, Hash, Unlock,
   GraduationCap, BookOpen, Layers, ShieldCheck, Camera, ImagePlus,
-  MapPin, Globe, Calendar, Compass, KeyRound, Key, Users, KeySquare, HelpCircle
+  MapPin, Globe, Calendar, Compass, KeyRound, Key, Users, KeySquare, HelpCircle,
+  Landmark, ShieldAlert, FileText, Check, Loader2, Award, ChevronRight
 } from 'lucide-react';
 
 const ROLL_NUMBERS = Array.from({ length: 999 }, (_, i) => String(i + 1).padStart(3, '0'));
@@ -103,7 +104,7 @@ export default function AuthModal({ onLoginSuccess }) {
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      setError('Please upload a valid image file (JPG, PNG, WebP).');
+      setError('Statutory Upload Error: File must be an official image document (JPG, PNG, WebP).');
       return;
     }
 
@@ -134,7 +135,7 @@ export default function AuthModal({ onLoginSuccess }) {
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
 
-        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.8);
+        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.85);
         setFormData(prev => ({ ...prev, profilePhoto: compressedBase64 }));
       };
     };
@@ -147,21 +148,21 @@ export default function AuthModal({ onLoginSuccess }) {
     resetMessages();
 
     if (isAdminMode) {
-      if (!formData.name.trim()) { setError('Admin Name required.'); setLoading(false); return; }
-      if (!formData.password || formData.password.length < 8) { setError('Password minimum 8 characters.'); setLoading(false); return; }
+      if (!formData.name.trim()) { setError('Magistracy Validation: Officer Designation / Admin Name is mandatory.'); setLoading(false); return; }
+      if (!formData.password || formData.password.length < 8) { setError('Security Directive: Executive password must be at least 8 characters.'); setLoading(false); return; }
     } else {
-      if (!formData.studentId.trim()) { setError('Student ID required.'); setLoading(false); return; }
-      if (formData.studentId.trim().length > 13) { setError('Max 13 digits for Student ID.'); setLoading(false); return; }
+      if (!formData.studentId.trim()) { setError('Registry Requirement: Official Student ID Number is mandatory.'); setLoading(false); return; }
+      if (formData.studentId.trim().length > 13) { setError('Statute Limit: Student ID cannot exceed 13 alphanumeric characters.'); setLoading(false); return; }
       if (isRegistering) {
-        if (!formData.rollNo) { setError('Roll Number is required.'); setLoading(false); return; }
-        if (!formData.fatherName.trim()) { setError("Father's Name is required."); setLoading(false); return; }
-        if (!formData.motherName.trim()) { setError("Mother's Name is required."); setLoading(false); return; }
-        if (!formData.dob) { setError('Date of Birth is required.'); setLoading(false); return; }
-        if (!formData.facultyId) { setError('Faculty selection is required.'); setLoading(false); return; }
-        if (!formData.department.trim()) { setError('Department selection is required.'); setLoading(false); return; }
-        if (!formData.university.trim()) { setError('Course / Programme selection is required.'); setLoading(false); return; }
-        if (!formData.session.trim()) { setError('Academic Session is required.'); setLoading(false); return; }
-        if (!formData.mobileNo.trim() || formData.mobileNo.length !== 10) { setError('Valid 10-digit mobile number is required.'); setLoading(false); return; }
+        if (!formData.rollNo) { setError('Registry Requirement: Campus Roll Number selection is mandatory.'); setLoading(false); return; }
+        if (!formData.fatherName.trim()) { setError("Dossier Field Required: Candidate Father's Name is mandatory."); setLoading(false); return; }
+        if (!formData.motherName.trim()) { setError("Dossier Field Required: Candidate Mother's Name is mandatory."); setLoading(false); return; }
+        if (!formData.dob) { setError('Dossier Field Required: Certified Date of Birth is mandatory.'); setLoading(false); return; }
+        if (!formData.facultyId) { setError('Academic Record Required: Faculty Jurisdiction selection is mandatory.'); setLoading(false); return; }
+        if (!formData.department.trim()) { setError('Academic Record Required: Department Branch selection is mandatory.'); setLoading(false); return; }
+        if (!formData.university.trim()) { setError('Academic Record Required: Programme / Degree Course selection is mandatory.'); setLoading(false); return; }
+        if (!formData.session.trim()) { setError('Academic Record Required: Certified Academic Session is mandatory.'); setLoading(false); return; }
+        if (!formData.mobileNo.trim() || formData.mobileNo.length !== 10) { setError('Communication Protocol: A valid 10-digit registered mobile number is required.'); setLoading(false); return; }
       }
     }
 
@@ -194,8 +195,8 @@ export default function AuthModal({ onLoginSuccess }) {
             };
 
         await API.post(endpoint, payload);
-        setSuccessMsg('Registration Successful. Switching to login.');
-        setTimeout(() => { setIsRegistering(false); resetMessages(); }, 1500);
+        setSuccessMsg('Registration Ratified. Candidate dossier committed to Central Ledger. Redirecting to access gate.');
+        setTimeout(() => { setIsRegistering(false); resetMessages(); }, 1600);
       } else {
         const loginPayload = isAdminMode
           ? { name: formData.name.trim(), password: formData.password, role: 'admin' }
@@ -207,7 +208,7 @@ export default function AuthModal({ onLoginSuccess }) {
         onLoginSuccess(data.user);
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Authentication Failed.');
+      setError(err.response?.data?.message || 'Authentication Rejection: Credentials failed validation check against registry.');
     } finally {
       setLoading(false);
     }
@@ -220,9 +221,9 @@ export default function AuthModal({ onLoginSuccess }) {
     try {
       const { data } = await API.post('/auth/forgot-password', { studentId: resetData.studentId });
       setSuccessMsg(data.message);
-      setTimeout(() => { setForgotPasswordStep(2); resetMessages(); }, 3500);
+      setTimeout(() => { setForgotPasswordStep(2); resetMessages(); }, 3000);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to send OTP.');
+      setError(err.response?.data?.message || 'Dispatch Error: Failed to transmit verification token.');
     } finally {
       setLoading(false);
     }
@@ -235,9 +236,9 @@ export default function AuthModal({ onLoginSuccess }) {
     try {
       const { data } = await API.post('/auth/reset-password', resetData);
       setSuccessMsg(data.message);
-      setTimeout(() => { setForgotPasswordStep(0); resetMessages(); }, 2500);
+      setTimeout(() => { setForgotPasswordStep(0); resetMessages(); }, 2200);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to reset.');
+      setError(err.response?.data?.message || 'Verification Error: Failed to overwrite credentials.');
     } finally {
       setLoading(false);
     }
@@ -246,206 +247,408 @@ export default function AuthModal({ onLoginSuccess }) {
   const isOutsidePunjab = formData.domicileState !== 'Punjab';
 
   return (
-    <div className="min-h-screen bg-gray-200 text-gray-900 font-sans selection:bg-blue-900 selection:text-white flex flex-col">
+    <div className="min-h-screen bg-slate-100 text-slate-900 font-sans selection:bg-blue-950 selection:text-white flex flex-col">
 
-      {/* PRIVATE TOP STRIP */}
-      <div className="bg-amber-950 text-white py-1.5 px-4 md:px-8 text-[11px] font-semibold flex justify-between tracking-wide">
-        <div className="uppercase flex items-center gap-1.5">
-          <ShieldCheck className="w-3.5 h-3.5 text-orange-400" />
-          <span>Private &amp; Unofficial Student Utility • Independent Mess Tracker</span>
+      {/* 1. STATE GOVERNMENT & STATUTORY EMBLEM STRIP */}
+      <div className="bg-slate-950 text-slate-300 text-[10px] font-bold px-4 md:px-8 py-2 border-b-2 border-amber-500/80 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-1.5 z-50 select-none">
+        <div className="flex items-center gap-2 uppercase tracking-widest text-slate-200">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span>Government of Punjab • Department of Higher Education</span>
+          <span className="text-slate-600 hidden md:inline">|</span>
+          <span className="text-amber-300 font-black hidden md:inline">Central Residential Cooperative Authority</span>
         </div>
-        <div className="flex gap-4">
-          <button onClick={() => { setIsAdminMode(!isAdminMode); resetMessages(); }} className="hover:underline uppercase text-orange-300 cursor-pointer flex items-center gap-1">
-            {isAdminMode ? <User className="w-3 h-3" /> : <KeyRound className="w-3 h-3" />}
-            {isAdminMode ? 'Switch to Member Portal' : 'Committee Admin Login'}
+        <div>
+          <button 
+            type="button"
+            onClick={() => { setIsAdminMode(!isAdminMode); resetMessages(); }} 
+            className="text-[9px] font-mono font-black uppercase text-amber-400 hover:text-amber-300 transition cursor-pointer flex items-center gap-1.5 bg-slate-900 px-2.5 py-1 border border-amber-500/40"
+          >
+            {isAdminMode ? <User className="w-3 h-3 text-emerald-400" /> : <ShieldCheck className="w-3 h-3 text-amber-400" />}
+            <span>{isAdminMode ? 'Switch to Candidate Gate' : 'Supervisory Magistracy Clearance'}</span>
           </button>
         </div>
       </div>
 
-      {/* PORTAL HEADER */}
-      <div className="bg-white border-b-4 border-orange-600 shadow-sm px-4 py-4 md:px-8 flex flex-col md:flex-row items-center gap-4">
-        <div className="w-16 h-16 bg-blue-900 rounded-full flex items-center justify-center text-white text-xs font-black border-2 border-orange-500 shrink-0 tracking-widest shadow-inner">
-          MESS
+      {/* 2. UNIVERSITY EMBLEM & STATUTORY PORTAL HEADER */}
+      <header className="bg-white border-b-2 border-slate-300 shadow-xs px-4 md:px-8 py-4 flex flex-col md:flex-row items-center gap-4 select-none">
+        <div className="w-16 h-16 bg-gradient-to-br from-blue-950 via-slate-900 to-blue-900 border-2 border-amber-600 rounded-xs flex flex-col items-center justify-center text-white shrink-0 shadow-xs">
+          <Landmark className="w-6 h-6 text-amber-400 mb-0.5" />
+          <span className="text-[6px] font-black tracking-widest text-amber-200 uppercase">SEAL</span>
         </div>
         <div className="text-center md:text-left">
-          <h1 className="text-2xl font-black text-blue-900 uppercase tracking-tight">Student Mess &amp; Diet Ledger System</h1>
-          <h2 className="text-sm font-bold text-gray-600 uppercase">Independent Student Cooperative Committee</h2>
-          <span className="text-[10px] font-bold bg-amber-700 text-white px-2 py-0.5 mt-1 inline-block">Private &amp; Unofficial Utility</span>
+          <div className="flex flex-wrap items-center gap-2 justify-center md:justify-start">
+            <h1 className="text-xl md:text-2xl font-black text-blue-950 uppercase tracking-tight font-serif">
+              Central Student Hostel Mess & Diet Audit Ledger
+            </h1>
+            <span className="text-[8px] font-black uppercase bg-blue-50 text-blue-950 border border-blue-200 px-2 py-0.5 hidden sm:inline-block">
+              Statutory Access Gate
+            </span>
+          </div>
+          <h2 className="text-xs md:text-sm font-bold text-slate-600 uppercase tracking-wide mt-0.5">
+            Independent Student Cooperative Association • Certified Residential Registry
+          </h2>
+          <div className="flex flex-wrap items-center gap-2 mt-1 justify-center md:justify-start">
+            <span className="text-[9px] font-black bg-emerald-800 text-white px-2 py-0.5 uppercase tracking-wider">
+              Statute Enforced
+            </span>
+            <span className="text-[9px] font-mono font-bold bg-slate-100 text-slate-700 border border-slate-300 px-2 py-0.5 uppercase">
+            students mess record & fee portal
+            </span>
+          </div>
         </div>
-      </div>
+      </header>
 
-      <div className="flex-1 flex items-center justify-center p-4 py-10">
-        <div className="bg-white border border-gray-300 w-full max-w-lg shadow-md rounded-sm">
+      {/* 3. MAIN FORM CONTAINER */}
+      <div className="flex-1 flex items-center justify-center p-4 py-8 sm:py-12">
+        <div className="bg-white border-2 border-slate-300 w-full max-w-xl shadow-md border-t-4 border-t-blue-950 relative">
 
-          {/* FORM HEADER */}
-          <div className="bg-gray-100 border-b border-gray-300 px-6 py-4 flex justify-between items-center">
-            <h3 className="text-lg font-bold text-blue-900 uppercase tracking-wide flex items-center gap-2">
-              {forgotPasswordStep > 0 ? (
-                <>
-                  <KeyRound className="w-4 h-4 text-orange-600" /> Password Recovery
-                </>
-              ) : isAdminMode ? (
-                isRegistering ? (
+          {/* FORM TAB HEADER */}
+          <div className="bg-slate-50 border-b border-slate-200 px-6 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 select-none">
+            <div>
+              <h3 className="text-xs sm:text-sm font-black text-blue-950 uppercase tracking-wider flex items-center gap-2 font-serif">
+                {forgotPasswordStep > 0 ? (
                   <>
-                    <UserPlus className="w-4 h-4 text-orange-600" /> Committee Admin Registration
+                    <KeyRound className="w-4 h-4 text-amber-600" />
+                    <span>Statutory Credential Recovery Protocol</span>
+                  </>
+                ) : isAdminMode ? (
+                  isRegistering ? (
+                    <>
+                      <ShieldCheck className="w-4 h-4 text-amber-600" />
+                      <span>Executive Officer Commissioning Register</span>
+                    </>
+                  ) : (
+                    <>
+                      <KeySquare className="w-4 h-4 text-amber-600" />
+                      <span>Executive Magistracy Authentication Gate</span>
+                    </>
+                  )
+                ) : isRegistering ? (
+                  <>
+                    <UserPlus className="w-4 h-4 text-blue-950" />
+                    <span>Candidate Academic & Residential Enrollment</span>
                   </>
                 ) : (
                   <>
-                    <KeyRound className="w-4 h-4 text-orange-600" /> Committee Admin Login
+                    <LogIn className="w-4 h-4 text-blue-950" />
+                    <span>Candidate Ledger Authentication Gate</span>
                   </>
-                )
-              ) : isRegistering ? (
-                <>
-                  <UserPlus className="w-4 h-4 text-blue-900" /> Member Registration Form
-                </>
-              ) : (
-                <>
-                  <LogIn className="w-4 h-4 text-blue-900" /> Member Login Portal
-                </>
-              )}
-            </h3>
+                )}
+              </h3>
+              <p className="text-[9px] font-mono font-bold text-slate-500 uppercase tracking-tight mt-0.5">
+                {isAdminMode ? 'Authorized Committee Personnel Only' : 'Official Autonomous Cooperative Record'}
+              </p>
+            </div>
+
             {forgotPasswordStep === 0 && (
-              <div className="flex text-xs font-bold border border-gray-400 bg-white rounded-sm overflow-hidden">
-                <button type="button" onClick={() => { setIsRegistering(false); resetMessages(); }} className={`px-4 py-1.5 cursor-pointer flex items-center gap-1.5 ${!isRegistering ? 'bg-blue-900 text-white' : 'text-gray-600 hover:bg-gray-50'}`}>
-                  <LogIn className="w-3.5 h-3.5" /> LOGIN
+              <div className="flex text-xs font-black border border-slate-300 bg-slate-200 overflow-hidden shrink-0 shadow-xs">
+                <button 
+                  type="button" 
+                  onClick={() => { setIsRegistering(false); resetMessages(); }} 
+                  className={`px-4 py-1.5 cursor-pointer flex items-center gap-1.5 uppercase transition ${!isRegistering ? 'bg-blue-950 text-white border-b border-amber-400' : 'text-slate-700 hover:bg-slate-100'}`}
+                >
+                  <LogIn className="w-3 h-3" />
+                  <span>LOGIN</span>
                 </button>
-                <button type="button" onClick={() => { setIsRegistering(true); resetMessages(); }} className={`px-4 py-1.5 border-l border-gray-400 cursor-pointer flex items-center gap-1.5 ${isRegistering ? 'bg-blue-900 text-white' : 'text-gray-600 hover:bg-gray-50'}`}>
-                  <UserPlus className="w-3.5 h-3.5" /> REGISTER
+                <button 
+                  type="button" 
+                  onClick={() => { setIsRegistering(true); resetMessages(); }} 
+                  className={`px-4 py-1.5 border-l border-slate-300 cursor-pointer flex items-center gap-1.5 uppercase transition ${isRegistering ? 'bg-blue-950 text-white border-b border-amber-400' : 'text-slate-700 hover:bg-slate-100'}`}
+                >
+                  <UserPlus className="w-3 h-3" />
+                  <span>REGISTER</span>
                 </button>
               </div>
             )}
           </div>
 
-          <div className="p-6 md:p-8 max-h-[75vh] overflow-y-auto">
-            {error && <div className="bg-red-50 border-l-4 border-red-700 text-red-900 px-4 py-3 text-sm mb-6 flex gap-3 font-medium"><AlertCircle className="w-5 h-5 shrink-0" /><span>{error}</span></div>}
-            {successMsg && <div className="bg-green-50 border-l-4 border-green-700 text-green-900 px-4 py-3 text-sm mb-6 flex gap-3 font-medium"><CheckCircle2 className="w-5 h-5 shrink-0" /><span>{successMsg}</span></div>}
+          <div className="p-6 sm:p-8 max-h-[75vh] overflow-y-auto">
+            {error && (
+              <div className="bg-red-50 border-l-4 border-red-800 text-red-950 px-4 py-3 text-xs mb-6 flex gap-3 font-bold uppercase shadow-xs">
+                <AlertCircle className="w-4 h-4 shrink-0 text-red-800 mt-0.5" />
+                <div>
+                  <p className="font-black">Authentication Directive</p>
+                  <p className="font-medium normal-case text-[11px] mt-0.5 text-red-900">{error}</p>
+                </div>
+              </div>
+            )}
+            {successMsg && (
+              <div className="bg-emerald-50 border-l-4 border-emerald-700 text-emerald-950 px-4 py-3 text-xs mb-6 flex gap-3 font-bold uppercase shadow-xs">
+                <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-700 mt-0.5" />
+                <div>
+                  <p className="font-black">Ledger Certified</p>
+                  <p className="font-medium normal-case text-[11px] mt-0.5 text-emerald-900">{successMsg}</p>
+                </div>
+              </div>
+            )}
 
-            {/* FORGOT PASSWORD FLOW */}
+            {/* ========================================================================= */}
+            {/* FORGOT PASSWORD: STEP 1 (STUDENT ID INQUIRY)                              */}
+            {/* ========================================================================= */}
             {forgotPasswordStep === 1 && (
               <form onSubmit={handleRequestOTP} className="space-y-5">
-                <div>
-                  <label className="text-xs font-bold text-gray-700 uppercase flex items-center gap-1.5">
-                    <IdCard className="w-3.5 h-3.5 text-blue-900" /> Student ID Number <span className="text-red-600">*</span>
-                  </label>
-                  <input required type="text" maxLength="13" value={resetData.studentId} onChange={e => setResetData({ ...resetData, studentId: e.target.value })} className="w-full mt-1 border border-gray-400 p-2.5 text-sm focus:outline-none focus:border-blue-900 focus:ring-1 focus:ring-blue-900 rounded-sm" />
+                <div className="bg-amber-50 border border-amber-300 p-3.5 text-xs text-amber-950 mb-2">
+                  <p className="font-bold uppercase font-serif flex items-center gap-1.5 text-[11px]">
+                    <ShieldAlert className="w-4 h-4 text-amber-700" />
+                    <span>Statutory Verification Protocol</span>
+                  </p>
+                  <p className="text-[11px] font-medium mt-1 leading-relaxed text-amber-900">
+                    Enter your certified Student ID Number. A one-time verification password (OTP) will be dispatched to your registered institutional email address on file.
+                  </p>
                 </div>
+
+                <div>
+                  <label className="text-[9px] font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                    <IdCard className="w-3.5 h-3.5 text-blue-950" /> 
+                    <span>Statutory Student ID Number</span> 
+                    <span className="text-red-700">*</span>
+                  </label>
+                  <input 
+                    required 
+                    type="text" 
+                    maxLength="13" 
+                    placeholder="e.g. 2024ECE102"
+                    value={resetData.studentId} 
+                    onChange={e => setResetData({ ...resetData, studentId: e.target.value })} 
+                    className="w-full mt-1 border border-slate-400 p-2.5 text-xs font-mono font-bold text-slate-900 uppercase outline-none focus:border-blue-950 focus:ring-1 focus:ring-blue-950" 
+                  />
+                </div>
+                
                 <div className="flex gap-3 pt-2">
-                  <button type="button" onClick={() => { setForgotPasswordStep(0); resetMessages(); }} className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2.5 text-sm uppercase rounded-sm border border-gray-300 cursor-pointer">Cancel</button>
-                  <button type="submit" disabled={loading} className="flex-1 bg-blue-900 hover:bg-blue-800 text-white font-bold py-2.5 text-sm uppercase rounded-sm cursor-pointer flex items-center justify-center gap-1.5">
-                    <Mail className="w-3.5 h-3.5" />
-                    <span>{loading ? 'Sending...' : 'Request OTP'}</span>
+                  <button 
+                    type="button" 
+                    onClick={() => { setForgotPasswordStep(0); resetMessages(); }} 
+                    className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-800 font-black py-2.5 text-xs uppercase tracking-wider border border-slate-300 cursor-pointer active:scale-95 transition"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit" 
+                    disabled={loading} 
+                    className="flex-1 bg-blue-950 hover:bg-blue-900 text-white font-black py-2.5 text-xs uppercase tracking-widest cursor-pointer flex items-center justify-center gap-1.5 border-b-2 border-amber-500 shadow-xs active:scale-95 disabled:opacity-60 transition"
+                  >
+                    <Mail className="w-3.5 h-3.5 text-amber-400" />
+                    <span>{loading ? 'Dispatching...' : 'Transmit OTP'}</span>
                   </button>
                 </div>
               </form>
             )}
 
+            {/* ========================================================================= */}
+            {/* FORGOT PASSWORD: STEP 2 (OTP VERIFICATION & RESET)                        */}
+            {/* ========================================================================= */}
             {forgotPasswordStep === 2 && (
               <form onSubmit={handleResetPassword} className="space-y-4">
                 <div>
-                  <label className="text-xs font-bold text-gray-700 uppercase flex items-center gap-1.5">
-                    <Key className="w-3.5 h-3.5 text-blue-900" /> 6-Digit OTP <span className="text-red-600">*</span>
+                  <label className="text-[9px] font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                    <Key className="w-3.5 h-3.5 text-blue-950" /> 
+                    <span>6-Digit Verification Token (OTP)</span> 
+                    <span className="text-red-700">*</span>
                   </label>
-                  <input required type="text" maxLength="6" value={resetData.otp} onChange={e => setResetData({ ...resetData, otp: e.target.value.replace(/\D/g, '') })} className="w-full mt-1 border border-gray-400 p-2.5 text-sm font-bold tracking-widest focus:border-blue-900 focus:ring-1 focus:ring-blue-900 rounded-sm" />
+                  <input 
+                    required 
+                    type="text" 
+                    maxLength="6" 
+                    placeholder="000000"
+                    value={resetData.otp} 
+                    onChange={e => setResetData({ ...resetData, otp: e.target.value.replace(/\D/g, '') })} 
+                    className="w-full mt-1 border border-slate-400 p-2.5 text-sm font-mono font-black tracking-widest text-slate-900 outline-none focus:border-blue-950 focus:ring-1 focus:ring-blue-950 text-center" 
+                  />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-gray-700 uppercase flex items-center gap-1.5">
-                    <Lock className="w-3.5 h-3.5 text-blue-900" /> New Password <span className="text-red-600">*</span>
+                  <label className="text-[9px] font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                    <Lock className="w-3.5 h-3.5 text-blue-950" /> 
+                    <span>New Account Password</span> 
+                    <span className="text-red-700">*</span>
                   </label>
-                  <input required type="password" value={resetData.newPassword} onChange={e => setResetData({ ...resetData, newPassword: e.target.value })} className="w-full mt-1 border border-gray-400 p-2.5 text-sm focus:border-blue-900 focus:ring-1 focus:ring-blue-900 rounded-sm" />
+                  <input 
+                    required 
+                    type="password" 
+                    placeholder="Min. 8 characters"
+                    value={resetData.newPassword} 
+                    onChange={e => setResetData({ ...resetData, newPassword: e.target.value })} 
+                    className="w-full mt-1 border border-slate-400 p-2.5 text-xs font-bold text-slate-900 outline-none focus:border-blue-950 focus:ring-1 focus:ring-blue-950" 
+                  />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-gray-700 uppercase flex items-center gap-1.5">
-                    <ShieldCheck className="w-3.5 h-3.5 text-blue-900" /> Confirm Password <span className="text-red-600">*</span>
+                  <label className="text-[9px] font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                    <ShieldCheck className="w-3.5 h-3.5 text-blue-950" /> 
+                    <span>Confirm New Password</span> 
+                    <span className="text-red-700">*</span>
                   </label>
-                  <input required type="password" value={resetData.confirmPassword} onChange={e => setResetData({ ...resetData, confirmPassword: e.target.value })} className="w-full mt-1 border border-gray-400 p-2.5 text-sm focus:border-blue-900 focus:ring-1 focus:ring-blue-900 rounded-sm" />
+                  <input 
+                    required 
+                    type="password" 
+                    placeholder="Re-enter password"
+                    value={resetData.confirmPassword} 
+                    onChange={e => setResetData({ ...resetData, confirmPassword: e.target.value })} 
+                    className="w-full mt-1 border border-slate-400 p-2.5 text-xs font-bold text-slate-900 outline-none focus:border-blue-950 focus:ring-1 focus:ring-blue-950" 
+                  />
                 </div>
-                <button type="submit" disabled={loading} className="w-full mt-2 bg-green-700 hover:bg-green-800 text-white font-bold py-3 text-sm uppercase rounded-sm cursor-pointer flex items-center justify-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>{loading ? 'Resetting...' : 'Submit & Reset'}</span>
+                <button 
+                  type="submit" 
+                  disabled={loading} 
+                  className="w-full mt-2 bg-emerald-800 hover:bg-emerald-700 text-white font-black py-3 text-xs uppercase tracking-widest cursor-pointer flex items-center justify-center gap-1.5 border-b-2 border-emerald-950 shadow-xs active:scale-95 disabled:opacity-60 transition"
+                >
+                  <CheckCircle2 className="w-4 h-4 text-emerald-200" />
+                  <span>{loading ? 'Ratifying...' : 'Authenticate & Reset Key'}</span>
                 </button>
               </form>
             )}
 
-            {/* NORMAL LOGIN / REGISTER FLOW */}
+            {/* ========================================================================= */}
+            {/* NORMAL LOGIN / REGISTRATION WORKFLOW                                      */}
+            {/* ========================================================================= */}
             {forgotPasswordStep === 0 && (
               <form onSubmit={handleSubmit} className="space-y-4">
+                
+                {/* 1. ADMIN MODE FIELDS */}
                 {isAdminMode ? (
                   <>
+                    <div className="bg-slate-50 border border-slate-300 p-3 mb-2">
+                      <span className="text-[9px] font-black text-amber-800 uppercase tracking-wider flex items-center gap-1">
+                        <ShieldAlert className="w-3.5 h-3.5" />
+                        <span>Executive Council Security Clearances Enforced</span>
+                      </span>
+                    </div>
+
                     <div>
-                      <label className="text-xs font-bold text-gray-700 uppercase flex items-center gap-1.5">
-                        <User className="w-3.5 h-3.5 text-orange-600" /> Designation / Admin Name <span className="text-red-600">*</span>
+                      <label className="text-[9px] font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                        <User className="w-3.5 h-3.5 text-amber-700" /> 
+                        <span>Officer Commission / Name</span> 
+                        <span className="text-red-700">*</span>
                       </label>
-                      <input required type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="w-full mt-1 border border-gray-400 p-2.5 text-sm focus:border-blue-900 focus:ring-1 focus:ring-blue-900 rounded-sm" />
+                      <input 
+                        required 
+                        type="text" 
+                        placeholder="e.g. Chief Warden Office"
+                        value={formData.name} 
+                        onChange={e => setFormData({ ...formData, name: e.target.value })} 
+                        className="w-full mt-1 border border-slate-400 p-2.5 text-xs font-bold text-slate-900 uppercase outline-none focus:border-blue-950 focus:ring-1 focus:ring-blue-950" 
+                      />
                     </div>
                     <div>
-                      <label className="text-xs font-bold text-gray-700 uppercase flex items-center gap-1.5">
-                        <Lock className="w-3.5 h-3.5 text-orange-600" /> Secure Password <span className="text-red-600">*</span>
+                      <label className="text-[9px] font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                        <Lock className="w-3.5 h-3.5 text-amber-700" /> 
+                        <span>Executive Password</span> 
+                        <span className="text-red-700">*</span>
                       </label>
-                      <input required type="password" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} className="w-full mt-1 border border-gray-400 p-2.5 text-sm focus:border-blue-900 focus:ring-1 focus:ring-blue-900 rounded-sm" />
+                      <input 
+                        required 
+                        type="password" 
+                        placeholder="••••••••"
+                        value={formData.password} 
+                        onChange={e => setFormData({ ...formData, password: e.target.value })} 
+                        className="w-full mt-1 border border-slate-400 p-2.5 text-xs font-bold text-slate-900 outline-none focus:border-blue-950 focus:ring-1 focus:ring-blue-950" 
+                      />
                     </div>
                     {isRegistering && (
-                      <div className="bg-orange-50 border border-orange-200 p-4 mt-2 rounded-sm">
-                        <label className="text-xs font-bold text-orange-900 uppercase flex items-center gap-1.5">
-                          <KeySquare className="w-3.5 h-3.5 text-orange-700" /> Authorization Secret Code <span className="text-red-600">*</span>
+                      <div className="bg-amber-50 border-2 border-amber-400 p-4 mt-2">
+                        <label className="text-[9px] font-black text-amber-950 uppercase tracking-wider flex items-center gap-1.5">
+                          <KeySquare className="w-3.5 h-3.5 text-amber-800" /> 
+                          <span>Council Authorization Secret Code</span> 
+                          <span className="text-red-700">*</span>
                         </label>
-                        <input required type="password" value={formData.adminSecret} onChange={e => setFormData({ ...formData, adminSecret: e.target.value })} className="w-full mt-1 border border-orange-400 p-2.5 text-sm focus:border-orange-600 rounded-sm" />
+                        <input 
+                          required 
+                          type="password" 
+                          placeholder="Institutional clearance code"
+                          value={formData.adminSecret} 
+                          onChange={e => setFormData({ ...formData, adminSecret: e.target.value })} 
+                          className="w-full mt-1 border border-amber-500 p-2.5 text-xs font-bold text-slate-900 outline-none focus:border-amber-700 bg-white" 
+                        />
+                        <p className="text-[9px] text-amber-900 mt-1 uppercase font-semibold">
+                          * Code issued exclusively by the University Registrar and Directorate of Hostels.
+                        </p>
                       </div>
                     )}
                   </>
                 ) : (
                   <>
+                    {/* 2. STUDENT REGISTRATION FORM */}
                     {isRegistering && (
                       <>
-                        {/* PHOTO UPLOAD BOX */}
-                        <div className="border border-gray-300 p-3 bg-gray-50 flex items-center gap-4">
-                          <div className="w-16 h-16 bg-gray-200 border-2 border-blue-900 overflow-hidden flex items-center justify-center shrink-0">
+                        {/* MEMBER PHOTOGRAPH */}
+                        <div className="border border-slate-300 p-3.5 bg-slate-50 flex items-center gap-4">
+                          <div className="w-16 h-16 bg-slate-200 border-2 border-blue-950 overflow-hidden flex items-center justify-center shrink-0 shadow-xs">
                             {formData.profilePhoto ? (
                               <img src={formData.profilePhoto} alt="Upload Preview" className="w-full h-full object-cover" />
                             ) : (
-                              <User className="w-8 h-8 text-gray-400" />
+                              <User className="w-8 h-8 text-slate-400" />
                             )}
                           </div>
                           <div>
-                            <label className="text-xs font-bold text-gray-800 uppercase block mb-1 flex items-center gap-1.5">
-                              <Camera className="w-3.5 h-3.5 text-blue-900" /> Member Photograph <span className="text-red-600">*</span>
+                            <label className="text-[9px] font-black text-slate-800 uppercase block mb-1 flex items-center gap-1.5">
+                              <Camera className="w-3.5 h-3.5 text-blue-950" /> 
+                              <span>Certified Candidate Photograph</span> 
+                              <span className="text-red-700">*</span>
                             </label>
-                            <label className="inline-flex items-center gap-1.5 bg-blue-900 hover:bg-blue-800 text-white px-3 py-1.5 text-[11px] font-bold uppercase rounded-xs cursor-pointer shadow-xs">
-                              <ImagePlus className="w-3.5 h-3.5" />
-                              <span>{formData.profilePhoto ? 'Change Image' : 'Select Photo'}</span>
+                            <label className="inline-flex items-center gap-1.5 bg-blue-950 hover:bg-blue-900 text-white px-3 py-1.5 text-[10px] font-black uppercase cursor-pointer border-b border-amber-500 shadow-xs active:scale-95 transition">
+                              <ImagePlus className="w-3.5 h-3.5 text-amber-400" />
+                              <span>{formData.profilePhoto ? 'Replace Photograph' : 'Upload Certified Image'}</span>
                               <input type="file" accept="image/*" required={!formData.profilePhoto} className="hidden" onChange={handlePhotoUpload} />
                             </label>
-                            <p className="text-[9px] text-gray-500 uppercase mt-1">Automatic compression enabled (Max 400px)</p>
+                            <p className="text-[8px] font-mono text-slate-500 uppercase mt-1">Automatic canvas scaling (400px JPEG standard)</p>
                           </div>
                         </div>
 
                         <div>
-                          <label className="text-xs font-bold text-gray-700 uppercase flex items-center gap-1.5">
-                            <User className="w-3.5 h-3.5 text-blue-900" /> Candidate Full Name <span className="text-red-600">*</span>
+                          <label className="text-[9px] font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                            <User className="w-3.5 h-3.5 text-blue-950" /> 
+                            <span>Candidate Full Name</span> 
+                            <span className="text-red-700">*</span>
                           </label>
-                          <input required type="text" placeholder="e.g. Lovepreet Singh" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="w-full mt-1 border border-gray-400 p-2.5 text-sm uppercase focus:border-blue-900 focus:ring-1 focus:ring-blue-900 rounded-sm" />
+                          <input 
+                            required 
+                            type="text" 
+                            placeholder="e.g. Lovepreet Singh" 
+                            value={formData.name} 
+                            onChange={e => setFormData({ ...formData, name: e.target.value })} 
+                            className="w-full mt-1 border border-slate-400 p-2.5 text-xs font-bold text-slate-900 uppercase outline-none focus:border-blue-950 focus:ring-1 focus:ring-blue-950" 
+                          />
                         </div>
 
-                        {/* PARENTAL DETAILS */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {/* PARENTAL RECORD PARTICULARS */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                           <div>
-                            <label className="text-xs font-bold text-gray-700 uppercase flex items-center gap-1.5">
-                              <User className="w-3.5 h-3.5 text-blue-900" /> Father's Name <span className="text-red-600">*</span>
+                            <label className="text-[9px] font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                              <User className="w-3.5 h-3.5 text-blue-950" /> 
+                              <span>Father's Name</span> 
+                              <span className="text-red-700">*</span>
                             </label>
-                            <input required type="text" placeholder="e.g. Gurdeep Singh" value={formData.fatherName} onChange={e => setFormData({ ...formData, fatherName: e.target.value })} className="w-full mt-1 border border-gray-400 p-2.5 text-sm uppercase focus:border-blue-900 rounded-sm" />
+                            <input 
+                              required 
+                              type="text" 
+                              placeholder="e.g. Gurdeep Singh" 
+                              value={formData.fatherName} 
+                              onChange={e => setFormData({ ...formData, fatherName: e.target.value })} 
+                              className="w-full mt-1 border border-slate-400 p-2.5 text-xs font-bold text-slate-900 uppercase outline-none focus:border-blue-950" 
+                            />
                           </div>
                           <div>
-                            <label className="text-xs font-bold text-gray-700 uppercase flex items-center gap-1.5">
-                              <Users className="w-3.5 h-3.5 text-blue-900" /> Mother's Name <span className="text-red-600">*</span>
+                            <label className="text-[9px] font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                              <Users className="w-3.5 h-3.5 text-blue-950" /> 
+                              <span>Mother's Name</span> 
+                              <span className="text-red-700">*</span>
                             </label>
-                            <input required type="text" placeholder="e.g. Harpreet Kaur" value={formData.motherName} onChange={e => setFormData({ ...formData, motherName: e.target.value })} className="w-full mt-1 border border-gray-400 p-2.5 text-sm uppercase focus:border-blue-900 rounded-sm" />
+                            <input 
+                              required 
+                              type="text" 
+                              placeholder="e.g. Harpreet Kaur" 
+                              value={formData.motherName} 
+                              onChange={e => setFormData({ ...formData, motherName: e.target.value })} 
+                              className="w-full mt-1 border border-slate-400 p-2.5 text-xs font-bold text-slate-900 uppercase outline-none focus:border-blue-950" 
+                            />
                           </div>
                         </div>
 
                         {/* DOB & NATIONALITY */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                           <div>
-                            <label className="text-xs font-bold text-gray-700 uppercase flex items-center gap-1.5">
-                              <Calendar className="w-3.5 h-3.5 text-blue-900" /> Date of Birth <span className="text-red-600">*</span>
+                            <label className="text-[9px] font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                              <Calendar className="w-3.5 h-3.5 text-blue-950" /> 
+                              <span>Date of Birth</span> 
+                              <span className="text-red-700">*</span>
                             </label>
                             <input 
                               required 
@@ -453,115 +656,136 @@ export default function AuthModal({ onLoginSuccess }) {
                               max="2010-12-31"
                               value={formData.dob} 
                               onChange={e => setFormData({ ...formData, dob: e.target.value })} 
-                              className="w-full mt-1 border border-gray-400 p-2 text-sm bg-white focus:border-blue-900 focus:ring-1 focus:ring-blue-900 rounded-sm cursor-pointer" 
+                              className="w-full mt-1 border border-slate-400 p-2 text-xs font-mono font-bold bg-white outline-none focus:border-blue-950 cursor-pointer" 
                             />
                           </div>
                           <div>
-                            <label className="text-xs font-bold text-gray-700 uppercase flex items-center gap-1.5">
-                              <Globe className="w-3.5 h-3.5 text-blue-900" /> Nationality <span className="text-red-600">*</span>
+                            <label className="text-[9px] font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                              <Globe className="w-3.5 h-3.5 text-blue-950" /> 
+                              <span>Nationality</span> 
+                              <span className="text-red-700">*</span>
                             </label>
                             <select
                               required
                               value={formData.nationality}
                               onChange={e => setFormData({ ...formData, nationality: e.target.value })}
-                              className="w-full mt-1 border border-gray-400 p-2.5 text-sm bg-white uppercase focus:border-blue-900 rounded-sm cursor-pointer"
+                              className="w-full mt-1 border border-slate-400 p-2 text-xs font-bold bg-white uppercase outline-none focus:border-blue-950 cursor-pointer"
                             >
                               {WORLD_COUNTRIES.map(country => (
-                                <option key={country} value={country}>
-                                  {country}
-                                </option>
+                                <option key={country} value={country}>{country}</option>
                               ))}
                             </select>
                           </div>
                         </div>
 
+                        {/* REGISTERED EMAIL ID */}
                         <div>
-                          <label className="text-xs font-bold text-gray-700 uppercase flex items-center gap-1.5">
-                            <Mail className="w-3.5 h-3.5 text-blue-900" /> Registered Email ID <span className="text-red-600">*</span>
+                          <label className="text-[9px] font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                            <Mail className="w-3.5 h-3.5 text-blue-950" /> 
+                            <span>Registered Email Address</span> 
+                            <span className="text-red-700">*</span>
                           </label>
-                          <input required type="email" placeholder="student@mess.coop" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} className="w-full mt-1 border border-gray-400 p-2.5 text-sm focus:border-blue-900 focus:ring-1 focus:ring-blue-900 rounded-sm" />
-                          <p className="text-[10px] font-bold text-red-600 mt-1 uppercase tracking-tight flex items-center gap-1">
-                            <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                            <span>Important: Enter an active, accurate email address. It is strictly required to receive OTP for password recovery.</span>
+                          <input 
+                            required 
+                            type="email" 
+                            placeholder="candidate@academic.gndu.ac.in" 
+                            value={formData.email} 
+                            onChange={e => setFormData({ ...formData, email: e.target.value })} 
+                            className="w-full mt-1 border border-slate-400 p-2.5 text-xs font-bold text-slate-900 outline-none focus:border-blue-950" 
+                          />
+                          <p className="text-[9px] font-bold text-amber-800 mt-1 uppercase tracking-tight flex items-center gap-1 font-mono">
+                            <AlertCircle className="w-3 h-3 shrink-0" />
+                            <span>Binding: Recovery tokens are routed strictly to this certified address.</span>
                           </p>
                         </div>
                       </>
                     )}
 
+                    {/* STUDENT ID INPUT (LOGIN & REGISTRATION) */}
                     <div>
-                      <label className="text-xs font-bold text-gray-700 uppercase flex items-center gap-1.5">
-                        <IdCard className="w-3.5 h-3.5 text-blue-900" /> Student ID Number <span className="text-red-600">*</span>
+                      <label className="text-[9px] font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                        <IdCard className="w-3.5 h-3.5 text-blue-950" /> 
+                        <span>Statutory Student ID Number</span> 
+                        <span className="text-red-700">*</span>
                       </label>
-                      <input required type="text" maxLength="13" placeholder="e.g. 2024ECE102" value={formData.studentId} onChange={e => setFormData({ ...formData, studentId: e.target.value })} className="w-full mt-1 border border-gray-400 p-2.5 text-sm uppercase focus:border-blue-900 focus:ring-1 focus:ring-blue-900 rounded-sm" />
+                      <input 
+                        required 
+                        type="text" 
+                        maxLength="13" 
+                        placeholder="e.g. 2024ECE102" 
+                        value={formData.studentId} 
+                        onChange={e => setFormData({ ...formData, studentId: e.target.value })} 
+                        className="w-full mt-1 border border-slate-400 p-2.5 text-xs font-mono font-bold text-slate-900 uppercase outline-none focus:border-blue-950 focus:ring-1 focus:ring-blue-950" 
+                      />
                     </div>
 
                     {isRegistering && (
                       <>
                         {/* 3-TIER HIERARCHY SELECTORS */}
-                        <div className="space-y-4">
+                        <div className="space-y-3.5 border border-slate-300 p-3.5 bg-slate-50">
                           <div>
-                            <label className="text-xs font-bold text-gray-700 uppercase flex items-center gap-1.5">
-                              <Compass className="w-3.5 h-3.5 text-blue-900" /> 1. Select Faculty <span className="text-red-600">*</span>
+                            <label className="text-[9px] font-black text-blue-950 uppercase tracking-wider flex items-center gap-1.5">
+                              <Compass className="w-3.5 h-3.5 text-blue-950" /> 
+                              <span>1. Select Faculty Jurisdiction</span> 
+                              <span className="text-red-700">*</span>
                             </label>
                             <select
                               required
                               value={formData.facultyId}
                               onChange={e => handleFacultyChange(e.target.value)}
-                              className="w-full mt-1 border border-gray-400 p-2.5 text-xs bg-white uppercase focus:border-blue-900 rounded-sm cursor-pointer"
+                              className="w-full mt-1 border border-slate-400 p-2 text-xs font-bold bg-white uppercase outline-none focus:border-blue-950 cursor-pointer"
                             >
-                              <option value="">-- SELECT FACULTY --</option>
+                              <option value="">-- SELECT FACULTY JURISDICTION --</option>
                               {UNIVERSITY_FACULTIES_HIERARCHY.map(f => (
-                                <option key={f.id} value={f.id}>
-                                  {f.name}
-                                </option>
+                                <option key={f.id} value={f.id}>{f.name}</option>
                               ))}
                             </select>
                           </div>
 
                           <div>
-                            <label className="text-xs font-bold text-gray-700 uppercase flex items-center gap-1.5">
-                              <BookOpen className="w-3.5 h-3.5 text-blue-900" /> 2. Select Department <span className="text-red-600">*</span>
+                            <label className="text-[9px] font-black text-blue-950 uppercase tracking-wider flex items-center gap-1.5">
+                              <BookOpen className="w-3.5 h-3.5 text-blue-950" /> 
+                              <span>2. Select Department Branch</span> 
+                              <span className="text-red-700">*</span>
                             </label>
                             <select
                               required
                               disabled={!formData.facultyId}
                               value={formData.department}
                               onChange={e => handleDepartmentChange(e.target.value)}
-                              className={`w-full mt-1 border border-gray-400 p-2.5 text-xs uppercase rounded-sm ${
+                              className={`w-full mt-1 border border-slate-400 p-2 text-xs font-bold uppercase ${
                                 !formData.facultyId 
-                                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                                  : 'bg-white focus:border-blue-900 cursor-pointer'
+                                  ? 'bg-slate-100 text-slate-400 cursor-not-allowed' 
+                                  : 'bg-white focus:border-blue-950 cursor-pointer'
                               }`}
                             >
                               <option value="">{formData.facultyId ? '-- SELECT DEPARTMENT --' : '-- FIRST CHOOSE FACULTY --'}</option>
                               {availableDepartments.map((dept, idx) => (
-                                <option key={idx} value={dept.name}>
-                                  {dept.name}
-                                </option>
+                                <option key={idx} value={dept.name}>{dept.name}</option>
                               ))}
                             </select>
                           </div>
 
                           <div>
-                            <label className="text-xs font-bold text-gray-700 uppercase flex items-center gap-1.5">
-                              <GraduationCap className="w-3.5 h-3.5 text-blue-900" /> 3. Course / Programme Name <span className="text-red-600">*</span>
+                            <label className="text-[9px] font-black text-blue-950 uppercase tracking-wider flex items-center gap-1.5">
+                              <GraduationCap className="w-3.5 h-3.5 text-blue-950" /> 
+                              <span>3. Course / Degree Programme</span> 
+                              <span className="text-red-700">*</span>
                             </label>
                             <select
                               required
                               disabled={!formData.department}
                               value={formData.university}
                               onChange={e => setFormData({ ...formData, university: e.target.value })}
-                              className={`w-full mt-1 border border-gray-400 p-2.5 text-sm uppercase rounded-sm ${
+                              className={`w-full mt-1 border border-slate-400 p-2 text-xs font-bold uppercase ${
                                 !formData.department 
-                                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                                  : 'bg-white focus:border-blue-900 cursor-pointer'
+                                  ? 'bg-slate-100 text-slate-400 cursor-not-allowed' 
+                                  : 'bg-white focus:border-blue-950 cursor-pointer'
                               }`}
                             >
-                              <option value="">{formData.department ? '-- SELECT COURSE / DEGREE --' : '-- FIRST CHOOSE DEPARTMENT --'}</option>
+                              <option value="">{formData.department ? '-- SELECT DEGREE COURSE --' : '-- FIRST CHOOSE DEPARTMENT --'}</option>
                               {availableProgrammes.map(course => (
-                                <option key={course.id} value={course.name}>
-                                  [{course.id}] {course.name}
-                                </option>
+                                <option key={course.id} value={course.name}>[{course.id}] {course.name}</option>
                               ))}
                             </select>
                           </div>
@@ -569,55 +793,57 @@ export default function AuthModal({ onLoginSuccess }) {
 
                         {/* ACADEMIC SESSION */}
                         <div>
-                          <label className="text-xs font-bold text-gray-700 uppercase flex items-center gap-1.5">
-                            <Layers className="w-3.5 h-3.5 text-blue-900" /> Academic Session <span className="text-red-600">*</span>
+                          <label className="text-[9px] font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                            <Layers className="w-3.5 h-3.5 text-blue-950" /> 
+                            <span>Academic Session Batch</span> 
+                            <span className="text-red-700">*</span>
                           </label>
                           <select
                             required
                             value={formData.session}
                             onChange={e => setFormData({ ...formData, session: e.target.value })}
-                            className="w-full mt-1 border border-gray-400 p-2.5 text-xs bg-white uppercase focus:border-blue-900 rounded-sm cursor-pointer"
+                            className="w-full mt-1 border border-slate-400 p-2 text-xs font-mono font-bold bg-white uppercase outline-none focus:border-blue-950 cursor-pointer"
                           >
                             <option value="">-- SELECT ACADEMIC SESSION --</option>
                             {ACADEMIC_SESSIONS.map(s => (
-                              <option key={s.id} value={s.id}>
-                                {s.name}
-                              </option>
+                              <option key={s.id} value={s.id}>{s.name}</option>
                             ))}
                           </select>
                         </div>
 
                         {/* DOMICILE STATE & SOCIAL CATEGORY */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                           <div>
-                            <label className="text-xs font-bold text-gray-700 uppercase flex items-center gap-1.5">
-                              <MapPin className="w-3.5 h-3.5 text-blue-900" /> Domicile State <span className="text-red-600">*</span>
+                            <label className="text-[9px] font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                              <MapPin className="w-3.5 h-3.5 text-blue-950" /> 
+                              <span>State of Domicile</span> 
+                              <span className="text-red-700">*</span>
                             </label>
                             <select
                               required
                               value={formData.domicileState}
                               onChange={e => handleStateChange(e.target.value)}
-                              className="w-full mt-1 border border-gray-400 p-2.5 text-sm bg-white uppercase focus:border-blue-900 rounded-sm cursor-pointer"
+                              className="w-full mt-1 border border-slate-400 p-2 text-xs font-bold bg-white uppercase outline-none focus:border-blue-950 cursor-pointer"
                             >
                               {INDIAN_STATES.map(st => (
-                                <option key={st} value={st}>
-                                  {st}
-                                </option>
+                                <option key={st} value={st}>{st}</option>
                               ))}
                             </select>
                           </div>
                           <div>
-                            <label className="text-xs font-bold text-gray-700 uppercase flex items-center gap-1.5">
-                              <ShieldCheck className="w-3.5 h-3.5 text-blue-900" /> Category <span className="text-red-600">*</span>
+                            <label className="text-[9px] font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                              <ShieldCheck className="w-3.5 h-3.5 text-blue-950" /> 
+                              <span>Social Category</span> 
+                              <span className="text-red-700">*</span>
                             </label>
                             <select
                               value={formData.category}
                               disabled={isOutsidePunjab}
                               onChange={e => setFormData({ ...formData, category: e.target.value })}
-                              className={`w-full mt-1 border border-gray-400 p-2.5 text-sm uppercase rounded-sm ${
+                              className={`w-full mt-1 border border-slate-400 p-2 text-xs font-bold uppercase ${
                                 isOutsidePunjab
-                                  ? 'bg-gray-100 text-gray-500 cursor-not-allowed border-gray-300'
-                                  : 'bg-white text-gray-900 focus:border-blue-900 cursor-pointer'
+                                  ? 'bg-slate-100 text-slate-500 cursor-not-allowed border-slate-300'
+                                  : 'bg-white text-slate-900 focus:border-blue-950 cursor-pointer'
                               }`}
                             >
                               <option value="General">General</option>
@@ -627,96 +853,153 @@ export default function AuthModal({ onLoginSuccess }) {
                               <option value="Other">Other</option>
                             </select>
                             {isOutsidePunjab ? (
-                              <p className="text-[10px] font-bold text-amber-700 mt-1 uppercase tracking-tight">
-                                * Out-of-Punjab candidates are treated as General category by state norms.
+                              <p className="text-[8px] font-bold text-amber-800 mt-1 uppercase tracking-tight font-mono">
+                                * Out-of-state candidates are classified as General by state norm.
                               </p>
                             ) : (
-                              <p className="text-[10px] text-gray-500 mt-1 uppercase">
-                                Punjab Domicile: Select your state reservation category.
+                              <p className="text-[8px] text-slate-500 mt-1 uppercase font-mono">
+                                Punjab Domicile: Select approved reservation quota.
                               </p>
                             )}
                           </div>
                         </div>
 
-                        {/* ROLL NUMBER (001 TO 999) & RESIDENCE HALL */}
-                        <div className="grid grid-cols-2 gap-4">
+                        {/* ROLL NUMBER & RESIDENCE HALL ALLOTMENT */}
+                        <div className="grid grid-cols-2 gap-3.5">
                           <div>
-                            <label className="text-xs font-bold text-gray-700 uppercase flex items-center gap-1.5">
-                              <Hash className="w-3.5 h-3.5 text-blue-900" /> Roll Number <span className="text-red-600">*</span>
+                            <label className="text-[9px] font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                              <Hash className="w-3.5 h-3.5 text-blue-950" /> 
+                              <span>Campus Roll Number</span> 
+                              <span className="text-red-700">*</span>
                             </label>
                             <select
                               required
                               value={formData.rollNo}
                               onChange={e => setFormData({ ...formData, rollNo: e.target.value })}
-                              className="w-full mt-1 border border-gray-400 p-2.5 text-sm bg-white uppercase focus:border-blue-900 rounded-sm cursor-pointer"
+                              className="w-full mt-1 border border-slate-400 p-2 text-xs font-mono font-bold bg-white uppercase outline-none focus:border-blue-950 cursor-pointer"
                             >
                               <option value="">-- ROLL (001-999) --</option>
                               {ROLL_NUMBERS.map(num => (
-                                <option key={num} value={num}>
-                                  {num}
-                                </option>
+                                <option key={num} value={num}>{num}</option>
                               ))}
                             </select>
                           </div>
                           <div>
-                            <label className="text-xs font-bold text-gray-700 uppercase flex items-center gap-1.5">
-                              <Building2 className="w-3.5 h-3.5 text-blue-900" /> Residence Hall <span className="text-red-600">*</span>
+                            <label className="text-[9px] font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                              <Building2 className="w-3.5 h-3.5 text-blue-950" /> 
+                              <span>Residence Hall</span> 
+                              <span className="text-red-700">*</span>
                             </label>
-                            <select value={formData.hostelNo} onChange={e => setFormData({ ...formData, hostelNo: e.target.value })} className="w-full mt-1 border border-gray-400 p-2.5 text-sm bg-white focus:border-blue-900 rounded-sm cursor-pointer">
-                              {hostels.length > 0 ? hostels.map(h => <option key={h._id} value={h.hostelNumber}>{h.hostelNumber} ({h.type.toUpperCase()})</option>) : <><option value="BH1">BH1</option><option value="GH1">GH1</option></>}
+                            <select 
+                              value={formData.hostelNo} 
+                              onChange={e => setFormData({ ...formData, hostelNo: e.target.value })} 
+                              className="w-full mt-1 border border-slate-400 p-2 text-xs font-bold bg-white uppercase outline-none focus:border-blue-950 cursor-pointer"
+                            >
+                              {hostels.length > 0 ? (
+                                hostels.map(h => (
+                                  <option key={h._id} value={h.hostelNumber}>{h.hostelNumber} ({h.type.toUpperCase()})</option>
+                                ))
+                              ) : (
+                                <>
+                                  <option value="BH1">BH1 (BOYS 1)</option>
+                                  <option value="GH1">GH1 (GIRLS 1)</option>
+                                </>
+                              )}
                             </select>
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        {/* GENDER & MOBILE NUMBER */}
+                        <div className="grid grid-cols-2 gap-3.5">
                           <div>
-                            <label className="text-xs font-bold text-gray-700 uppercase flex items-center gap-1.5">
-                              <User className="w-3.5 h-3.5 text-blue-900" /> Gender <span className="text-red-600">*</span>
+                            <label className="text-[9px] font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                              <User className="w-3.5 h-3.5 text-blue-950" /> 
+                              <span>Candidate Gender</span> 
+                              <span className="text-red-700">*</span>
                             </label>
-                            <select value={formData.gender} onChange={e => setFormData({ ...formData, gender: e.target.value })} className="w-full mt-1 border border-gray-400 p-2.5 text-sm bg-white focus:border-blue-900 rounded-sm cursor-pointer">
-                              <option value="Male">Male</option><option value="Female">Female</option><option value="Other">Other</option>
+                            <select 
+                              value={formData.gender} 
+                              onChange={e => setFormData({ ...formData, gender: e.target.value })} 
+                              className="w-full mt-1 border border-slate-400 p-2 text-xs font-bold bg-white uppercase outline-none focus:border-blue-950 cursor-pointer"
+                            >
+                              <option value="Male">Male</option>
+                              <option value="Female">Female</option>
+                              <option value="Other">Other</option>
                             </select>
                           </div>
                           <div>
-                            <label className="text-xs font-bold text-gray-700 uppercase flex items-center gap-1.5">
-                              <Phone className="w-3.5 h-3.5 text-blue-900" /> Mobile No. <span className="text-red-600">*</span>
+                            <label className="text-[9px] font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                              <Phone className="w-3.5 h-3.5 text-blue-950" /> 
+                              <span>Mobile Protocol</span> 
+                              <span className="text-red-700">*</span>
                             </label>
-                            <input required type="tel" maxLength="10" placeholder="10-digit mobile" value={formData.mobileNo} onChange={e => setFormData({ ...formData, mobileNo: e.target.value.replace(/\D/g, '') })} className="w-full mt-1 border border-gray-400 p-2.5 text-sm focus:border-blue-900 rounded-sm" />
+                            <input 
+                              required 
+                              type="tel" 
+                              maxLength="10" 
+                              placeholder="10-digit number" 
+                              value={formData.mobileNo} 
+                              onChange={e => setFormData({ ...formData, mobileNo: e.target.value.replace(/\D/g, '') })} 
+                              className="w-full mt-1 border border-slate-400 p-2 text-xs font-mono font-bold text-slate-900 outline-none focus:border-blue-950" 
+                            />
                           </div>
                         </div>
                       </>
                     )}
 
+                    {/* ACCOUNT PASSWORD INPUT */}
                     <div>
-                      <label className="text-xs font-bold text-gray-700 uppercase flex items-center gap-1.5">
-                        <Lock className="w-3.5 h-3.5 text-blue-900" /> Account Password <span className="text-red-600">*</span>
+                      <label className="text-[9px] font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                        <Lock className="w-3.5 h-3.5 text-blue-950" /> 
+                        <span>Account Access Key</span> 
+                        <span className="text-red-700">*</span>
                       </label>
-                      <input required type="password" placeholder="••••••••" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} className="w-full mt-1 border border-gray-400 p-2.5 text-sm focus:border-blue-900 focus:ring-1 focus:ring-blue-900 rounded-sm" />
+                      <input 
+                        required 
+                        type="password" 
+                        placeholder="••••••••" 
+                        value={formData.password} 
+                        onChange={e => setFormData({ ...formData, password: e.target.value })} 
+                        className="w-full mt-1 border border-slate-400 p-2.5 text-xs font-bold text-slate-900 outline-none focus:border-blue-950 focus:ring-1 focus:ring-blue-950" 
+                      />
                     </div>
                   </>
                 )}
 
+                {/* FORGOT PASSWORD TRIGGER (STUDENT ONLY) */}
                 {!isRegistering && !isAdminMode && (
-                  <div className="text-right">
-                    <button type="button" onClick={() => { setForgotPasswordStep(1); resetMessages(); }} className="text-xs font-bold text-blue-800 hover:underline cursor-pointer inline-flex items-center gap-1">
-                      <HelpCircle className="w-3.5 h-3.5" />
-                      <span>Forgot Password?</span>
+                  <div className="text-right pt-1">
+                    <button 
+                      type="button" 
+                      onClick={() => { setForgotPasswordStep(1); resetMessages(); }} 
+                      className="text-[10px] font-mono font-black uppercase text-blue-950 hover:underline cursor-pointer inline-flex items-center gap-1"
+                    >
+                      <HelpCircle className="w-3 h-3 text-amber-600" />
+                      <span>Request Password Recovery?</span>
                     </button>
                   </div>
                 )}
 
-                <button type="submit" disabled={loading} className="w-full mt-6 bg-blue-900 hover:bg-blue-800 text-white font-bold py-3 text-sm uppercase tracking-wide rounded-sm shadow-sm disabled:opacity-70 transition-colors cursor-pointer flex items-center justify-center gap-2">
+                {/* PRIMARY SUBMIT ACTION BUTTON */}
+                <button 
+                  type="submit" 
+                  disabled={loading} 
+                  className="w-full mt-6 bg-blue-950 hover:bg-blue-900 active:bg-blue-950 text-white font-black py-3.5 text-xs uppercase tracking-widest transition cursor-pointer disabled:opacity-70 shadow-xs border-b-2 border-amber-500 flex items-center justify-center gap-2 active:scale-[0.99]"
+                >
                   {loading ? (
-                    <span>Processing Request...</span>
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin text-amber-400" />
+                      <span>Authenticating Request...</span>
+                    </>
                   ) : isRegistering ? (
                     <>
-                      <UserPlus className="w-4 h-4" />
-                      <span>Submit Registration Form</span>
+                      <UserPlus className="w-4 h-4 text-amber-400" />
+                      <span>Ratify & Commit Registration Dossier</span>
                     </>
                   ) : (
                     <>
-                      <LogIn className="w-4 h-4" />
-                      <span>Login to Portal</span>
+                      <LogIn className="w-4 h-4 text-amber-400" />
+                      <span>Authenticate & Enter Ledger Portal</span>
                     </>
                   )}
                 </button>
@@ -724,9 +1007,10 @@ export default function AuthModal({ onLoginSuccess }) {
             )}
           </div>
 
-          <div className="bg-gray-50 border-t border-gray-300 p-4 text-center text-[10px] text-gray-500 uppercase tracking-wide flex items-center justify-center gap-1.5">
-            <ShieldCheck className="w-3.5 h-3.5 text-gray-400" />
-            <span>© {new Date().getFullYear()} Student Mess Cooperative. All Rights Reserved. (Private Unofficial Utility)</span>
+          {/* OFFICIAL FOOTER AUDIT WATERMARK */}
+          <div className="bg-slate-50 border-t border-slate-300 p-3.5 text-center text-[9px] font-mono text-slate-500 uppercase tracking-widest flex items-center justify-center gap-1.5 select-none">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
+            <span>Autonomous Student Cooperative Registry • Certified Residential Audit System</span>
           </div>
         </div>
       </div>

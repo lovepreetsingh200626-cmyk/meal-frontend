@@ -1,281 +1,348 @@
 import React, { useState } from 'react';
 import API from '../services/api';
 import { 
-    X, Camera, User as UserIcon, Phone, 
-    Mail, AlertCircle, CheckCircle2, Save, GraduationCap, 
-    BookOpen, Layers, ShieldCheck, Users, MapPin, Building, 
-    IdCard, Calendar, Globe, Compass, Lock 
+  User, 
+  Phone, 
+  Save, 
+  CheckCircle2, 
+  AlertCircle, 
+  ShieldCheck, 
+  Building, 
+  IdCard, 
+  GraduationCap, 
+  Mail, 
+  BookOpen, 
+  Layers, 
+  ShieldAlert, 
+  Users, 
+  MapPin, 
+  Compass, 
+  Globe, 
+  Lock, 
+  Landmark, 
+  X, 
+  Loader2, 
+  FileText,
+  Calendar
 } from 'lucide-react';
 
 export default function ProfileModal({ user, onClose, onUpdateUser }) {
-    const [loading, setLoading] = useState(false);
-    const [errorMsg, setErrorMsg] = useState('');
-    const [successMsg, setSuccessMsg] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
 
-    // Determine lock state: Students get locked after 1 edit (Admins remain unlocked)
-    const isStudent = user?.role === 'student';
-    const isMobileLocked = isStudent && Boolean(user?.isMobileLocked || user?.mobileChanged);
-    const isEmailLocked = isStudent && Boolean(user?.isEmailLocked || user?.emailChanged);
+  const isMobileLocked = Boolean(user?.isMobileLocked || user?.mobileChanged);
+  const isEmailLocked = Boolean(user?.isEmailLocked || user?.emailChanged);
 
-    const [formData, setFormData] = useState({
-        mobileNo: user?.mobileNo || '',
-        email: user?.email || '',
-        profilePhoto: user?.profilePhoto || ''
-    });
+  const formattedDob = user?.dob ? String(user.dob).split('T')[0] : 'N/A';
 
-    const handlePhotoChange = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        if (file.size > 2 * 1024 * 1024) {
-            setErrorMsg('Official photograph must be under 2MB.');
-            setTimeout(() => setErrorMsg(''), 4000);
-            return;
-        }
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            setFormData(prev => ({ ...prev, profilePhoto: reader.result }));
-        };
-        reader.readAsDataURL(file);
+  const [formData, setFormData] = useState({
+    mobileNo: user?.mobileNo || '',
+    email: user?.email || ''
+  });
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setErrorMsg('');
+    setSuccessMsg('');
+
+    const userId = user?._id || user?.id || user?.userId;
+    if (!userId) {
+      setErrorMsg('Authentication Session Error: Candidate ID token missing.');
+      setLoading(false);
+      return;
+    }
+
+    if (!/^\d{10}$/.test(formData.mobileNo)) {
+      setErrorMsg('Validation: Registered mobile number must be exactly 10 digits.');
+      setLoading(false);
+      return;
+    }
+
+    if (isMobileLocked && formData.mobileNo !== (user?.mobileNo || '')) {
+      setErrorMsg('Security Constraint: Mobile number has already been permanently sealed.');
+      setLoading(false);
+      return;
+    }
+
+    if (isEmailLocked && formData.email !== (user?.email || '')) {
+      setErrorMsg('Security Constraint: Email address has already been permanently sealed.');
+      setLoading(false);
+      return;
+    }
+
+    const mobileEdited = formData.mobileNo !== (user?.mobileNo || '');
+    const emailEdited = formData.email !== (user?.email || '');
+
+    // Identity and statutory fields are strictly locked from the registered user record
+    const submissionPayload = {
+      name: user?.name,
+      gender: user?.gender,
+      profilePhoto: user?.profilePhoto,
+      dob: user?.dob,
+      fatherName: user?.fatherName,
+      motherName: user?.motherName,
+      studentId: user?.studentId,
+      rollNo: user?.rollNo,
+      hostelNo: user?.hostelNo,
+      university: user?.university,
+      department: user?.department,
+      facultyName: user?.facultyName || user?.faculty,
+      session: user?.session,
+      domicileState: user?.domicileState,
+      category: user?.category,
+      nationality: user?.nationality,
+      mobileNo: formData.mobileNo.trim(),
+      email: formData.email.trim(),
+      isMobileLocked: isMobileLocked || mobileEdited,
+      isEmailLocked: isEmailLocked || emailEdited
     };
 
-    const handleProfileSubmit = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        setErrorMsg('');
-        setSuccessMsg('');
+    try {
+      const { data } = await API.put(`/auth/profile/${userId}`, submissionPayload);
+      const updated = data.user || data.updatedUser || submissionPayload;
+      setSuccessMsg('Candidate records ratified and synchronized successfully.');
+      if (onUpdateUser) onUpdateUser(updated);
+      setTimeout(() => {
+        onClose();
+      }, 1200);
+    } catch (err) {
+      setErrorMsg(err.response?.data?.message || 'Error committing profile changes to server.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        // Block submission if tampering with locked fields
-        if (isMobileLocked && formData.mobileNo !== (user?.mobileNo || '')) {
-            setErrorMsg('Mobile number is locked and cannot be altered further.');
-            setLoading(false);
-            return;
-        }
-        if (isEmailLocked && formData.email !== (user?.email || '')) {
-            setErrorMsg('Email address is locked and cannot be altered further.');
-            setLoading(false);
-            return;
-        }
-
-        // Determine if this submission consumes the 1-time change allowance
-        const updatedMobile = formData.mobileNo !== (user?.mobileNo || '');
-        const updatedEmail = formData.email !== (user?.email || '');
-
-        const payload = {
-            ...formData,
-            ...(isStudent && {
-                isMobileLocked: isMobileLocked || updatedMobile,
-                isEmailLocked: isEmailLocked || updatedEmail
-            })
-        };
-
-        try {
-            const endpoint = user.role === 'admin' ? `/auth/admins/${user._id}` : `/auth/users/${user._id}`;
-            const { data } = await API.put(endpoint, payload);
-            
-            setSuccessMsg('Institutional identity records updated successfully.');
-            if (onUpdateUser) onUpdateUser(user.role === 'admin' ? data.admin : data.user);
-            setTimeout(() => setSuccessMsg(''), 3000);
-        } catch (err) {
-            setErrorMsg(err.response?.data?.message || 'Failed to update profile.');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-blue-950/80 backdrop-blur-sm p-4 font-sans text-gray-900">
-            <div className="bg-white w-full max-w-lg shadow-2xl relative border-t-4 border-orange-600 rounded-sm overflow-hidden flex flex-col max-h-[90vh]">
-                
-                {/* MODAL HEADER */}
-                <div className="bg-gray-100 border-b border-gray-300 px-6 py-4 flex items-center justify-between shrink-0">
-                    <div>
-                        <h3 className="text-sm font-black text-blue-900 uppercase tracking-widest">Official Profile Manager</h3>
-                        <p className="text-[9px] font-bold text-gray-500 mt-0.5 uppercase tracking-wide">
-                            {user?.role === 'admin' ? 'Executive Administrator Clearance' : 'Student Academic Dossier'}
-                        </p>
-                    </div>
-                    <button onClick={onClose} className="w-6 h-6 flex items-center justify-center bg-gray-300 hover:bg-gray-400 text-gray-800 transition cursor-pointer">
-                        <X className="w-3.5 h-3.5" />
-                    </button>
-                </div>
-
-                {/* SCROLLABLE CONTENT AREA */}
-                <div className="p-6 overflow-y-auto">
-                    {errorMsg && (
-                        <div className="bg-red-50 border border-red-300 border-l-4 border-l-red-800 text-red-900 px-4 py-3 text-xs font-bold uppercase mb-5 flex items-start gap-3">
-                            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                            <span>{errorMsg}</span>
-                        </div>
-                    )}
-                    {successMsg && (
-                        <div className="bg-green-50 border border-green-300 border-l-4 border-l-green-700 text-green-900 px-4 py-3 text-xs font-bold uppercase mb-5 flex items-start gap-3">
-                            <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
-                            <span>{successMsg}</span>
-                        </div>
-                    )}
-
-                    <form onSubmit={handleProfileSubmit} className="space-y-4">
-                        {/* PHOTOGRAPH UPLOAD & DETAILS CARD */}
-                        <div className="flex flex-col items-center justify-center border border-gray-300 p-4 bg-gray-50 mb-2">
-                            <div className="relative group cursor-pointer border-2 border-blue-900 p-1 bg-white">
-                                <div className="w-24 h-24 bg-gray-200 overflow-hidden flex items-center justify-center">
-                                    {formData.profilePhoto ? (
-                                        <img src={formData.profilePhoto} alt="Profile" className="w-full h-full object-cover" />
-                                    ) : (
-                                        <UserIcon className="w-10 h-10 text-gray-400" />
-                                    )}
-                                </div>
-                                <label className="absolute inset-0 bg-black/60 text-white flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-                                    <Camera className="w-5 h-5 mb-1" />
-                                    <span className="text-[8px] font-bold uppercase">Upload Photo</span>
-                                    <input type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} />
-                                </label>
-                            </div>
-                            <h4 className="font-black text-blue-900 text-xs uppercase mt-3">{user?.name}</h4>
-                            <p className="text-[10px] font-bold text-gray-600 uppercase mt-0.5">
-                                {user?.role === 'student' ? `Roll No: ${user.rollNo} | ID: ${user.studentId}` : 'Chief Warden Authority'}
-                            </p>
-                        </div>
-
-                        {/* INSTITUTIONAL DOSSIER METADATA */}
-                        {user?.role === 'student' && (
-                            <div className="space-y-2.5 bg-white border border-gray-200 p-3 text-xs uppercase font-bold">
-                                <div className="flex justify-between border-b pb-2">
-                                    <span className="text-gray-500 flex items-center gap-1"><Building className="w-3.5 h-3.5 text-blue-900" /> Assigned Hostel:</span>
-                                    <span className="text-blue-900">{user.hostelNo || 'N/A'}</span>
-                                </div>
-                                <div className="flex justify-between border-b pb-2">
-                                    <span className="text-gray-500 flex items-center gap-1"><IdCard className="w-3.5 h-3.5 text-blue-900" /> Student ID:</span>
-                                    <span className="text-gray-800">{user.studentId || 'N/A'}</span>
-                                </div>
-                                <div className="flex justify-between border-b pb-2">
-                                    <span className="text-gray-500 flex items-center gap-1"><Users className="w-3.5 h-3.5 text-blue-900" /> Father's Name:</span>
-                                    <span className="text-gray-800 text-right">{user.fatherName || 'N/A'}</span>
-                                </div>
-                                <div className="flex justify-between border-b pb-2">
-                                    <span className="text-gray-500 flex items-center gap-1"><Users className="w-3.5 h-3.5 text-blue-900" /> Mother's Name:</span>
-                                    <span className="text-gray-800 text-right">{user.motherName || 'N/A'}</span>
-                                </div>
-                                <div className="flex justify-between border-b pb-2">
-                                    <span className="text-gray-500 flex items-center gap-1"><Compass className="w-3.5 h-3.5 text-blue-900" /> Faculty:</span>
-                                    <span className="text-gray-800 text-right">{user.facultyName || user.faculty || 'N/A'}</span>
-                                </div>
-                                <div className="flex justify-between border-b pb-2">
-                                    <span className="text-gray-500 flex items-center gap-1"><GraduationCap className="w-3.5 h-3.5 text-blue-900" /> Course / Program:</span>
-                                    <span className="text-gray-800 text-right">{user.university || 'N/A'}</span>
-                                </div>
-                                <div className="flex justify-between border-b pb-2">
-                                    <span className="text-gray-500 flex items-center gap-1"><BookOpen className="w-3.5 h-3.5 text-blue-900" /> Department:</span>
-                                    <span className="text-gray-800 text-right">{user.department || 'N/A'}</span>
-                                </div>
-                                <div className="flex justify-between border-b pb-2">
-                                    <span className="text-gray-500 flex items-center gap-1"><Layers className="w-3.5 h-3.5 text-blue-900" /> Session:</span>
-                                    <span className="text-gray-800">{user.session || 'N/A'}</span>
-                                </div>
-                                <div className="flex justify-between border-b pb-2">
-                                    <span className="text-gray-500 flex items-center gap-1"><Calendar className="w-3.5 h-3.5 text-blue-900" /> Date of Birth:</span>
-                                    <span className="text-gray-800">{user.dob || 'N/A'}</span>
-                                </div>
-                                <div className="flex justify-between border-b pb-2">
-                                    <span className="text-gray-500 flex items-center gap-1"><UserIcon className="w-3.5 h-3.5 text-blue-900" /> Gender:</span>
-                                    <span className="text-gray-800">{user.gender || 'N/A'}</span>
-                                </div>
-                                <div className="flex justify-between border-b pb-2">
-                                    <span className="text-gray-500 flex items-center gap-1"><Globe className="w-3.5 h-3.5 text-blue-900" /> Nationality:</span>
-                                    <span className="text-gray-800">{user.nationality || 'India'}</span>
-                                </div>
-                                <div className="flex justify-between border-b pb-2">
-                                    <span className="text-gray-500 flex items-center gap-1"><MapPin className="w-3.5 h-3.5 text-blue-900" /> Domicile State:</span>
-                                    <span className="text-gray-800">{user.domicileState || 'Punjab'}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-gray-500 flex items-center gap-1"><ShieldCheck className="w-3.5 h-3.5 text-blue-900" /> Category:</span>
-                                    <span className="text-orange-700">{user.category || 'General'}</span>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* EDITABLE CONTACT FIELDS WITH 1-TIME LOCK RULES */}
-                        <div className="space-y-3 pt-2">
-                            {/* MOBILE NUMBER INPUT */}
-                            <div>
-                                <div className="flex items-center justify-between mb-1">
-                                    <label className="text-[10px] font-bold text-gray-600 uppercase">Registered Mobile Number</label>
-                                    {isStudent && (
-                                        isMobileLocked ? (
-                                            <span className="text-[9px] font-black uppercase text-red-700 bg-red-50 border border-red-200 px-1.5 py-0.5 rounded-xs flex items-center gap-1">
-                                                <Lock className="w-2.5 h-2.5" /> Locked (1-time edit used)
-                                            </span>
-                                        ) : (
-                                            <span className="text-[9px] font-bold uppercase text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-xs">
-                                                Single change allowed
-                                            </span>
-                                        )
-                                    )}
-                                </div>
-                                <div className="relative">
-                                    <Phone className="absolute left-3 top-2.5 w-3.5 h-3.5 text-gray-400" />
-                                    <input 
-                                        required 
-                                        type="tel" 
-                                        maxLength="10" 
-                                        disabled={isMobileLocked}
-                                        value={formData.mobileNo} 
-                                        onChange={(e) => setFormData({ ...formData, mobileNo: e.target.value.replace(/\D/g, '') })} 
-                                        className={`w-full border pl-9 pr-3 py-2 text-xs font-bold outline-none rounded-xs ${
-                                            isMobileLocked 
-                                                ? 'bg-gray-100 border-gray-300 text-gray-500 cursor-not-allowed select-none' 
-                                                : 'bg-white border-gray-400 focus:border-blue-900 text-gray-900'
-                                        }`} 
-                                    />
-                                </div>
-                            </div>
-
-                            {/* EMAIL ADDRESS INPUT */}
-                            <div>
-                                <div className="flex items-center justify-between mb-1">
-                                    <label className="text-[10px] font-bold text-gray-600 uppercase">Official Email Address</label>
-                                    {isStudent && (
-                                        isEmailLocked ? (
-                                            <span className="text-[9px] font-black uppercase text-red-700 bg-red-50 border border-red-200 px-1.5 py-0.5 rounded-xs flex items-center gap-1">
-                                                <Lock className="w-2.5 h-2.5" /> Locked (1-time edit used)
-                                            </span>
-                                        ) : (
-                                            <span className="text-[9px] font-bold uppercase text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-xs">
-                                                Single change allowed
-                                            </span>
-                                        )
-                                    )}
-                                </div>
-                                <div className="relative">
-                                    <Mail className="absolute left-3 top-2.5 w-3.5 h-3.5 text-gray-400" />
-                                    <input 
-                                        required 
-                                        type="email" 
-                                        disabled={isEmailLocked}
-                                        value={formData.email} 
-                                        onChange={(e) => setFormData({ ...formData, email: e.target.value })} 
-                                        className={`w-full border pl-9 pr-3 py-2 text-xs font-bold outline-none rounded-xs ${
-                                            isEmailLocked 
-                                                ? 'bg-gray-100 border-gray-300 text-gray-500 cursor-not-allowed select-none' 
-                                                : 'bg-white border-gray-400 focus:border-blue-900 text-gray-900'
-                                        }`} 
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        <button 
-                            type="submit" 
-                            disabled={loading || (isMobileLocked && isEmailLocked && formData.profilePhoto === user?.profilePhoto)} 
-                            className="w-full bg-blue-900 hover:bg-blue-800 text-white font-bold py-3 text-[11px] uppercase tracking-widest transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 mt-4 shadow-sm"
-                        >
-                            <Save className="w-4 h-4" /> 
-                            <span>{loading ? 'Processing...' : 'Commit Record Updates'}</span>
-                        </button>
-                    </form>
-                </div>
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-xs p-4 select-none">
+      <div className="bg-white w-full max-w-2xl border-2 border-slate-300 border-t-4 border-t-blue-950 shadow-2xl relative max-h-[90vh] flex flex-col">
+        
+        {/* Modal Header */}
+        <div className="bg-slate-50 border-b border-slate-300 px-6 py-4 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-blue-950 text-amber-400 flex items-center justify-center border border-blue-900 shrink-0">
+              <Landmark className="w-4 h-4" />
             </div>
+            <div>
+              <h3 className="text-xs font-black text-blue-950 uppercase tracking-widest font-serif">
+                Candidate Profile Dossier
+              </h3>
+              <p className="text-[9px] font-mono text-slate-500 uppercase">
+                Roll: {user?.rollNo || 'N/A'} &bull; Statute 2.4 Audit Record
+              </p>
+            </div>
+          </div>
+          <button 
+            type="button" 
+            onClick={onClose} 
+            className="w-7 h-7 flex items-center justify-center bg-slate-200 hover:bg-slate-300 text-slate-800 transition cursor-pointer"
+            title="Close Dossier"
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
-    );
+
+        {/* Modal Body */}
+        <div className="p-6 overflow-y-auto space-y-5">
+          {errorMsg && (
+            <div className="bg-red-50 border border-red-300 border-l-4 border-l-red-800 text-red-950 p-3 text-xs font-bold uppercase flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0 text-red-800" />
+              <span>{errorMsg}</span>
+            </div>
+          )}
+          {successMsg && (
+            <div className="bg-emerald-50 border border-emerald-300 border-l-4 border-l-emerald-700 text-emerald-950 p-3 text-xs font-bold uppercase flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-700" />
+              <span>{successMsg}</span>
+            </div>
+          )}
+
+          {/* Sealed Identification Strip */}
+          <div className="border border-slate-300 p-3.5 bg-slate-50 flex items-center gap-4">
+            <div className="w-16 h-16 bg-slate-200 border-2 border-blue-950 overflow-hidden flex items-center justify-center shrink-0 shadow-xs relative">
+              {user?.profilePhoto ? (
+                <img src={user.profilePhoto} alt="Certified Identification" className="w-full h-full object-cover" />
+              ) : (
+                <User className="w-8 h-8 text-slate-400" />
+              )}
+            </div>
+            <div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-black uppercase text-blue-950 font-serif">{user?.name}</span>
+                <span className="text-[8px] font-black uppercase bg-emerald-800 text-white px-1.5 py-0.2 rounded-xs">
+                  Certified
+                </span>
+              </div>
+              <p className="text-[10px] font-mono font-bold text-slate-500 uppercase mt-0.5">
+                Roll: {user?.rollNo || 'N/A'} &bull; Gender: {user?.gender || 'N/A'}
+              </p>
+              <span className="inline-flex items-center gap-1 text-[8px] font-mono uppercase text-slate-500 bg-slate-200 border border-slate-300 px-1.5 py-0.2 mt-1">
+                <Lock className="w-2.5 h-2.5 text-slate-600" /> Photo, Name, Gender &amp; DOB Sealed at Registration
+              </span>
+            </div>
+          </div>
+
+          {/* Immutable Registry Dossier */}
+          <div className="border border-slate-300 bg-slate-50 p-4 space-y-3">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-1.5">
+              <span className="text-[10px] font-black uppercase text-blue-950 font-serif">
+                Immutable Registry Dossier (Statute Sealed)
+              </span>
+              <span className="text-[8px] font-mono bg-slate-200 text-slate-600 px-1.5 py-0.2 uppercase font-bold flex items-center gap-1">
+                <Lock className="w-2.5 h-2.5" /> Locked
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
+              <div>
+                <span className="text-[9px] font-bold text-slate-500 uppercase block">Candidate Name</span>
+                <span className="font-bold text-blue-950 uppercase font-serif">{user?.name || 'N/A'}</span>
+              </div>
+              <div>
+                <span className="text-[9px] font-bold text-slate-500 uppercase block">Gender</span>
+                <span className="font-bold text-slate-800 uppercase">{user?.gender || 'N/A'}</span>
+              </div>
+              <div>
+                <span className="text-[9px] font-bold text-slate-500 uppercase block">Date of Birth</span>
+                <span className="font-mono font-bold text-slate-800">{formattedDob}</span>
+              </div>
+              <div>
+                <span className="text-[9px] font-bold text-slate-500 uppercase block">Student ID Number</span>
+                <span className="font-mono font-bold text-slate-800">{user?.studentId || 'N/A'}</span>
+              </div>
+              <div>
+                <span className="text-[9px] font-bold text-slate-500 uppercase block">Father's Name</span>
+                <span className="font-bold text-slate-800 uppercase">{user?.fatherName || 'N/A'}</span>
+              </div>
+              <div>
+                <span className="text-[9px] font-bold text-slate-500 uppercase block">Mother's Name</span>
+                <span className="font-bold text-slate-800 uppercase">{user?.motherName || 'N/A'}</span>
+              </div>
+              <div>
+                <span className="text-[9px] font-bold text-slate-500 uppercase block">Residence Hall</span>
+                <span className="font-mono font-bold text-slate-800">{user?.hostelNo || 'N/A'}</span>
+              </div>
+              <div>
+                <span className="text-[9px] font-bold text-slate-500 uppercase block">Faculty Jurisdiction</span>
+                <span className="font-bold text-slate-800 uppercase">{user?.facultyName || user?.faculty || 'N/A'}</span>
+              </div>
+              <div>
+                <span className="text-[9px] font-bold text-slate-500 uppercase block">Degree / Course</span>
+                <span className="font-bold text-slate-800 uppercase font-serif">{user?.university || 'N/A'}</span>
+              </div>
+              <div>
+                <span className="text-[9px] font-bold text-slate-500 uppercase block">Department Branch</span>
+                <span className="font-bold text-slate-800 uppercase">{user?.department || 'N/A'}</span>
+              </div>
+              <div>
+                <span className="text-[9px] font-bold text-slate-500 uppercase block">Academic Session</span>
+                <span className="font-mono font-bold text-slate-800">{user?.session || 'N/A'}</span>
+              </div>
+              <div>
+                <span className="text-[9px] font-bold text-slate-500 uppercase block">Social Category</span>
+                <span className="font-black text-amber-800 uppercase">{user?.category || 'General'}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Permitted Contact Protocol Updates */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="border-b border-slate-200 pb-1.5 flex items-center justify-between">
+              <span className="text-[10px] font-black uppercase text-blue-950 font-serif">
+                Contact Protocol (Single Amendment Permitted)
+              </span>
+              <span className="text-[8px] font-mono text-amber-800 bg-amber-50 border border-amber-300 px-1.5 py-0.2 uppercase">
+                Single-Edit Protocol
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Mobile Number */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-[9px] font-black text-slate-700 uppercase tracking-wider">
+                    Registered Mobile <span className="text-red-700">*</span>
+                  </label>
+                  {isMobileLocked ? (
+                    <span className="text-[8px] font-black uppercase text-red-800 bg-red-50 border border-red-200 px-1 py-0.2 flex items-center gap-1">
+                      <Lock className="w-2.5 h-2.5" /> Locked
+                    </span>
+                  ) : (
+                    <span className="text-[8px] font-mono uppercase text-amber-800 bg-amber-50 border border-amber-300 px-1 py-0.2">
+                      1 Edit Allowed
+                    </span>
+                  )}
+                </div>
+                <input
+                  required
+                  type="tel"
+                  maxLength="10"
+                  disabled={isMobileLocked}
+                  value={formData.mobileNo}
+                  className={`w-full py-2 px-3 text-xs font-mono font-bold outline-none ${
+                    isMobileLocked
+                      ? 'bg-slate-100 border border-slate-300 text-slate-500 cursor-not-allowed select-none'
+                      : 'bg-white border border-slate-400 text-slate-900 focus:border-blue-950'
+                  }`}
+                  onChange={e => setFormData({ ...formData, mobileNo: e.target.value.replace(/\D/g, '') })}
+                />
+              </div>
+
+              {/* Email Address */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-[9px] font-black text-slate-700 uppercase tracking-wider">
+                    Registered Email <span className="text-red-700">*</span>
+                  </label>
+                  {isEmailLocked ? (
+                    <span className="text-[8px] font-black uppercase text-red-800 bg-red-50 border border-red-200 px-1 py-0.2 flex items-center gap-1">
+                      <Lock className="w-2.5 h-2.5" /> Locked
+                    </span>
+                  ) : (
+                    <span className="text-[8px] font-mono uppercase text-amber-800 bg-amber-50 border border-amber-300 px-1 py-0.2">
+                      1 Edit Allowed
+                    </span>
+                  )}
+                </div>
+                <input
+                  required
+                  type="email"
+                  disabled={isEmailLocked}
+                  value={formData.email}
+                  className={`w-full py-2 px-3 text-xs font-bold outline-none ${
+                    isEmailLocked
+                      ? 'bg-slate-100 border border-slate-300 text-slate-500 cursor-not-allowed select-none'
+                      : 'bg-white border border-slate-400 text-slate-900 focus:border-blue-950'
+                  }`}
+                  onChange={e => setFormData({ ...formData, email: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div className="pt-2">
+              <button
+                type="submit"
+                disabled={loading || (isMobileLocked && isEmailLocked)}
+                className="w-full bg-blue-950 hover:bg-blue-900 active:bg-blue-950 text-white font-black py-3 text-xs uppercase tracking-widest transition cursor-pointer border-b-2 border-amber-500 shadow-xs flex items-center justify-center gap-2 active:scale-95 disabled:opacity-60"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin text-amber-400" />
+                    <span>Ratifying Contact Record...</span>
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4 text-amber-400" />
+                    <span>Ratify &amp; Synchronize Record Changes</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+        </div>
+
+      </div>
+    </div>
+  );
 }
