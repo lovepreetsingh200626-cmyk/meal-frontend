@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import API from '../../services/api';
-import { MessageSquareWarning, Filter, Trash2, X, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import { MessageSquareWarning, Filter, Trash2, X, CheckCircle2, AlertCircle, Loader2, Eye } from 'lucide-react';
 import ConfirmModal from '../../components/ConfirmModal';
 
 export default function AdminComplaints() {
@@ -15,6 +15,9 @@ export default function AdminComplaints() {
     const [complaintStatus, setComplaintStatus] = useState('Pending');
     const [adminRemark, setAdminRemark] = useState('');
     const [confirmModal, setConfirmModal] = useState({ isOpen: false, title: '', message: '', onConfirm: () => {} });
+
+    // State for viewing full-size photo proof modal
+    const [previewModalImg, setPreviewModalImg] = useState(null);
 
     useEffect(() => {
         const fetchComplaints = async () => {
@@ -108,9 +111,27 @@ export default function AdminComplaints() {
                                     <p className="text-[11px] text-slate-700 font-medium leading-relaxed">{c.description}</p>
                                 </div>
                                 {c.photoProof && (
-                                    <div className="mt-3 pt-3 border-t border-slate-200">
-                                        <a href={c.photoProof} target="_blank" rel="noreferrer"><img src={c.photoProof} alt="Proof" className="w-12 h-12 object-cover border border-slate-400" /></a>
-                                        <div className="text-[8px] text-slate-500 font-bold uppercase mt-1">Evidentiary Attachment</div>
+                                    <div className="mt-3 pt-3 border-t border-slate-200 flex items-center gap-3">
+                                        <div 
+                                            onClick={() => setPreviewModalImg(c.photoProof)} 
+                                            className="cursor-pointer group relative border border-slate-400 bg-slate-100 w-14 h-14 overflow-hidden flex items-center justify-center shrink-0 shadow-xs"
+                                            title="Click to inspect full-size photo"
+                                        >
+                                            <img src={c.photoProof} alt="Proof" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                                            <div className="absolute inset-0 bg-black/40 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <Eye className="w-4 h-4" />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <span className="text-[9px] font-bold text-blue-950 uppercase block font-serif">Evidentiary Attachment</span>
+                                            <button 
+                                                type="button" 
+                                                onClick={() => setPreviewModalImg(c.photoProof)} 
+                                                className="text-[9px] font-mono font-bold text-amber-700 hover:underline uppercase mt-0.5 cursor-pointer block"
+                                            >
+                                                [ Inspect Full Image ]
+                                            </button>
+                                        </div>
                                     </div>
                                 )}
                                 <div className="bg-slate-50 border border-slate-200 p-3 text-[10px] uppercase font-bold mt-4 space-y-0.5">
@@ -154,6 +175,21 @@ export default function AdminComplaints() {
                             </div>
                             <button type="submit" className="w-full mt-4 bg-emerald-800 hover:bg-emerald-900 text-white font-black py-2.5 text-[10px] uppercase tracking-widest transition border-b-2 border-emerald-950 active:scale-95">Ratify &amp; Seal Finding</button>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* FULL SIZE PHOTO INSPECTION MODAL */}
+            {previewModalImg && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-xs p-4 select-none">
+                    <div className="bg-white border-2 border-slate-300 shadow-2xl max-w-2xl w-full p-4 space-y-3">
+                        <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+                            <span className="text-xs font-black uppercase text-blue-950 font-serif">Evidentiary Attachment Inspection</span>
+                            <button type="button" onClick={() => setPreviewModalImg(null)} className="w-7 h-7 flex items-center justify-center bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold cursor-pointer">✕</button>
+                        </div>
+                        <div className="max-h-[75vh] overflow-auto flex items-center justify-center bg-slate-100 p-2 border border-slate-300">
+                            <img src={previewModalImg} alt="Evidence Inspection" className="max-h-full max-w-full object-contain shadow-md" />
+                        </div>
                     </div>
                 </div>
             )}

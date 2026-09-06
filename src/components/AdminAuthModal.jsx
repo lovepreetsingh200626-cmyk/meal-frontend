@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import API from '../services/api';
 import {
   User, Lock, LogIn, UserPlus, AlertCircle, CheckCircle2,
-  ShieldCheck, KeySquare, Landmark, ShieldAlert, Loader2, ArrowLeft
+  ShieldCheck, KeySquare, Landmark, ShieldAlert, Loader2, ArrowLeft, AlertTriangle
 } from 'lucide-react';
 
 export default function AdminAuthModal({ onLoginSuccess, onSwitchToStudent }) {
@@ -56,44 +56,60 @@ export default function AdminAuthModal({ onLoginSuccess, onSwitchToStudent }) {
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900 font-sans selection:bg-slate-900 selection:text-white flex flex-col">
       
-      {/* 1. STATE GOVERNMENT & SUPERVISORY STRIP */}
-      <div className="bg-slate-950 text-slate-300 text-[10px] font-bold px-4 md:px-8 py-2 border-b-2 border-amber-500/80 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-1.5 z-50 select-none">
-        <div className="flex items-center gap-2 uppercase tracking-widest text-slate-200">
-          <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-          <span>Government of Punjab • Directorate of Higher Education</span>
-          <span className="text-slate-600 hidden md:inline">|</span>
+      {/* 1. STATE GOVERNMENT & SUPERVISORY STRIP WITH RIGHT-ALIGNED ROLLING NOTICE */}
+      <div className="bg-slate-950 text-slate-300 text-[10px] font-bold px-4 md:px-8 py-2.5 border-b-2 border-amber-500/80 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 z-50 select-none shadow-sm">
+        <div className="flex items-center gap-2.5 uppercase tracking-widest text-slate-200 font-mono shrink-0">
+          <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
+          <span>mess records & fee payment portal • hostels </span>
+          <span className="text-slate-700 hidden md:inline">|</span>
           <span className="text-amber-300 font-black hidden md:inline">Supervisory Magistracy Clearance Gate</span>
         </div>
-        <div>
-          <button 
-            type="button"
-            onClick={onSwitchToStudent} 
-            className="text-[9px] font-mono font-black uppercase text-emerald-400 hover:text-emerald-300 transition cursor-pointer flex items-center gap-1.5 bg-slate-900 px-2.5 py-1 border border-emerald-500/40 shadow-xs"
-          >
-            <ArrowLeft className="w-3 h-3 text-emerald-400" />
-            <span>Return to Candidate Gate</span>
-          </button>
+        
+        {/* RIGHT-ALIGNED ROLLING NOTICE TICKER */}
+        <div className="flex items-center gap-3 w-full lg:w-auto justify-end overflow-hidden">
+          <div className="max-w-[320px] sm:max-w-[420px] bg-slate-900 border border-amber-500/40 px-3 py-1 rounded-xs overflow-hidden shrink-0 shadow-inner flex items-center gap-2">
+            <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0 animate-pulse" />
+            <div className="whitespace-nowrap overflow-hidden">
+              <div className="inline-block animate-[marquee_20s_linear_infinite] uppercase font-mono tracking-wider font-extrabold text-[9px] text-amber-300">
+                NOTICE: ADMIN PORTAL ONLY. STUDENTS MUST USE THE student portal login
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* 2. PORTAL HEADER */}
-      <header className="bg-white border-b-2 border-slate-300 shadow-xs px-4 md:px-8 py-4 flex flex-col md:flex-row items-center gap-4 select-none">
-        <div className="w-16 h-16 bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 border-2 border-amber-600 rounded-xs flex flex-col items-center justify-center text-white shrink-0 shadow-xs">
-          <Landmark className="w-6 h-6 text-amber-400 mb-0.5" />
-          <span className="text-[6px] font-black tracking-widest text-amber-200 uppercase">SEAL</span>
-        </div>
-        <div className="text-center md:text-left">
-          <div className="flex flex-wrap items-center gap-2 justify-center md:justify-start">
-            <h1 className="text-xl md:text-2xl font-black text-blue-950 uppercase tracking-tight font-serif">
-              Central Student Hostel Mess & Diet Audit Ledger
-            </h1>
-            <span className="text-[8px] font-black uppercase bg-amber-100 text-amber-950 border border-amber-300 px-2 py-0.5 hidden sm:inline-block">
-              Executive Officer Desk
-            </span>
+      <header className="bg-white border-b-2 border-slate-300 shadow-xs px-4 md:px-8 py-4 flex flex-col md:flex-row items-center justify-between gap-4 select-none">
+        <div className="flex items-center gap-4">
+          <div className="w-16 h-16 bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 border-2 border-amber-600 rounded-xs flex flex-col items-center justify-center text-white shrink-0 shadow-xs">
+            <Landmark className="w-6 h-6 text-amber-400 mb-0.5" />
+            <span className="text-[6px] font-black tracking-widest text-amber-200 uppercase">SEAL</span>
           </div>
-          <h2 className="text-xs md:text-sm font-bold text-slate-600 uppercase tracking-wide mt-0.5">
-            Comptroller of Accounts • Supervisory Committee Authentication
-          </h2>
+          <div className="text-center md:text-left">
+            <div className="flex flex-wrap items-center gap-2 justify-center md:justify-start">
+              <h1 className="text-xl md:text-2xl font-black text-blue-950 uppercase tracking-tight font-serif">
+                Central Student Hostel Mess &amp; Diet Audit Ledger
+              </h1>
+              <span className="text-[8px] font-black uppercase bg-amber-100 text-amber-950 border border-amber-300 px-2 py-0.5 hidden sm:inline-block font-mono">
+                Executive Officer Desk
+              </span>
+            </div>
+            <h2 className="text-xs md:text-sm font-bold text-slate-600 uppercase tracking-wide mt-0.5 font-sans">
+              Comptroller of Accounts • Supervisory Committee Authentication
+            </h2>
+          </div>
+        </div>
+
+        {/* HIGH-VISIBILITY STUDENT SWITCH BUTTON */}
+        <div className="w-full md:w-auto flex justify-center md:justify-end">
+          <button
+            type="button"
+            onClick={onSwitchToStudent}
+            className="w-full md:w-auto bg-slate-900 hover:bg-slate-950 text-emerald-300 border-2 border-emerald-500 px-4 py-2.5 text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm cursor-pointer transition active:scale-95 font-mono"
+          >
+            <ArrowLeft className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span>Student / Candidate Portal Gate</span>
+          </button>
         </div>
       </header>
 
@@ -143,6 +159,7 @@ export default function AdminAuthModal({ onLoginSuccess, onSwitchToStudent }) {
           </div>
 
           <div className="p-6 sm:p-8">
+
             {error && (
               <div className="bg-red-50 border-l-4 border-red-800 text-red-950 px-4 py-3 text-xs mb-6 flex gap-3 font-bold uppercase shadow-xs">
                 <AlertCircle className="w-4 h-4 shrink-0 text-red-800 mt-0.5" />

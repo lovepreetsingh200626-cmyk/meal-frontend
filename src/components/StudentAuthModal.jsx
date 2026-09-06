@@ -237,51 +237,47 @@ export default function StudentAuthModal({ onLoginSuccess, onSwitchToAdmin }) {
     <div className="min-h-screen bg-slate-100 text-slate-900 font-sans selection:bg-blue-950 selection:text-white flex flex-col">
       
       {/* 1. STATE GOVERNMENT & STATUTORY EMBLEM STRIP */}
-      <div className="bg-slate-950 text-slate-300 text-[10px] font-bold px-4 md:px-8 py-2 border-b-2 border-orange-500/80 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-1.5 z-50 select-none">
-        <div className="flex items-center gap-2 uppercase tracking-widest text-slate-200">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span>Government of Punjab • Department of Higher Education</span>
-          <span className="text-slate-600 hidden md:inline">|</span>
-          <span className="text-orange-300 font-black hidden md:inline">Candidate Residential Access Gate</span>
-        </div>
-        <div>
-          <button 
-            type="button"
-            onClick={onSwitchToAdmin} 
-            className="text-[9px] font-mono font-black uppercase text-orange-400 hover:text-orange-300 transition cursor-pointer flex items-center gap-1.5 bg-slate-900 px-2.5 py-1 border border-orange-500/40 shadow-xs"
-          >
-            <ShieldCheck className="w-3 h-3 text-orange-400" />
-            <span>Switch to Executive Officer Gateway</span>
-          </button>
+      <div className="bg-slate-950 text-slate-300 text-[10px] font-bold px-4 md:px-8 py-2.5 border-b-2 border-orange-500/80 flex justify-between items-center z-50 select-none shadow-sm">
+        <div className="flex items-center gap-2.5 uppercase tracking-widest text-slate-200 font-mono">
+          <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span>mess records & fee payment portal • hostels </span>
+          <span className="text-slate-700 hidden md:inline">|</span>
+          <span className="text-orange-400 font-black hidden md:inline">Candidate Residential Access Portal</span>
         </div>
       </div>
 
-      {/* 2. PORTAL HEADER WITH THEME MATCHED STYLING */}
-      <header className="bg-white border-b-2 border-slate-300 shadow-xs px-4 md:px-8 py-4 flex flex-col md:flex-row items-center gap-4 select-none">
-        <div className="w-16 h-16 bg-gradient-to-br from-blue-950 via-slate-900 to-blue-900 border-2 border-orange-600 rounded-xs flex flex-col items-center justify-center text-white shrink-0 shadow-xs">
-          <Landmark className="w-6 h-6 text-orange-400 mb-0.5" />
-          <span className="text-[6px] font-black tracking-widest text-orange-200 uppercase">SEAL</span>
+      {/* 2. PORTAL HEADER */}
+      <header className="bg-white border-b-2 border-slate-300 shadow-xs px-4 md:px-8 py-4 flex flex-col md:flex-row items-center justify-between gap-4 select-none">
+        <div className="flex items-center gap-4">
+          <div className="w-16 h-16 bg-gradient-to-br from-blue-950 via-slate-900 to-blue-900 border-2 border-orange-600 rounded-xs flex flex-col items-center justify-center text-white shrink-0 shadow-xs">
+            <Landmark className="w-6 h-6 text-orange-400 mb-0.5" />
+            <span className="text-[6px] font-black tracking-widest text-orange-200 uppercase">SEAL</span>
+          </div>
+          <div className="text-center md:text-left">
+            <div className="flex flex-wrap items-center gap-2 justify-center md:justify-start">
+              <h1 className="text-xl md:text-2xl font-black text-blue-950 uppercase tracking-tight font-serif">
+                Central Student Hostel Mess &amp; Diet Audit Ledger
+              </h1>
+              <span className="text-[8px] font-black uppercase bg-blue-50 text-blue-950 border border-blue-200 px-2 py-0.5 hidden sm:inline-block font-mono">
+                Candidate Portal
+              </span>
+            </div>
+            <h2 className="text-xs md:text-sm font-bold text-slate-600 uppercase tracking-wide mt-0.5 font-sans">
+              Independent Student Cooperative Association • Certified Residential Registry
+            </h2>
+          </div>
         </div>
-        <div className="text-center md:text-left">
-          <div className="flex flex-wrap items-center gap-2 justify-center md:justify-start">
-            <h1 className="text-xl md:text-2xl font-black text-blue-950 uppercase tracking-tight font-serif">
-              Central Student Hostel Mess & Diet Audit Ledger
-            </h1>
-            <span className="text-[8px] font-black uppercase bg-blue-50 text-blue-950 border border-blue-200 px-2 py-0.5 hidden sm:inline-block">
-              Candidate Portal
-            </span>
-          </div>
-          <h2 className="text-xs md:text-sm font-bold text-slate-600 uppercase tracking-wide mt-0.5">
-            Independent Student Cooperative Association • Certified Residential Registry
-          </h2>
-          <div className="flex flex-wrap items-center gap-2 mt-1 justify-center md:justify-start">
-            <span className="text-[9px] font-black bg-orange-600 text-white px-2 py-0.5 uppercase tracking-wider">
-              Statute Enforced
-            </span>
-            <span className="text-[9px] font-mono font-bold bg-slate-100 text-slate-700 border border-slate-300 px-2 py-0.5 uppercase">
-              students mess record & fee portal
-            </span>
-          </div>
+
+        {/* HIGH-VISIBILITY ADMIN SWITCH BANNER BUTTON */}
+        <div className="w-full md:w-auto flex justify-center md:justify-end">
+          <button
+            type="button"
+            onClick={onSwitchToAdmin}
+            className="w-full md:w-auto bg-slate-900 hover:bg-slate-950 text-amber-300 border-2 border-amber-500 px-4 py-2.5 text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm cursor-pointer transition active:scale-95 font-mono"
+          >
+            <ShieldCheck className="w-4 h-4 text-amber-400 shrink-0" />
+            <span>Admin / Warden Login Portal</span>
+          </button>
         </div>
       </header>
 
@@ -301,7 +297,7 @@ export default function StudentAuthModal({ onLoginSuccess, onSwitchToAdmin }) {
                 ) : isRegistering ? (
                   <>
                     <UserPlus className="w-4 h-4 text-blue-950" />
-                    <span>Candidate Academic & Residential Enrollment</span>
+                    <span>Candidate Academic &amp; Residential Enrollment</span>
                   </>
                 ) : (
                   <>
@@ -886,12 +882,12 @@ export default function StudentAuthModal({ onLoginSuccess, onSwitchToAdmin }) {
                   ) : isRegistering ? (
                     <>
                       <UserPlus className="w-4 h-4 text-orange-400" />
-                      <span>Ratify & Commit Registration Dossier</span>
+                      <span>Ratify &amp; Commit Registration Dossier</span>
                     </>
                   ) : (
                     <>
                       <LogIn className="w-4 h-4 text-orange-400" />
-                      <span>Authenticate & Enter Ledger Portal</span>
+                      <span>Authenticate &amp; Enter Ledger Portal</span>
                     </>
                   )}
                 </button>
