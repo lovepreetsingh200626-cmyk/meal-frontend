@@ -183,7 +183,7 @@ export default function AdminAuthModal({ onLoginSuccess, onSwitchToStudent }) {
               <div className="bg-slate-50 border border-slate-300 p-3 mb-2">
                 <span className="text-[9px] font-black text-amber-800 uppercase tracking-wider flex items-center gap-1">
                   <ShieldAlert className="w-3.5 h-3.5" />
-                  <span>Executive Council Security Clearances Enforced</span>
+                  <span> login to admin portal</span>
                 </span>
               </div>
 
