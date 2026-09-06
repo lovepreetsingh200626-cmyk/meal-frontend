@@ -162,7 +162,7 @@ export default function AdminMeals() {
                                                         {m.meals?.dinner && <span className="bg-blue-100 border border-blue-300 text-blue-950 px-1.5 py-0.5 font-black uppercase text-[9px]">DINNER</span>}
                                                     </div>
                                                 </td>
-                                                <td className="p-3 border-r border-slate-200 text-[10px] text-slate-700 uppercase font-bold font-mono">{m.extras?.length > 0 ? m.extras.map(e => `${e.itemName} (₹${e.cost})`).join(', ') : 'NIL'}</td>
+                                                <td className="p-3 border-r border-slate-200 text-[10px] text-slate-700 uppercase font-bold font-mono">{m.extras?.length > 0 ? m.extras.map(e => `${e.itemName} (₹${e.cost})`).join(', ') : 'not applicable'}</td>
                                                 <td className="p-3 text-right whitespace-nowrap">
                                                     <div className="flex items-center justify-end gap-2">
                                                         <span className="font-black text-blue-950 text-sm font-serif">₹{m.dailyTotalCost || 0}/-</span>

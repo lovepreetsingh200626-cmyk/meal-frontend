@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import API from '../services/api';
 import { 
     Users, ShieldCheck, FileText, CreditCard, MessageSquareWarning, 
-    BellRing, Settings, LayoutDashboard, LogOut, Landmark, Award, X, ImagePlus 
+    BellRing, Settings, LayoutDashboard, LogOut, Landmark, Award, X, ImagePlus, Loader2 
 } from 'lucide-react';
 
-// Import your modularized admin sub-pages from client/src/pages/admin/
+// Import admin sub-pages
 import AdminOverview from '../pages/admin/AdminOverview';
 import AdminUsers from '../pages/admin/AdminUsers';
 import AdminMeals from '../pages/admin/AdminMeals';
@@ -16,6 +16,7 @@ import AdminSettings from '../pages/admin/AdminSettings';
 
 export default function AdminDashboard({ user, onLogout, onUpdateUser }) {
     const [activeTab, setActiveTab] = useState('dashboard');
+    const [isTransitioning, setIsTransitioning] = useState(false);
     const [successMsg, setSuccessMsg] = useState('');
     const [errorMsg, setErrorMsg] = useState('');
 
@@ -26,6 +27,15 @@ export default function AdminDashboard({ user, onLogout, onUpdateUser }) {
         dob: user?.dob ? String(user.dob).split('T')[0] : '', 
         profilePhoto: user?.profilePhoto || ''
     });
+
+    const handleTabSwitch = (tabName) => {
+        if (activeTab === tabName) return;
+        setIsTransitioning(true);
+        setActiveTab(tabName);
+        setTimeout(() => {
+            setIsTransitioning(false);
+        }, 500);
+    };
 
     const handleAdminPhotoChange = (e) => {
         const file = e.target.files[0]; 
@@ -38,13 +48,22 @@ export default function AdminDashboard({ user, onLogout, onUpdateUser }) {
     const handleAdminEditSubmit = async (e) => {
         e.preventDefault();
         try {
+            // FIXED: Target the backend '/auth/admins/:id' route matching the Admin Mongoose model
             const { data } = await API.put(`/auth/admins/${user._id}`, adminEditFormData);
             setSuccessMsg('Executive profile ratified successfully.'); 
             setTimeout(() => setSuccessMsg(''), 4000);
-            if (onUpdateUser) onUpdateUser(data.admin);
+            
+            const updatedProfile = data.admin || data.user || data;
+            
+            // Immediately update local storage and app state for instant UI change
+            localStorage.setItem('user', JSON.stringify(updatedProfile));
+            if (onUpdateUser) {
+                onUpdateUser(updatedProfile);
+            }
+            
             setIsAdminEditModalOpen(false);
         } catch (err) { 
-            setErrorMsg('Failed to commit profile updates.'); 
+            setErrorMsg(err.response?.data?.message || 'Failed to commit profile updates.'); 
             setTimeout(() => setErrorMsg(''), 4000); 
         }
     };
@@ -103,10 +122,18 @@ export default function AdminDashboard({ user, onLogout, onUpdateUser }) {
                 </div>
             </header>
 
-            {/* 3. SUPERVISORY OFFICER IDENTIFIER STRIP (ADMIN PROFILE CLICK TARGET) */}
+            {/* 3. SUPERVISORY OFFICER IDENTIFIER STRIP */}
             <div className="bg-slate-900 text-white px-4 md:px-8 py-2.5 flex items-center justify-between border-b border-slate-800 z-30 print:hidden">
                 <div 
-                    onClick={() => setIsAdminEditModalOpen(true)} 
+                    onClick={() => {
+                        setAdminEditFormData({
+                            name: user?.name || '',
+                            mobileNo: user?.mobileNo || '',
+                            dob: user?.dob ? String(user.dob).split('T')[0] : '',
+                            profilePhoto: user?.profilePhoto || ''
+                        });
+                        setIsAdminEditModalOpen(true);
+                    }} 
                     className="flex items-center gap-3 cursor-pointer hover:bg-slate-800/80 px-2 py-1 rounded-xs transition"
                     title="Click to edit Admin Profile & Portrait"
                 >
@@ -148,67 +175,48 @@ export default function AdminDashboard({ user, onLogout, onUpdateUser }) {
                 {/* STATUTORY NAVIGATION TABS */}
                 <div className="bg-white border border-slate-300 p-2.5 flex flex-wrap items-center justify-between gap-3 shadow-xs print:hidden">
                     <div className="flex flex-wrap gap-1">
-                        <button 
-                            onClick={() => setActiveTab('dashboard')} 
-                            className={`px-3.5 py-2 text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${activeTab === 'dashboard' ? 'bg-blue-950 text-white border-b-2 border-amber-500 shadow-xs' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
-                        >
-                            <LayoutDashboard className="w-3 h-3 inline-block mr-1.5 mb-0.5" /> 
-                            Executive Dashboard
+                        <button onClick={() => handleTabSwitch('dashboard')} className={`px-3.5 py-2 text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${activeTab === 'dashboard' ? 'bg-blue-950 text-white border-b-2 border-amber-500 shadow-xs' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}>
+                            <LayoutDashboard className="w-3 h-3 inline-block mr-1.5 mb-0.5" /> Executive Dashboard
                         </button>
-                        <button 
-                            onClick={() => setActiveTab('users')} 
-                            className={`px-3.5 py-2 text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${activeTab === 'users' ? 'bg-blue-950 text-white border-b-2 border-amber-500 shadow-xs' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
-                        >
-                            <Users className="w-3 h-3 inline-block mr-1.5 mb-0.5" /> 
-                            Member Directory
+                        <button onClick={() => handleTabSwitch('users')} className={`px-3.5 py-2 text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${activeTab === 'users' ? 'bg-blue-950 text-white border-b-2 border-amber-500 shadow-xs' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}>
+                            <Users className="w-3 h-3 inline-block mr-1.5 mb-0.5" /> Member Directory
                         </button>
-                        <button 
-                            onClick={() => setActiveTab('meals')} 
-                            className={`px-3.5 py-2 text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${activeTab === 'meals' ? 'bg-blue-950 text-white border-b-2 border-amber-500 shadow-xs' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
-                        >
-                            <FileText className="w-3 h-3 inline-block mr-1.5 mb-0.5" /> 
-                            Master Ledger
+                        <button onClick={() => handleTabSwitch('meals')} className={`px-3.5 py-2 text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${activeTab === 'meals' ? 'bg-blue-950 text-white border-b-2 border-amber-500 shadow-xs' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}>
+                            <FileText className="w-3 h-3 inline-block mr-1.5 mb-0.5" /> Master Ledger
                         </button>
-                        <button 
-                            onClick={() => setActiveTab('payments')} 
-                            className={`px-3.5 py-2 text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${activeTab === 'payments' ? 'bg-blue-950 text-white border-b-2 border-amber-500 shadow-xs' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
-                        >
-                            <CreditCard className="w-3 h-3 inline-block mr-1.5 mb-0.5" /> 
-                            Fee Clearances
+                        <button onClick={() => handleTabSwitch('payments')} className={`px-3.5 py-2 text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${activeTab === 'payments' ? 'bg-blue-950 text-white border-b-2 border-amber-500 shadow-xs' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}>
+                            <CreditCard className="w-3 h-3 inline-block mr-1.5 mb-0.5" /> Fee Clearances
                         </button>
-                        <button 
-                            onClick={() => setActiveTab('complaints')} 
-                            className={`px-3.5 py-2 text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${activeTab === 'complaints' ? 'bg-blue-950 text-white border-b-2 border-amber-500 shadow-xs' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
-                        >
-                            <MessageSquareWarning className="w-3 h-3 inline-block mr-1.5 mb-0.5" /> 
-                            Grievance Docket
+                        <button onClick={() => handleTabSwitch('complaints')} className={`px-3.5 py-2 text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${activeTab === 'complaints' ? 'bg-blue-950 text-white border-b-2 border-amber-500 shadow-xs' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}>
+                            <MessageSquareWarning className="w-3 h-3 inline-block mr-1.5 mb-0.5" /> Grievance Docket
                         </button>
-                        <button 
-                            onClick={() => setActiveTab('notices')} 
-                            className={`px-3.5 py-2 text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${activeTab === 'notices' ? 'bg-blue-950 text-white border-b-2 border-amber-500 shadow-xs' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
-                        >
-                            <BellRing className="w-3 h-3 inline-block mr-1.5 mb-0.5" /> 
-                            Directives
+                        <button onClick={() => handleTabSwitch('notices')} className={`px-3.5 py-2 text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${activeTab === 'notices' ? 'bg-blue-950 text-white border-b-2 border-amber-500 shadow-xs' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}>
+                            <BellRing className="w-3 h-3 inline-block mr-1.5 mb-0.5" /> Directives
                         </button>
-                        <button 
-                            onClick={() => setActiveTab('settings')} 
-                            className={`px-3.5 py-2 text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${activeTab === 'settings' ? 'bg-blue-950 text-white border-b-2 border-amber-500 shadow-xs' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
-                        >
-                            <Settings className="w-3 h-3 inline-block mr-1.5 mb-0.5" /> 
-                            Statutory Tariffs
+                        <button onClick={() => handleTabSwitch('settings')} className={`px-3.5 py-2 text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${activeTab === 'settings' ? 'bg-blue-950 text-white border-b-2 border-amber-500 shadow-xs' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}>
+                            <Settings className="w-3 h-3 inline-block mr-1.5 mb-0.5" /> Statutory Tariffs
                         </button>
                     </div>
                 </div>
 
                 {/* DYNAMIC VIEW ROUTER */}
-                <main>
-                    {activeTab === 'dashboard' && <AdminOverview />}
-                    {activeTab === 'users' && <AdminUsers />}
-                    {activeTab === 'meals' && <AdminMeals />}
-                    {activeTab === 'payments' && <AdminPayments />}
-                    {activeTab === 'complaints' && <AdminComplaints />}
-                    {activeTab === 'notices' && <AdminNotices />}
-                    {activeTab === 'settings' && <AdminSettings />}
+                <main className="min-h-[50vh]">
+                    {isTransitioning ? (
+                        <div className="flex flex-col items-center justify-center min-h-[400px] bg-white border-2 border-slate-300 shadow-sm border-t-4 border-t-blue-950">
+                            <Loader2 className="w-10 h-10 animate-spin text-amber-600 mb-4" />
+                            <p className="text-xs font-mono font-black uppercase tracking-widest text-slate-700">Accessing Archives...</p>
+                        </div>
+                    ) : (
+                        <div className="animate-in fade-in duration-300">
+                            {activeTab === 'dashboard' && <AdminOverview />}
+                            {activeTab === 'users' && <AdminUsers />}
+                            {activeTab === 'meals' && <AdminMeals />}
+                            {activeTab === 'payments' && <AdminPayments />}
+                            {activeTab === 'complaints' && <AdminComplaints />}
+                            {activeTab === 'notices' && <AdminNotices />}
+                            {activeTab === 'settings' && <AdminSettings />}
+                        </div>
+                    )}
                 </main>
             </div>
 

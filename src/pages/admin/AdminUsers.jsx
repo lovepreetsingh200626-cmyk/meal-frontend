@@ -3,7 +3,7 @@ import API from '../../services/api';
 import { 
     Users, Search, Filter, Pencil, KeyRound, Trash2, 
     Printer, AlertCircle, CheckCircle2, Loader2, User as UserIcon, 
-    Home, Mail, Phone, Check, ShieldCheck, Camera, ImagePlus, X, CreditCard
+    Home, Mail, Phone, Check, ShieldCheck, Camera, ImagePlus, X, CreditCard, Lock
 } from 'lucide-react';
 import { UNIVERSITY_FACULTIES_HIERARCHY } from '../../data/coursesData';
 import { ACADEMIC_SESSIONS } from '../../data/sessionsData';
@@ -28,6 +28,9 @@ export default function AdminUsers() {
 
     const [confirmModal, setConfirmModal] = useState({ isOpen: false, title: '', message: '', onConfirm: () => {} });
     
+    // Password Override Custom Modal State
+    const [passwordModal, setPasswordModal] = useState({ isOpen: false, targetId: null, targetName: '', newPassword: '' });
+
     // Edit User State
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editingUserId, setEditingUserId] = useState(null);
@@ -146,17 +149,35 @@ export default function AdminUsers() {
         });
     };
 
-    const handleResetPassword = async (studentRef, targetName) => {
+    // Trigger Custom Password Override Modal
+    const promptResetPassword = (studentRef, targetName) => {
         const targetId = typeof studentRef === 'object' ? (studentRef?._id || studentRef?.id) : studentRef;
-        const newPassword = window.prompt(`Administrative Override: Enter updated authentication key (min. 8 chars) for (${targetName}):`);
-        if (newPassword === null) return;
-        if (newPassword.trim().length < 8) return alert('Security Policy: Key must meet minimum complexity length of 8 characters.');
+        setPasswordModal({
+            isOpen: true,
+            targetId: targetId,
+            targetName: targetName,
+            newPassword: ''
+        });
+    };
+
+    // Execute Password Override Submission
+    const handlePasswordSubmit = async (e) => {
+        e.preventDefault();
+        const { targetId, targetName, newPassword } = passwordModal;
+
+        if (!newPassword || newPassword.trim().length < 8) {
+            setErrorMsg('Security Policy: Key must meet minimum complexity length of 8 characters.');
+            setTimeout(() => setErrorMsg(''), 4000);
+            return;
+        }
+
         try {
             const { data } = await API.put(`/auth/users/${targetId}/password`, { newPassword: newPassword.trim() });
-            setSuccessMsg(data.message || 'Authentication key overwritten successfully.'); 
+            setSuccessMsg(data.message || `Authentication key overwritten successfully for (${targetName}).`); 
             setTimeout(() => setSuccessMsg(''), 4000);
+            setPasswordModal({ isOpen: false, targetId: null, targetName: '', newPassword: '' });
         } catch (err) { 
-            setErrorMsg('Failed to update credentials.'); 
+            setErrorMsg(err.response?.data?.message || 'Failed to update credentials.'); 
             setTimeout(() => setErrorMsg(''), 4000); 
         }
     };
@@ -437,7 +458,7 @@ export default function AdminUsers() {
                                                 <td className="p-3 text-right print:hidden">
                                                     <div className="flex items-center justify-end gap-1">
                                                         <button onClick={() => openEditModal(u)} className="p-1.5 border border-slate-300 bg-slate-100 hover:bg-blue-950 hover:text-white transition cursor-pointer" title="Amend Candidate Record"><Pencil className="w-3.5 h-3.5" /></button>
-                                                        <button onClick={() => handleResetPassword(u, u.name)} className="p-1.5 border border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-600 hover:text-white transition cursor-pointer" title="Overwrite Authentication Key"><KeyRound className="w-3.5 h-3.5" /></button>
+                                                        <button onClick={() => promptResetPassword(u, u.name)} className="p-1.5 border border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-600 hover:text-white transition cursor-pointer" title="Overwrite Authentication Key"><KeyRound className="w-3.5 h-3.5" /></button>
                                                         <button onClick={() => promptRemoveStudent(u, u.name)} className="p-1.5 border border-red-300 bg-red-50 text-red-700 hover:bg-red-800 hover:text-white transition cursor-pointer" title="Expel from Cooperative Registry"><Trash2 className="w-3.5 h-3.5" /></button>
                                                     </div>
                                                 </td>
@@ -629,6 +650,44 @@ export default function AdminUsers() {
 
                             <button type="submit" className="w-full mt-4 bg-emerald-800 hover:bg-emerald-900 text-white font-black py-3 text-[10px] uppercase tracking-widest cursor-pointer transition border-b-2 border-emerald-950 active:scale-95 shadow-sm">
                                 Commit Statutory Amendments &amp; Registry Update
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* CUSTOM PASSWORD OVERRIDE MODAL */}
+            {passwordModal.isOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-xs p-4 select-none">
+                    <div className="bg-white w-full max-w-sm shadow-2xl relative border-t-4 border-amber-600 rounded-xs">
+                        <div className="bg-slate-50 border-b border-slate-300 px-6 py-4 flex items-center justify-between mb-4">
+                            <div>
+                                <h3 className="text-xs font-black text-blue-950 uppercase tracking-widest font-serif">Overwrite Authentication Key</h3>
+                                <p className="text-[9px] font-bold text-slate-500 uppercase mt-0.5 tracking-tight">Candidate: {passwordModal.targetName}</p>
+                            </div>
+                            <button onClick={() => setPasswordModal({ isOpen: false, targetId: null, targetName: '', newPassword: '' })} className="w-6 h-6 flex items-center justify-center bg-slate-200 hover:bg-slate-300 text-slate-800 transition cursor-pointer"><X className="w-3.5 h-3.5" /></button>
+                        </div>
+                        <form onSubmit={handlePasswordSubmit} className="p-6 pt-0 space-y-4">
+                            <div className="bg-amber-50 border border-amber-300 p-3 text-[10px] font-bold uppercase text-amber-950 tracking-wide">
+                                Administrative Directive: Enter new secure password (minimum 8 characters).
+                            </div>
+                            <div>
+                                <label className="text-[10px] font-black text-slate-700 uppercase block mb-1">New Authentication Key <span className="text-red-700">*</span></label>
+                                <div className="relative">
+                                    <Lock className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
+                                    <input 
+                                        required 
+                                        type="password" 
+                                        placeholder="••••••••" 
+                                        minLength={8}
+                                        value={passwordModal.newPassword} 
+                                        onChange={(e) => setPasswordModal({ ...passwordModal, newPassword: e.target.value })} 
+                                        className="w-full bg-white border border-slate-400 pl-9 pr-3 py-2 text-xs font-bold outline-none focus:border-blue-950" 
+                                    />
+                                </div>
+                            </div>
+                            <button type="submit" className="w-full mt-2 bg-blue-950 hover:bg-blue-900 text-white font-black py-2.5 text-[10px] uppercase tracking-widest transition border-b-2 border-amber-500 active:scale-95 cursor-pointer">
+                                Ratify New Key
                             </button>
                         </form>
                     </div>

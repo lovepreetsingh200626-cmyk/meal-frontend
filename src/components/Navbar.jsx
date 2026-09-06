@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   Utensils, FileText, MessageSquareWarning, LayoutDashboard, 
   Users, BellRing, Settings, LogOut, User as UserIcon, CreditCard, 
-  ShieldCheck, RefreshCw, Landmark, ChevronRight, Award
+  ShieldCheck, Landmark, ShieldAlert, Fingerprint
 } from 'lucide-react';
 
 export default function Navbar({ user, onLogout, onOpenProfile, activeAdminTab, onSelectAdminTab }) {
@@ -37,10 +37,6 @@ export default function Navbar({ user, onLogout, onOpenProfile, activeAdminTab, 
     }
   };
 
-  const handleRefresh = () => {
-    window.location.reload();
-  };
-
   return (
     <header className="w-full bg-white shadow-md sticky top-0 z-50 font-sans select-none print:hidden flex flex-col border-b border-slate-300">
       
@@ -63,12 +59,12 @@ export default function Navbar({ user, onLogout, onOpenProfile, activeAdminTab, 
       </div>
 
       {/* 2. PRIMARY EMBLEM & USER CONTROL BAR */}
-      <div className="px-4 md:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4 bg-white relative z-10">
+      <div className="px-4 md:px-8 py-3.5 flex flex-wrap items-stretch justify-between gap-4 bg-white relative z-10">
         
         {/* Institutional Authority Brand */}
         <div 
           onClick={() => navigate(isAdmin ? '/admin' : '/student')} 
-          className="flex items-center gap-3.5 cursor-pointer group"
+          className="flex items-center gap-3.5 cursor-pointer group py-1"
         >
           <div className="w-12 h-12 bg-gradient-to-br from-blue-950 via-slate-900 to-blue-900 border-2 border-orange-500 rounded-sm flex flex-col items-center justify-center text-white shrink-0 shadow-sm group-hover:shadow-md transition-all">
             <Landmark className="w-5 h-5 text-orange-400 mb-0.5" />
@@ -85,61 +81,58 @@ export default function Navbar({ user, onLogout, onOpenProfile, activeAdminTab, 
         </div>
 
         {/* User Identity & Global Action Controls */}
-        <div className="flex items-center gap-2.5 sm:gap-4">
+        <div className="flex items-stretch gap-2.5 sm:gap-4">
           
-          {/* Official Dossier Card */}
+          {/* OFFICIAL SECURITY CLEARANCE BADGE (Profile Card) */}
           <div 
             onClick={handleProfileClick} 
-            className="flex items-center gap-3 cursor-pointer group hover:bg-slate-50 p-1.5 pr-4 border border-slate-300 bg-white transition-all shadow-xs hover:shadow-sm"
+            className="flex items-stretch cursor-pointer group bg-white border border-slate-300 shadow-sm hover:shadow-md transition-all"
             title="Open Certified Dossier & Settings"
           >
-            <div className="w-9 h-9 bg-slate-100 text-slate-400 font-bold text-xs flex items-center justify-center border border-slate-300 overflow-hidden shrink-0">
-              {user?.profilePhoto ? (
-                <img src={user.profilePhoto} alt="Profile" className="w-full h-full object-cover" />
-              ) : (
-                <UserIcon className="w-5 h-5" />
-              )}
+            {/* Photo Housing */}
+            <div className="bg-slate-100 border-r border-slate-300 p-1.5 flex items-center justify-center shrink-0 group-hover:bg-slate-200 transition-colors">
+              <div className="w-10 h-10 border border-slate-400 overflow-hidden bg-white flex items-center justify-center shadow-inner relative">
+                {user?.profilePhoto ? (
+                  <img src={user.profilePhoto} alt="Profile" className="w-full h-full object-cover grayscale-[20%]" />
+                ) : (
+                  <Fingerprint className="w-6 h-6 text-slate-400" />
+                )}
+              </div>
             </div>
-            <div className="text-left leading-tight hidden sm:block">
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs font-black uppercase text-blue-950 font-serif group-hover:text-orange-700 transition-colors">
+            
+            {/* Dossier Credentials */}
+            <div className="px-3 py-1.5 flex flex-col justify-center border-l-4 border-l-transparent group-hover:border-l-orange-500 transition-colors hidden sm:flex min-w-[160px]">
+              <div className="flex items-baseline justify-between gap-3">
+                <span className="text-[11px] font-black uppercase text-blue-950 font-serif tracking-wide truncate">
                   {user?.name || 'Officer'}
                 </span>
-                <span className="text-[8px] font-black uppercase bg-emerald-100 text-emerald-900 border border-emerald-300 px-1.5 py-0.5 tracking-wider">
-                  {isAdmin ? 'Staff' : 'Certified'}
+                <span className="text-[7px] font-black uppercase bg-emerald-100 text-emerald-900 border border-emerald-300 px-1 py-0.5 tracking-widest shrink-0">
+                  {isAdmin ? 'STAFF' : 'CERTIFIED'}
                 </span>
               </div>
-              <p className="text-[9px] font-mono font-bold text-slate-500 uppercase mt-1 tracking-tight">
-                {isAdmin ? (
-                  <>Clearance: <strong className="text-blue-950">Magistracy</strong></>
-                ) : (
-                  <>ID: <strong className="text-blue-950">{user?.studentId || 'N/A'}</strong></>
-                )}
-                <span className="text-orange-600 font-black ml-2 group-hover:underline">VIEW DOSSIER ➔</span>
+              <p className="text-[9px] font-mono font-bold text-slate-500 uppercase mt-1 tracking-tight flex items-center justify-between">
+                <span>
+                  {isAdmin ? (
+                    <>Access: <strong className="text-blue-950">Magistracy</strong></>
+                  ) : (
+                    <>ID: <strong className="text-blue-950">{user?.studentId || 'N/A'}</strong></>
+                  )}
+                </span>
+                <span className="text-orange-600 font-black group-hover:underline">DOSSIER ➔</span>
               </p>
             </div>
           </div>
 
-          {/* Quick Refresh & Session Controls */}
-          <div className="flex items-center gap-2 border-l border-slate-200 pl-2 sm:pl-4">
-            <button 
-              type="button"
-              onClick={handleRefresh} 
-              className="flex items-center justify-center w-9 h-9 sm:w-auto sm:h-auto sm:px-3 sm:py-2 bg-slate-50 hover:bg-slate-200 border border-slate-300 text-slate-700 transition cursor-pointer shadow-xs active:scale-95 group"
-              title="Synchronize Interface & Ledger"
-            >
-              <RefreshCw className="w-4 h-4 sm:w-3.5 sm:h-3.5 text-blue-950 group-hover:rotate-180 transition-transform duration-500" />
-              <span className="hidden sm:inline text-[10px] font-black uppercase tracking-wider ml-1.5">Sync</span>
-            </button>
-
+          {/* Secure Session Termination Button */}
+          <div className="flex items-stretch border-l border-slate-200 pl-2 sm:pl-4">
             <button 
               type="button"
               onClick={onLogout} 
-              className="flex items-center justify-center w-9 h-9 sm:w-auto sm:h-auto sm:px-4 sm:py-2 bg-red-800 hover:bg-red-900 text-white border-b-2 border-red-950 transition cursor-pointer shadow-xs active:scale-95"
+              className="flex flex-col sm:flex-row items-center justify-center px-3 sm:px-4 bg-red-900 hover:bg-red-950 text-white border border-red-950 transition cursor-pointer shadow-xs active:scale-95 group"
               title="Terminate Active Session"
             >
-              <LogOut className="w-4 h-4 sm:w-3.5 sm:h-3.5 text-red-200" />
-              <span className="hidden sm:inline text-[10px] font-black uppercase tracking-widest ml-1.5">Logout</span>
+              <LogOut className="w-4 h-4 sm:w-3.5 sm:h-3.5 text-red-200 group-hover:text-white transition-colors" />
+              <span className="hidden sm:block text-[9px] font-black uppercase tracking-widest ml-1.5 font-mono">Terminate<br/>Session</span>
             </button>
           </div>
 

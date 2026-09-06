@@ -11,7 +11,7 @@ import StudentLedgerPage from './pages/student/StudentLedgerPage';
 import StudentComplaintsPage from './pages/student/StudentComplaintsPage';
 import StudentPaymentPage from './pages/student/StudentPaymentPage';
 
-// NEW: Separated Admin Dashboard Pages
+// Admin Pages
 import AdminLayout from './pages/admin/AdminLayout';
 import AdminOverview from './pages/admin/AdminOverview';
 import AdminUsers from './pages/admin/AdminUsers';
@@ -74,19 +74,17 @@ function AppRoutes() {
   return (
     <div className="relative min-h-screen bg-slate-100 text-slate-900 font-sans">
       <Routes>
-        {/* ROOT PATH REDIRECT */}
         <Route 
           path="/" 
           element={<Navigate to={user ? (user.role === 'admin' ? '/admin' : '/student') : '/login'} replace />} 
         />
 
-        {/* AUTHENTICATION ROUTE */}
         <Route 
           path="/login" 
           element={!user ? <AuthModal onLoginSuccess={handleLoginSuccess} /> : <Navigate to={user.role === 'admin' ? '/admin' : '/student'} replace />} 
         />
 
-        {/* STUDENT MULTI-PAGE ROUTES */}
+        {/* STUDENT ROUTES */}
         <Route 
           path="/student" 
           element={
@@ -143,7 +141,6 @@ function AppRoutes() {
           } 
         />
         
-        {/* REGISTERED FEE & RECEIPT PAYMENT DESK ROUTE */}
         <Route 
           path="/student/payments" 
           element={
@@ -158,34 +155,23 @@ function AppRoutes() {
           } 
         />
 
-        {/* ======================================= */}
-        {/* EXECUTIVE ADMIN PORTAL ROUTING (NESTED) */}
-        {/* ======================================= */}
+        {/* ADMIN PORTAL ROUTING */}
         <Route 
           path="/admin" 
           element={
             user && user.role === 'admin' 
-              ? <AdminLayout user={user} onLogout={handleLogout} /> 
+              ? <AdminLayout user={user} onLogout={handleLogout} onUpdateUser={handleUpdateUser} /> 
               : <Navigate to="/login" replace />
           } 
         >
-          {/* These are the sub-pages that inject into AdminLayout's <Outlet /> */}
           <Route index element={<AdminOverview />} />
           <Route path="users" element={<AdminUsers />} />
           <Route path="meals" element={<AdminMeals />} />
-          
-          {/* We will build these next! */}
-          {/* <Route path="payments" element={<AdminPayments />} /> */}
-          {/* <Route path="complaints" element={<AdminComplaints />} /> */}
-          {/* <Route path="notices" element={<AdminNotices />} /> */}
-          {/* <Route path="settings" element={<AdminSettings />} /> */}
         </Route>
 
-        {/* CATCH-ALL REDIRECT */}
         <Route path="*" element={<Navigate to={user ? (user.role === 'admin' ? '/admin' : '/student') : '/login'} replace />} />
       </Routes>
 
-      {/* POPUP MODAL OVERLAY */}
       {isProfileModalOpen && user && (
         <ProfileModal 
           user={user} 
