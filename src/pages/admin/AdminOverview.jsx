@@ -43,7 +43,7 @@ export default function AdminOverview() {
 
     const [loading, setLoading] = useState(true);
 
-    /* 
+    /*
      * ============================================================
      * ADMIN / WARDEN PROFILE
      * ============================================================
@@ -330,7 +330,7 @@ export default function AdminOverview() {
 
         return (
 
-            <div className="min-h-[55vh] bg-white border border-slate-200 rounded-2xl flex flex-col items-center justify-center">
+            <div className="min-h-[55vh] bg-white border border-slate-200 rounded-2xl flex flex-col items-center justify-center px-4">
 
                 <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center mb-4">
 
@@ -344,7 +344,7 @@ export default function AdminOverview() {
                     Loading dashboard
                 </p>
 
-                <p className="text-xs text-slate-500 mt-1">
+                <p className="text-xs text-slate-500 mt-1 text-center">
                     Fetching the latest mess records...
                 </p>
 
@@ -356,19 +356,19 @@ export default function AdminOverview() {
 
     return (
 
-        <div className="space-y-6 animate-in fade-in duration-300">
+        <div className="w-full min-w-0 space-y-4 sm:space-y-6 animate-in fade-in duration-300">
 
             {/* =====================================================
                 PAGE HEADER
             ====================================================== */}
 
-            <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+            <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-3 sm:gap-4 min-w-0">
 
-                <div>
+                <div className="min-w-0">
 
                     <div className="flex items-center gap-2 mb-2">
 
-                        <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-900 flex items-center justify-center">
+                        <div className="w-8 h-8 shrink-0 rounded-lg bg-blue-50 text-blue-900 flex items-center justify-center">
 
                             <Building2 className="w-4 h-4" />
 
@@ -380,20 +380,20 @@ export default function AdminOverview() {
 
                     </div>
 
-                    <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
+                    <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900 break-words">
                         Executive Dashboard
                     </h1>
 
-                    <p className="text-sm text-slate-500 mt-1">
+                    <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-2xl">
                         Administrative overview of hostel operations,
                         meals, payments and grievances.
                     </p>
 
                 </div>
 
-                <div className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-lg shadow-sm w-fit">
+                <div className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-lg shadow-sm w-fit max-w-full">
 
-                    <span className="relative flex h-2.5 w-2.5">
+                    <span className="relative flex h-2.5 w-2.5 shrink-0">
 
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
 
@@ -401,7 +401,7 @@ export default function AdminOverview() {
 
                     </span>
 
-                    <span className="text-xs font-semibold text-slate-600">
+                    <span className="text-xs font-semibold text-slate-600 whitespace-nowrap">
                         System synchronized
                     </span>
 
@@ -418,21 +418,21 @@ export default function AdminOverview() {
 
                 {/* PROFILE HEADER */}
 
-                <div className="px-5 sm:px-6 py-4 border-b border-slate-200 bg-slate-50/70">
+                <div className="px-4 sm:px-6 py-4 border-b border-slate-200 bg-slate-50/70">
 
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
 
-                        <div>
+                        <div className="min-w-0">
 
                             <div className="flex items-center gap-2">
 
-                                <div className="w-9 h-9 rounded-lg bg-blue-900 text-white flex items-center justify-center">
+                                <div className="w-9 h-9 shrink-0 rounded-lg bg-blue-900 text-white flex items-center justify-center">
 
                                     <UserRoundCheck className="w-5 h-5" />
 
                                 </div>
 
-                                <div>
+                                <div className="min-w-0">
 
                                     <h2 className="text-sm sm:text-base font-bold text-slate-900">
                                         Warden / In-Charge Profile
@@ -448,11 +448,11 @@ export default function AdminOverview() {
 
                         </div>
 
-                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-50 border border-blue-100 text-blue-900 w-fit">
+                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-50 border border-blue-100 text-blue-900 w-fit max-w-full">
 
-                            <BadgeCheck className="w-4 h-4" />
+                            <BadgeCheck className="w-4 h-4 shrink-0" />
 
-                            <span className="text-xs font-bold">
+                            <span className="text-xs font-bold whitespace-nowrap">
                                 Authorized Administrator
                             </span>
 
@@ -465,17 +465,17 @@ export default function AdminOverview() {
 
                 {/* PROFILE BODY */}
 
-                <div className="p-5 sm:p-6">
+                <div className="p-4 sm:p-6">
 
-                    <div className="flex flex-col lg:flex-row gap-6">
+                    <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 min-w-0">
 
                         {/* =================================================
                             PROFILE IDENTITY
                         ================================================== */}
 
-                        <div className="lg:w-[280px] shrink-0">
+                        <div className="w-full lg:w-[280px] shrink-0">
 
-                            <div className="flex flex-col items-center text-center p-5 bg-slate-50 border border-slate-200 rounded-xl">
+                            <div className="flex flex-col items-center text-center p-4 sm:p-5 bg-slate-50 border border-slate-200 rounded-xl">
 
                                 {/* PROFILE IMAGE */}
 
@@ -497,19 +497,19 @@ export default function AdminOverview() {
 
                                 )}
 
-                                <h3 className="text-lg font-bold text-slate-900 mt-4">
+                                <h3 className="text-lg font-bold text-slate-900 mt-4 break-words max-w-full">
                                     {getValue(currentUser.name)}
                                 </h3>
 
-                                <p className="text-sm font-semibold text-blue-900 mt-1">
+                                <p className="text-sm font-semibold text-blue-900 mt-1 break-words max-w-full">
                                     {getValue(currentUser.designation)}
                                 </p>
 
-                                <div className="flex items-center gap-1.5 mt-3 px-3 py-1.5 bg-white border border-slate-200 rounded-lg">
+                                <div className="flex items-center gap-1.5 mt-3 px-3 py-1.5 bg-white border border-slate-200 rounded-lg max-w-full">
 
-                                    <IdCard className="w-3.5 h-3.5 text-slate-500" />
+                                    <IdCard className="w-3.5 h-3.5 text-slate-500 shrink-0" />
 
-                                    <span className="text-xs font-semibold text-slate-600">
+                                    <span className="text-xs font-semibold text-slate-600 break-words">
                                         ID: {getValue(
                                             currentUser.teacherId ||
                                             currentUser.employeeId
@@ -527,9 +527,9 @@ export default function AdminOverview() {
                             MANDATORY PROFILE INFORMATION
                         ================================================== */}
 
-                        <div className="flex-1">
+                        <div className="flex-1 min-w-0">
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 min-w-0">
 
                                 {/* NAME */}
 
@@ -629,7 +629,7 @@ export default function AdminOverview() {
 
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-5 gap-3 sm:gap-4">
 
                     {/* USERS */}
 
@@ -718,7 +718,7 @@ export default function AdminOverview() {
 
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
 
                     {/* RECORDED DAYS */}
 
@@ -766,21 +766,21 @@ export default function AdminOverview() {
 
             <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
 
-                <div className="px-5 py-4 border-b border-slate-200">
+                <div className="px-4 sm:px-5 py-4 border-b border-slate-200">
 
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
 
-                        <div>
+                        <div className="min-w-0">
 
                             <div className="flex items-center gap-2">
 
-                                <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-900 flex items-center justify-center">
+                                <div className="w-8 h-8 shrink-0 rounded-lg bg-blue-50 text-blue-900 flex items-center justify-center">
 
                                     <TrendingUp className="w-4 h-4" />
 
                                 </div>
 
-                                <div>
+                                <div className="min-w-0">
 
                                     <h2 className="text-sm font-bold text-slate-900">
                                         Meal Cost Trend
@@ -796,9 +796,9 @@ export default function AdminOverview() {
 
                         </div>
 
-                        <div className="flex items-center gap-2 text-xs text-slate-500">
+                        <div className="flex items-center gap-2 text-xs text-slate-500 shrink-0">
 
-                            <CalendarDays className="w-4 h-4" />
+                            <CalendarDays className="w-4 h-4 shrink-0" />
 
                             <span>
                                 Currency: INR
@@ -811,11 +811,11 @@ export default function AdminOverview() {
                 </div>
 
 
-                <div className="p-4 sm:p-6 h-[280px] sm:h-[340px]">
+                <div className="p-2 sm:p-4 lg:p-6 h-[260px] sm:h-[340px] lg:h-[380px] min-w-0">
 
                     {chartData.length === 0 ? (
 
-                        <div className="h-full flex flex-col items-center justify-center">
+                        <div className="h-full flex flex-col items-center justify-center px-4">
 
                             <TrendingUp className="w-8 h-8 text-slate-300 mb-3" />
 
@@ -840,8 +840,8 @@ export default function AdminOverview() {
                                 data={chartData}
                                 margin={{
                                     top: 10,
-                                    right: 10,
-                                    left: 0,
+                                    right: 5,
+                                    left: -10,
                                     bottom: 0
                                 }}
                             >
@@ -896,6 +896,7 @@ export default function AdminOverview() {
                                     }}
                                     tickLine={false}
                                     axisLine={false}
+                                    width={40}
                                     tickFormatter={
                                         value =>
                                             `₹${value}`
@@ -963,14 +964,14 @@ function ProfileField({
     return (
 
         <div
-            className={`rounded-xl border p-4 ${
+            className={`min-w-0 rounded-xl border p-3 sm:p-4 ${
                 highlight
                     ? 'border-blue-200 bg-blue-50/50'
                     : 'border-slate-200 bg-white'
             }`}
         >
 
-            <div className="flex items-start gap-3">
+            <div className="flex items-start gap-3 min-w-0">
 
                 <div
                     className={`w-9 h-9 shrink-0 rounded-lg flex items-center justify-center ${
@@ -984,14 +985,14 @@ function ProfileField({
 
                 </div>
 
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
 
                     <p className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wide">
                         {label}
                     </p>
 
                     <p
-                        className={`text-sm font-semibold mt-1 break-words ${
+                        className={`text-xs sm:text-sm font-semibold mt-1 break-words ${
                             value
                                 ? 'text-slate-800'
                                 : 'text-slate-400 italic'
@@ -1025,33 +1026,33 @@ function StatCard({
 
     return (
 
-        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+        <div className="min-w-0 bg-white border border-slate-200 rounded-xl p-3 sm:p-5 shadow-sm hover:shadow-md transition-shadow">
 
-            <div className="flex items-start justify-between gap-3">
+            <div className="flex items-start justify-between gap-2 sm:gap-3">
 
                 <div className="min-w-0">
 
-                    <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">
+                    <p className="text-[9px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-wide leading-tight">
                         {label}
                     </p>
 
-                    <p className="text-2xl sm:text-3xl font-bold text-slate-900 mt-2 truncate">
+                    <p className="text-lg sm:text-2xl lg:text-3xl font-bold text-slate-900 mt-2 break-words">
                         {value}
                     </p>
 
                 </div>
 
                 <div
-                    className={`w-10 h-10 shrink-0 rounded-lg flex items-center justify-center ${iconClass}`}
+                    className={`w-8 h-8 sm:w-10 sm:h-10 shrink-0 rounded-lg flex items-center justify-center ${iconClass}`}
                 >
 
-                    <Icon className="w-5 h-5" />
+                    <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
 
                 </div>
 
             </div>
 
-            <p className="text-xs text-slate-500 mt-3">
+            <p className="text-[10px] sm:text-xs text-slate-500 mt-3 leading-snug">
                 {description}
             </p>
 
@@ -1074,17 +1075,17 @@ function SummaryCard({
 
     return (
 
-        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+        <div className="min-w-0 bg-white border border-slate-200 rounded-xl p-3 sm:p-4 shadow-sm">
 
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">
+            <p className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wide">
                 {label}
             </p>
 
-            <p className="text-xl font-bold text-slate-900 mt-1">
+            <p className="text-lg sm:text-xl font-bold text-slate-900 mt-1 break-words">
                 {value}
             </p>
 
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-[10px] sm:text-xs text-slate-500 mt-1 leading-snug">
                 {description}
             </p>
 

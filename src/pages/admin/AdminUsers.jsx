@@ -47,28 +47,28 @@ const ROLL_NUMBERS = Array.from(
 
 function StatCard({ icon: Icon, label, value, description, iconClass = '' }) {
     return (
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="flex items-start justify-between gap-4">
-                <div>
-                    <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">
+        <div className="min-w-0 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-5">
+            <div className="flex min-w-0 items-start justify-between gap-2 sm:gap-4">
+                <div className="min-w-0">
+                    <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-slate-500 sm:text-[11px] sm:tracking-[0.16em]">
                         {label}
                     </p>
 
-                    <p className="mt-2 text-2xl font-black tracking-tight text-slate-900">
+                    <p className="mt-2 truncate text-xl font-black tracking-tight text-slate-900 sm:text-2xl">
                         {value}
                     </p>
 
                     {description && (
-                        <p className="mt-1 text-xs text-slate-500">
+                        <p className="mt-1 hidden text-xs text-slate-500 sm:block">
                             {description}
                         </p>
                     )}
                 </div>
 
                 <div
-                    className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-100 ${iconClass}`}
+                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 sm:h-11 sm:w-11 ${iconClass}`}
                 >
-                    <Icon className="h-5 w-5" />
+                    <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
                 </div>
             </div>
         </div>
@@ -77,12 +77,12 @@ function StatCard({ icon: Icon, label, value, description, iconClass = '' }) {
 
 function SectionHeader({ icon: Icon, title, description }) {
     return (
-        <div className="mb-4 flex items-start gap-3">
+        <div className="mb-4 flex min-w-0 items-start gap-3">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-900 text-white">
                 <Icon className="h-4 w-4" />
             </div>
 
-            <div>
+            <div className="min-w-0">
                 <h4 className="text-sm font-black text-slate-900">
                     {title}
                 </h4>
@@ -99,7 +99,7 @@ function SectionHeader({ icon: Icon, title, description }) {
 
 function Field({ label, required = false, children }) {
     return (
-        <div>
+        <div className="min-w-0">
             <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-slate-600">
                 {label}
                 {required && <span className="ml-1 text-red-500">*</span>}
@@ -935,28 +935,28 @@ export default function AdminUsers() {
     /* ---------------------------------------------------------------------- */
 
     return (
-        <div className="space-y-6 pb-8">
+        <div className="w-full min-w-0 space-y-4 pb-8 sm:space-y-6">
             {/* ---------------------------------------------------------------- */}
             {/* NOTIFICATIONS                                                     */}
             {/* ---------------------------------------------------------------- */}
 
             {errorMsg && (
-                <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-red-800 shadow-sm">
+                <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-3 py-3 text-red-800 shadow-sm sm:px-4">
                     <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
 
-                    <div>
+                    <div className="min-w-0">
                         <p className="text-sm font-bold">
                             Action failed
                         </p>
 
-                        <p className="mt-0.5 text-xs">
+                        <p className="mt-0.5 break-words text-xs">
                             {errorMsg}
                         </p>
                     </div>
 
                     <button
                         onClick={() => setErrorMsg('')}
-                        className="ml-auto rounded-lg p-1 hover:bg-red-100"
+                        className="ml-auto shrink-0 rounded-lg p-1 hover:bg-red-100"
                     >
                         <X className="h-4 w-4" />
                     </button>
@@ -964,22 +964,22 @@ export default function AdminUsers() {
             )}
 
             {successMsg && (
-                <div className="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-800 shadow-sm">
+                <div className="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-3 text-emerald-800 shadow-sm sm:px-4">
                     <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" />
 
-                    <div>
+                    <div className="min-w-0">
                         <p className="text-sm font-bold">
                             Action completed
                         </p>
 
-                        <p className="mt-0.5 text-xs">
+                        <p className="mt-0.5 break-words text-xs">
                             {successMsg}
                         </p>
                     </div>
 
                     <button
                         onClick={() => setSuccessMsg('')}
-                        className="ml-auto rounded-lg p-1 hover:bg-emerald-100"
+                        className="ml-auto shrink-0 rounded-lg p-1 hover:bg-emerald-100"
                     >
                         <X className="h-4 w-4" />
                     </button>
@@ -990,18 +990,18 @@ export default function AdminUsers() {
             {/* PAGE HEADER                                                       */}
             {/* ---------------------------------------------------------------- */}
 
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-                <div>
-                    <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-blue-600">
-                        <Users className="h-4 w-4" />
+            <div className="flex min-w-0 flex-col gap-3 sm:gap-4 lg:flex-row lg:items-end lg:justify-between">
+                <div className="min-w-0">
+                    <div className="mb-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.15em] text-blue-600 sm:text-xs sm:tracking-[0.18em]">
+                        <Users className="h-4 w-4 shrink-0" />
                         User Management
                     </div>
 
-                    <h1 className="text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">
+                    <h1 className="text-xl font-black tracking-tight text-slate-950 sm:text-3xl">
                         Student Directory
                     </h1>
 
-                    <p className="mt-1 max-w-2xl text-sm text-slate-500">
+                    <p className="mt-1 max-w-2xl text-xs leading-relaxed text-slate-500 sm:text-sm">
                         Manage student profiles, academic
                         information, hostel allocation and
                         monthly fee clearance.
@@ -1011,7 +1011,7 @@ export default function AdminUsers() {
                 <button
                     onClick={() => fetchData(true)}
                     disabled={loading || refreshing}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
                 >
                     <RefreshCw
                         className={`h-4 w-4 ${
@@ -1028,7 +1028,7 @@ export default function AdminUsers() {
             {/* STAT CARDS                                                        */}
             {/* ---------------------------------------------------------------- */}
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
                 <StatCard
                     icon={Users}
                     label="Total Students"
@@ -1066,14 +1066,14 @@ export default function AdminUsers() {
             {/* DIRECTORY CARD                                                    */}
             {/* ---------------------------------------------------------------- */}
 
-            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div className="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
                 {/* TOOLBAR */}
 
-                <div className="border-b border-slate-200 p-4 sm:p-5">
-                    <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-                        <div>
+                <div className="min-w-0 border-b border-slate-200 p-3 sm:p-5">
+                    <div className="flex min-w-0 flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+                        <div className="min-w-0">
                             <h2 className="flex items-center gap-2 text-base font-black text-slate-900">
-                                <UserRound className="h-5 w-5 text-blue-600" />
+                                <UserRound className="h-5 w-5 shrink-0 text-blue-600" />
                                 Student Records
                             </h2>
 
@@ -1083,10 +1083,10 @@ export default function AdminUsers() {
                             </p>
                         </div>
 
-                        <div className="flex flex-col gap-2 sm:flex-row">
+                        <div className="flex min-w-0 flex-col gap-2 sm:flex-row">
                             {/* SEARCH */}
 
-                            <div className="relative">
+                            <div className="relative min-w-0">
                                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
 
                                 <input
@@ -1098,13 +1098,13 @@ export default function AdminUsers() {
                                             e.target.value
                                         )
                                     }
-                                    className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-4 text-sm font-medium text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 sm:w-64"
+                                    className="h-10 w-full min-w-0 rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-4 text-sm font-medium text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 sm:w-64"
                                 />
                             </div>
 
                             {/* HOSTEL FILTER */}
 
-                            <div className="relative">
+                            <div className="relative min-w-0">
                                 <Filter className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
 
                                 <select
@@ -1146,24 +1146,24 @@ export default function AdminUsers() {
 
                 {/* TABLE */}
 
-                <div className="overflow-x-auto">
+                <div className="w-full overflow-x-auto">
                     {loading ? (
-                        <div className="flex min-h-[420px] flex-col items-center justify-center">
+                        <div className="flex min-h-[320px] flex-col items-center justify-center px-4 sm:min-h-[420px]">
                             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
                                 <Loader2 className="h-6 w-6 animate-spin" />
                             </div>
 
-                            <p className="mt-4 text-sm font-bold text-slate-700">
+                            <p className="mt-4 text-center text-sm font-bold text-slate-700">
                                 Loading student directory...
                             </p>
 
-                            <p className="mt-1 text-xs text-slate-400">
+                            <p className="mt-1 text-center text-xs text-slate-400">
                                 Fetching records and payment
                                 information
                             </p>
                         </div>
                     ) : (
-                        <table className="min-w-[1100px] w-full text-left">
+                        <table className="w-full min-w-[1100px] text-left">
                             <thead>
                                 <tr className="border-b border-slate-200 bg-slate-50">
                                     <th className="px-5 py-4 text-[10px] font-black uppercase tracking-wider text-slate-500">
@@ -1466,7 +1466,7 @@ export default function AdminUsers() {
                 {/* TABLE FOOTER */}
 
                 {!loading && filteredUsers.length > 0 && (
-                    <div className="flex flex-col gap-2 border-t border-slate-200 bg-slate-50 px-5 py-3 text-[11px] text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex flex-col gap-2 border-t border-slate-200 bg-slate-50 px-4 py-3 text-[11px] text-slate-500 sm:flex-row sm:items-center sm:justify-between sm:px-5">
                         <span>
                             {filteredUsers.length} student
                             {filteredUsers.length !== 1
@@ -1487,21 +1487,21 @@ export default function AdminUsers() {
             {/* ================================================================== */}
 
             {isEditModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-3 backdrop-blur-sm sm:p-5">
+                <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-950/60 p-2 backdrop-blur-sm sm:p-5">
                     <div
                         role="dialog"
                         aria-modal="true"
-                        className="flex max-h-[94vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+                        className="my-2 flex max-h-[96vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl sm:my-0 sm:max-h-[94vh]"
                     >
                         {/* MODAL HEADER */}
 
-                        <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4 sm:px-6">
-                            <div>
+                        <div className="flex items-start justify-between gap-3 border-b border-slate-200 px-4 py-3 sm:px-6 sm:py-4">
+                            <div className="min-w-0">
                                 <p className="text-[10px] font-black uppercase tracking-[0.18em] text-blue-600">
                                     Student Management
                                 </p>
 
-                                <h3 className="mt-1 text-lg font-black text-slate-900">
+                                <h3 className="mt-1 text-base font-black text-slate-900 sm:text-lg">
                                     Edit Student Profile
                                 </h3>
 
@@ -1516,7 +1516,7 @@ export default function AdminUsers() {
                                 onClick={() =>
                                     setIsEditModalOpen(false)
                                 }
-                                className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-slate-500 transition hover:bg-slate-200 hover:text-slate-900"
+                                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-500 transition hover:bg-slate-200 hover:text-slate-900"
                             >
                                 <X className="h-5 w-5" />
                             </button>
@@ -1526,12 +1526,12 @@ export default function AdminUsers() {
 
                         <form
                             onSubmit={handleEditSubmit}
-                            className="overflow-y-auto p-5 sm:p-6"
+                            className="min-h-0 overflow-y-auto p-4 sm:p-6"
                         >
                             <div className="space-y-6">
                                 {/* PROFILE PHOTO */}
 
-                                <div className="flex flex-col items-center rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                                <div className="flex flex-col items-center rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:p-5">
                                     <div className="relative">
                                         <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-2xl border-4 border-white bg-slate-200 shadow-md">
                                             {editFormData.profilePhoto ? (
@@ -1565,7 +1565,7 @@ export default function AdminUsers() {
                                         Profile Photo
                                     </p>
 
-                                    <p className="mt-1 text-[10px] text-slate-400">
+                                    <p className="mt-1 text-center text-[10px] text-slate-400">
                                         Image automatically compressed
                                         before upload
                                     </p>
@@ -2272,24 +2272,24 @@ export default function AdminUsers() {
             {/* ================================================================== */}
 
             {passwordModal.isOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
+                <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-950/60 p-3 backdrop-blur-sm sm:p-4">
                     <div
                         role="dialog"
                         aria-modal="true"
-                        className="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl"
+                        className="my-2 w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl sm:my-0"
                     >
-                        <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
-                            <div className="flex items-center gap-3">
-                                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
+                        <div className="flex items-center justify-between border-b border-slate-200 px-4 py-4 sm:px-5">
+                            <div className="flex min-w-0 items-center gap-3">
+                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
                                     <Lock className="h-5 w-5" />
                                 </div>
 
-                                <div>
+                                <div className="min-w-0">
                                     <h3 className="text-sm font-black text-slate-900">
                                         Reset Password
                                     </h3>
 
-                                    <p className="mt-0.5 text-[11px] text-slate-500">
+                                    <p className="mt-0.5 truncate text-[11px] text-slate-500">
                                         {passwordModal.targetName}
                                     </p>
                                 </div>
@@ -2305,7 +2305,7 @@ export default function AdminUsers() {
                                         newPassword: '',
                                     })
                                 }
-                                className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-500 hover:bg-slate-200"
+                                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500 hover:bg-slate-200"
                             >
                                 <X className="h-4 w-4" />
                             </button>
@@ -2313,7 +2313,7 @@ export default function AdminUsers() {
 
                         <form
                             onSubmit={handlePasswordSubmit}
-                            className="p-5"
+                            className="p-4 sm:p-5"
                         >
                             <div className="rounded-xl border border-amber-200 bg-amber-50 p-3">
                                 <p className="text-xs leading-relaxed text-amber-800">
@@ -2356,7 +2356,7 @@ export default function AdminUsers() {
                                 </Field>
                             </div>
 
-                            <div className="mt-6 flex gap-3">
+                            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
                                 <button
                                     type="button"
                                     onClick={() =>
