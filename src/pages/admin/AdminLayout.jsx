@@ -123,23 +123,24 @@ export default function AdminLayout({ user, onLogout }) {
         cursor-pointer
 
         border
+        rounded-lg
+        sm:rounded-md
 
-        ${
-            isActive
-                ? `
-                    bg-blue-700
-                    text-white
-                    border-blue-800
-                    shadow-sm
-                `
-                : `
-                    bg-slate-50
-                    text-slate-700
-                    border-transparent
-                    hover:bg-blue-50
-                    hover:text-blue-800
-                    hover:border-blue-100
-                `
+        ${isActive
+            ? `
+                bg-blue-700
+                text-white
+                border-blue-800
+                shadow-sm
+            `
+            : `
+                bg-slate-50
+                text-slate-700
+                border-transparent
+                hover:bg-blue-50
+                hover:text-blue-800
+                hover:border-blue-100
+            `
         }
         `;
 
@@ -150,13 +151,20 @@ export default function AdminLayout({ user, onLogout }) {
             className="
                 min-h-screen
                 w-full
+                min-w-0
                 max-w-full
+
                 overflow-x-hidden
+
                 bg-slate-100
                 text-slate-900
-                pb-8
-                sm:pb-16
+
+                pb-6
+                sm:pb-10
+                md:pb-16
+
                 font-sans
+
                 flex
                 flex-col
 
@@ -171,19 +179,18 @@ export default function AdminLayout({ user, onLogout }) {
 
             <div
                 className="
+                    w-full
+                    min-w-0
+
                     bg-slate-800
                     text-slate-300
-
-                    text-[8px]
-                    sm:text-[10px]
-
-                    font-bold
 
                     px-3
                     sm:px-4
                     md:px-8
 
-                    py-2
+                    py-1.5
+                    sm:py-2
 
                     border-b-2
                     border-amber-500/80
@@ -192,7 +199,7 @@ export default function AdminLayout({ user, onLogout }) {
                     items-center
                     justify-between
 
-                    gap-3
+                    gap-2
 
                     print:hidden
                     select-none
@@ -205,9 +212,10 @@ export default function AdminLayout({ user, onLogout }) {
                     className="
                         flex
                         items-center
-                        gap-2
+                        gap-1.5
 
                         min-w-0
+                        flex-1
 
                         uppercase
                         tracking-widest
@@ -225,19 +233,26 @@ export default function AdminLayout({ user, onLogout }) {
                             rounded-full
                             bg-emerald-400
                             animate-pulse
+
                             shrink-0
                         "
                     />
 
-                    <span className="truncate">
+                    <span
+                        className="
+                            truncate
+                            text-[8px]
+                            sm:text-[10px]
+                        "
+                    >
                         Autonomous Hostel Cooperative Registry
                     </span>
 
                     <span
                         className="
-                            text-slate-500
                             hidden
                             lg:inline
+                            text-slate-500
                             shrink-0
                         "
                     >
@@ -246,10 +261,10 @@ export default function AdminLayout({ user, onLogout }) {
 
                     <span
                         className="
-                            text-amber-300
-                            font-black
                             hidden
                             lg:inline
+                            text-amber-300
+                            font-black
                             truncate
                         "
                     >
@@ -271,6 +286,7 @@ export default function AdminLayout({ user, onLogout }) {
                         font-mono
                         uppercase
                         tracking-wider
+
                         text-slate-400
 
                         shrink-0
@@ -296,40 +312,42 @@ export default function AdminLayout({ user, onLogout }) {
 
             <header
                 className="
+                    w-full
+                    min-w-0
+
                     bg-white
+
                     border-b-2
                     border-slate-300
+
                     shadow-sm
 
                     px-3
                     sm:px-4
                     md:px-8
 
-                    py-3
+                    py-2.5
                     sm:py-4
 
                     flex
                     items-center
                     justify-between
 
-                    gap-3
+                    gap-2
 
                     z-40
                     print:hidden
-
-                    min-w-0
                 "
             >
 
-                {/* =================================================
-                    BRAND
-                ================================================== */}
+                {/* BRAND */}
 
                 <div
                     className="
                         flex
                         items-center
-                        gap-2.5
+
+                        gap-2
                         sm:gap-4
 
                         min-w-0
@@ -355,7 +373,8 @@ export default function AdminLayout({ user, onLogout }) {
 
                             p-1
 
-                            rounded-sm
+                            rounded-md
+                            sm:rounded-sm
 
                             flex
                             flex-col
@@ -390,7 +409,9 @@ export default function AdminLayout({ user, onLogout }) {
 
                                 font-black
                                 tracking-widest
+
                                 text-amber-200
+
                                 uppercase
                                 leading-none
                             "
@@ -404,12 +425,16 @@ export default function AdminLayout({ user, onLogout }) {
                     <div
                         className="
                             min-w-0
+                            flex-1
                         "
                     >
 
                         <h1
                             className="
-                                text-sm
+                                max-w-[205px]
+                                sm:max-w-none
+
+                                text-[12px]
                                 sm:text-lg
                                 md:text-xl
 
@@ -421,11 +446,15 @@ export default function AdminLayout({ user, onLogout }) {
 
                                 font-serif
 
-                                leading-tight
+                                leading-[1.15]
+
+                                line-clamp-3
+                                sm:line-clamp-none
                             "
                         >
                             Central Student Hostel Mess &amp; Diet Audit Ledger
                         </h1>
+
 
                         <h2
                             className="
@@ -472,87 +501,83 @@ export default function AdminLayout({ user, onLogout }) {
                 </div>
 
 
-                {/* =================================================
-                    HEADER ACTIONS
-                ================================================== */}
+                {/* LOGOUT */}
 
-                <div
+                <button
+                    type="button"
+                    onClick={onLogout}
                     className="
+                        shrink-0
+
                         flex
                         items-center
-                        shrink-0
+                        justify-center
+
+                        gap-1.5
+
+                        text-[9px]
+                        sm:text-[10px]
+
+                        font-black
+
+                        bg-red-700
+                        hover:bg-red-800
+
+                        text-white
+
+                        border
+                        border-red-900
+
+                        px-2.5
+                        sm:px-3.5
+
+                        py-2.5
+                        sm:py-2.5
+
+                        rounded-md
+                        sm:rounded-none
+
+                        uppercase
+                        tracking-wider
+                        sm:tracking-widest
+
+                        transition
+                        cursor-pointer
+
+                        shadow-sm
+
+                        active:scale-95
+
+                        whitespace-nowrap
+
+                        min-h-[38px]
+                        sm:min-h-0
                     "
                 >
 
-                    {/* LOGOUT */}
-
-                    <button
-                        type="button"
-                        onClick={onLogout}
+                    <LogOut
                         className="
-                            flex
-                            items-center
-                            justify-center
-                            gap-1.5
+                            w-4
+                            h-4
 
-                            text-[9px]
-                            sm:text-[10px]
+                            sm:w-3.5
+                            sm:h-3.5
 
-                            font-black
-
-                            bg-red-700
-                            hover:bg-red-800
-
-                            text-white
-
-                            border
-                            border-red-900
-
-                            px-2.5
-                            sm:px-3.5
-
-                            py-2
-                            sm:py-2.5
-
-                            uppercase
-                            tracking-wider
-                            sm:tracking-widest
-
-                            transition
-                            cursor-pointer
-
-                            shadow-sm
-
-                            active:scale-95
-
-                            whitespace-nowrap
-
-                            min-h-[38px]
-                            sm:min-h-0
+                            shrink-0
                         "
-                    >
+                    />
 
-                        <LogOut
-                            className="
-                                w-3.5
-                                h-3.5
-                                shrink-0
-                            "
-                        />
-
-                        <span>
-                            <span className="hidden sm:inline">
-                                Terminate Session
-                            </span>
-
-                            <span className="sm:hidden">
-                                Logout
-                            </span>
+                    <span>
+                        <span className="hidden sm:inline">
+                            Terminate Session
                         </span>
 
-                    </button>
+                        <span className="sm:hidden">
+                            Logout
+                        </span>
+                    </span>
 
-                </div>
+                </button>
 
             </header>
 
@@ -563,6 +588,9 @@ export default function AdminLayout({ user, onLogout }) {
 
             <div
                 className="
+                    w-full
+                    min-w-0
+
                     bg-slate-800
                     text-white
 
@@ -577,15 +605,13 @@ export default function AdminLayout({ user, onLogout }) {
                     items-center
                     justify-between
 
-                    gap-3
+                    gap-2
 
                     border-b
                     border-slate-700
 
                     z-30
                     print:hidden
-
-                    min-w-0
                 "
             >
 
@@ -595,15 +621,19 @@ export default function AdminLayout({ user, onLogout }) {
                     className="
                         flex
                         items-center
-                        gap-2.5
+
+                        gap-2
                         sm:gap-3
 
-                        px-1.5
+                        min-w-0
+                        flex-1
+
+                        px-1
                         sm:px-2
 
                         py-1
 
-                        rounded-sm
+                        rounded-md
 
                         hover:bg-slate-700
 
@@ -611,9 +641,6 @@ export default function AdminLayout({ user, onLogout }) {
                         cursor-pointer
 
                         text-left
-
-                        min-w-0
-                        flex-1
                     "
                     title="Open Administrator Profile"
                 >
@@ -640,6 +667,8 @@ export default function AdminLayout({ user, onLogout }) {
 
                             overflow-hidden
                             shrink-0
+
+                            rounded-sm
                         "
                     >
 
@@ -672,6 +701,7 @@ export default function AdminLayout({ user, onLogout }) {
                     <div
                         className="
                             min-w-0
+                            flex-1
                         "
                     >
 
@@ -679,8 +709,8 @@ export default function AdminLayout({ user, onLogout }) {
                             className="
                                 flex
                                 items-center
-                                gap-1.5
-                                sm:gap-2
+
+                                gap-2
 
                                 min-w-0
                             "
@@ -688,6 +718,8 @@ export default function AdminLayout({ user, onLogout }) {
 
                             <h3
                                 className="
+                                    min-w-0
+
                                     font-black
                                     text-white
 
@@ -704,6 +736,7 @@ export default function AdminLayout({ user, onLogout }) {
                                 {currentUser?.name ||
                                     'Executive Officer'}
                             </h3>
+
 
                             <span
                                 className="
@@ -748,7 +781,8 @@ export default function AdminLayout({ user, onLogout }) {
                                 text-slate-300
 
                                 uppercase
-                                tracking-wider
+
+                                tracking-wide
                                 sm:tracking-widest
 
                                 truncate
@@ -767,6 +801,8 @@ export default function AdminLayout({ user, onLogout }) {
 
                 <div
                     className="
+                        shrink-0
+
                         text-[8px]
                         sm:text-[9px]
 
@@ -775,8 +811,6 @@ export default function AdminLayout({ user, onLogout }) {
                         tracking-wider
 
                         text-slate-400
-
-                        shrink-0
                     "
                 >
 
@@ -801,6 +835,7 @@ export default function AdminLayout({ user, onLogout }) {
                 className="
                     w-full
                     max-w-7xl
+
                     mx-auto
 
                     px-2.5
@@ -823,6 +858,9 @@ export default function AdminLayout({ user, onLogout }) {
 
                 <nav
                     className="
+                        w-full
+                        min-w-0
+
                         bg-white
 
                         border
@@ -831,12 +869,12 @@ export default function AdminLayout({ user, onLogout }) {
                         p-1.5
                         sm:p-2.5
 
+                        rounded-xl
+                        sm:rounded-md
+
                         shadow-sm
 
                         print:hidden
-
-                        w-full
-                        min-w-0
 
                         overflow-hidden
                     "
@@ -845,20 +883,22 @@ export default function AdminLayout({ user, onLogout }) {
                     <div
                         className="
                             flex
+                            items-stretch
+
                             gap-1.5
 
                             overflow-x-auto
                             overflow-y-hidden
 
-                            pb-0.5
+                            pb-1
+
+                            min-w-0
+
+                            touch-pan-x
 
                             scrollbar-thin
                             scrollbar-thumb-slate-300
                             scrollbar-track-transparent
-
-                            touch-pan-x
-
-                            min-w-0
                         "
                     >
 
@@ -867,9 +907,17 @@ export default function AdminLayout({ user, onLogout }) {
                             end
                             className={navLinkClass}
                         >
-                            <LayoutDashboard className="w-3.5 h-3.5 shrink-0" />
+
+                            <LayoutDashboard
+                                className="
+                                    w-4
+                                    h-4
+                                    shrink-0
+                                "
+                            />
 
                             <span>
+
                                 <span className="hidden sm:inline">
                                     Executive Dashboard
                                 </span>
@@ -877,7 +925,9 @@ export default function AdminLayout({ user, onLogout }) {
                                 <span className="sm:hidden">
                                     Dashboard
                                 </span>
+
                             </span>
+
                         </NavLink>
 
 
@@ -885,9 +935,17 @@ export default function AdminLayout({ user, onLogout }) {
                             to="/admin/users"
                             className={navLinkClass}
                         >
-                            <Users className="w-3.5 h-3.5 shrink-0" />
+
+                            <Users
+                                className="
+                                    w-4
+                                    h-4
+                                    shrink-0
+                                "
+                            />
 
                             <span>
+
                                 <span className="hidden sm:inline">
                                     Member Directory
                                 </span>
@@ -895,7 +953,9 @@ export default function AdminLayout({ user, onLogout }) {
                                 <span className="sm:hidden">
                                     Users
                                 </span>
+
                             </span>
+
                         </NavLink>
 
 
@@ -903,9 +963,17 @@ export default function AdminLayout({ user, onLogout }) {
                             to="/admin/meals"
                             className={navLinkClass}
                         >
-                            <FileText className="w-3.5 h-3.5 shrink-0" />
+
+                            <FileText
+                                className="
+                                    w-4
+                                    h-4
+                                    shrink-0
+                                "
+                            />
 
                             <span>
+
                                 <span className="hidden sm:inline">
                                     Master Ledger
                                 </span>
@@ -913,7 +981,9 @@ export default function AdminLayout({ user, onLogout }) {
                                 <span className="sm:hidden">
                                     Meals
                                 </span>
+
                             </span>
+
                         </NavLink>
 
 
@@ -921,9 +991,17 @@ export default function AdminLayout({ user, onLogout }) {
                             to="/admin/payments"
                             className={navLinkClass}
                         >
-                            <CreditCard className="w-3.5 h-3.5 shrink-0" />
+
+                            <CreditCard
+                                className="
+                                    w-4
+                                    h-4
+                                    shrink-0
+                                "
+                            />
 
                             <span>
+
                                 <span className="hidden sm:inline">
                                     Fee Clearances
                                 </span>
@@ -931,7 +1009,9 @@ export default function AdminLayout({ user, onLogout }) {
                                 <span className="sm:hidden">
                                     Payments
                                 </span>
+
                             </span>
+
                         </NavLink>
 
 
@@ -939,9 +1019,17 @@ export default function AdminLayout({ user, onLogout }) {
                             to="/admin/complaints"
                             className={navLinkClass}
                         >
-                            <MessageSquareWarning className="w-3.5 h-3.5 shrink-0" />
+
+                            <MessageSquareWarning
+                                className="
+                                    w-4
+                                    h-4
+                                    shrink-0
+                                "
+                            />
 
                             <span>
+
                                 <span className="hidden sm:inline">
                                     Grievance Docket
                                 </span>
@@ -949,7 +1037,9 @@ export default function AdminLayout({ user, onLogout }) {
                                 <span className="sm:hidden">
                                     Complaints
                                 </span>
+
                             </span>
+
                         </NavLink>
 
 
@@ -957,9 +1047,17 @@ export default function AdminLayout({ user, onLogout }) {
                             to="/admin/notices"
                             className={navLinkClass}
                         >
-                            <BellRing className="w-3.5 h-3.5 shrink-0" />
+
+                            <BellRing
+                                className="
+                                    w-4
+                                    h-4
+                                    shrink-0
+                                "
+                            />
 
                             <span>
+
                                 <span className="hidden sm:inline">
                                     Directives
                                 </span>
@@ -967,7 +1065,9 @@ export default function AdminLayout({ user, onLogout }) {
                                 <span className="sm:hidden">
                                     Notices
                                 </span>
+
                             </span>
+
                         </NavLink>
 
 
@@ -975,9 +1075,17 @@ export default function AdminLayout({ user, onLogout }) {
                             to="/admin/settings"
                             className={navLinkClass}
                         >
-                            <Settings className="w-3.5 h-3.5 shrink-0" />
+
+                            <Settings
+                                className="
+                                    w-4
+                                    h-4
+                                    shrink-0
+                                "
+                            />
 
                             <span>
+
                                 <span className="hidden sm:inline">
                                     Statutory Tariffs
                                 </span>
@@ -985,7 +1093,9 @@ export default function AdminLayout({ user, onLogout }) {
                                 <span className="sm:hidden">
                                     Settings
                                 </span>
+
                             </span>
+
                         </NavLink>
 
                     </div>
@@ -1001,6 +1111,8 @@ export default function AdminLayout({ user, onLogout }) {
                     className="
                         w-full
                         min-w-0
+
+                        overflow-x-hidden
                     "
                 >
 
