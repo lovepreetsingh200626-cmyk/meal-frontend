@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import API from '../services/api';
+
 import {
     User,
     Phone,
@@ -32,11 +33,9 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
     const [hostelsList, setHostelsList] = useState([]);
     const [hostelsLoading, setHostelsLoading] = useState(true);
 
-    /*
-    |--------------------------------------------------------------------------
-    | Faculty list
-    |--------------------------------------------------------------------------
-    */
+    /* ============================================================
+       Faculty list
+    ============================================================ */
 
     const faculties = useMemo(() => {
         return Array.isArray(UNIVERSITY_FACULTIES_HIERARCHY)
@@ -44,19 +43,19 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
             : [];
     }, []);
 
-    /*
-    |--------------------------------------------------------------------------
-    | Initial faculty detection
-    |--------------------------------------------------------------------------
-    */
+    /* ============================================================
+       Initial faculty detection
+    ============================================================ */
 
     const getInitialFaculty = () => {
+
         const savedFaculty =
             user?.faculty ||
             user?.facultyName ||
             '';
 
         if (savedFaculty) {
+
             const directMatch = faculties.find(
                 faculty => faculty.name === savedFaculty
             );
@@ -69,6 +68,7 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
         const savedDepartment = user?.department || '';
 
         if (savedDepartment) {
+
             const departmentMatch = faculties.find(faculty =>
                 Array.isArray(faculty.departments) &&
                 faculty.departments.some(
@@ -84,24 +84,22 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
         return '';
     };
 
-    /*
-    |--------------------------------------------------------------------------
-    | Form State
-    |--------------------------------------------------------------------------
-    */
+    /* ============================================================
+       Form State
+    ============================================================ */
 
     const [formData, setFormData] = useState({
         name: user?.name || '',
         mobileNo: user?.mobileNo || user?.phone || '',
         email: user?.email || '',
         gender: user?.gender || '',
+
         dob: user?.dob
             ? String(user.dob).split('T')[0]
             : '',
 
-        /*
-        Student fields
-        */
+        /* Student fields */
+
         studentId: user?.studentId || '',
         rollNo: user?.rollNo || '',
         hostelNo: user?.hostelNo || '',
@@ -109,47 +107,41 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
         session: user?.session || '',
         category: user?.category || '',
 
-        /*
-        Academic fields
-        */
+        /* Academic fields */
+
         faculty: getInitialFaculty(),
         facultyName: getInitialFaculty(),
         department: user?.department || '',
 
-        /*
-        Admin fields
-        */
+        /* Admin fields */
+
         teacherId: user?.teacherId || user?.employeeId || '',
         employeeId: user?.employeeId || user?.teacherId || '',
         designation: user?.designation || '',
+
         wardenHostel:
             user?.wardenHostel ||
             user?.hostelNo ||
             '',
 
-        /*
-        Family
-        */
+        /* Family */
+
         fatherName: user?.fatherName || '',
         motherName: user?.motherName || '',
 
-        /*
-        Profile
-        */
+        /* Profile */
+
         profilePhoto: user?.profilePhoto || '',
 
-        /*
-        Security
-        */
+        /* Security */
+
         isMobileLocked: Boolean(user?.isMobileLocked),
         isEmailLocked: Boolean(user?.isEmailLocked)
     });
 
-    /*
-    |--------------------------------------------------------------------------
-    | Load Hostels
-    |--------------------------------------------------------------------------
-    */
+    /* ============================================================
+       Load Hostels
+    ============================================================ */
 
     useEffect(() => {
 
@@ -170,6 +162,7 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
             } catch (err) {
 
                 console.error('Failed to load hostels:', err);
+
                 setHostelsList([]);
 
             } finally {
@@ -183,11 +176,9 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
 
     }, []);
 
-    /*
-    |--------------------------------------------------------------------------
-    | Departments belonging to selected faculty
-    |--------------------------------------------------------------------------
-    */
+    /* ============================================================
+       Departments belonging to selected faculty
+    ============================================================ */
 
     const availableDepartments = useMemo(() => {
 
@@ -209,11 +200,9 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
 
     }, [faculties, formData.faculty]);
 
-    /*
-    |--------------------------------------------------------------------------
-    | Keep department valid when faculty changes
-    |--------------------------------------------------------------------------
-    */
+    /* ============================================================
+       Keep department valid when faculty changes
+    ============================================================ */
 
     useEffect(() => {
 
@@ -240,11 +229,9 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
 
     }, [availableDepartments, formData.department]);
 
-    /*
-    |--------------------------------------------------------------------------
-    | Generic input change
-    |--------------------------------------------------------------------------
-    */
+    /* ============================================================
+       Generic input change
+    ============================================================ */
 
     const handleChange = (e) => {
 
@@ -257,14 +244,11 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
 
         setError('');
         setSuccess('');
-
     };
 
-    /*
-    |--------------------------------------------------------------------------
-    | Faculty change
-    |--------------------------------------------------------------------------
-    */
+    /* ============================================================
+       Faculty change
+    ============================================================ */
 
     const handleFacultyChange = (e) => {
 
@@ -279,14 +263,11 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
 
         setError('');
         setSuccess('');
-
     };
 
-    /*
-    |--------------------------------------------------------------------------
-    | Department change
-    |--------------------------------------------------------------------------
-    */
+    /* ============================================================
+       Department change
+    ============================================================ */
 
     const handleDepartmentChange = (e) => {
 
@@ -312,14 +293,11 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
 
         setError('');
         setSuccess('');
-
     };
 
-    /*
-    |--------------------------------------------------------------------------
-    | Hostel change
-    |--------------------------------------------------------------------------
-    */
+    /* ============================================================
+       Hostel change
+    ============================================================ */
 
     const handleHostelChange = (e) => {
 
@@ -330,14 +308,11 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
 
         setError('');
         setSuccess('');
-
     };
 
-    /*
-    |--------------------------------------------------------------------------
-    | Profile Photo Upload
-    |--------------------------------------------------------------------------
-    */
+    /* ============================================================
+       Profile Photo Upload
+    ============================================================ */
 
     const handlePhotoUpload = (e) => {
 
@@ -384,7 +359,6 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
                             (MAX_DIMENSION / width);
 
                         width = MAX_DIMENSION;
-
                     }
 
                 } else {
@@ -396,9 +370,7 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
                             (MAX_DIMENSION / height);
 
                         height = MAX_DIMENSION;
-
                     }
-
                 }
 
                 canvas.width = width;
@@ -424,20 +396,15 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
                     ...prev,
                     profilePhoto: compressedBase64
                 }));
-
             };
-
         };
 
         reader.readAsDataURL(file);
-
     };
 
-    /*
-    |--------------------------------------------------------------------------
-    | Remove Photo
-    |--------------------------------------------------------------------------
-    */
+    /* ============================================================
+       Remove Photo
+    ============================================================ */
 
     const handleRemovePhoto = () => {
 
@@ -445,14 +412,11 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
             ...prev,
             profilePhoto: ''
         }));
-
     };
 
-    /*
-    |--------------------------------------------------------------------------
-    | Submit
-    |--------------------------------------------------------------------------
-    */
+    /* ============================================================
+       Submit
+    ============================================================ */
 
     const handleSubmit = async (e) => {
 
@@ -461,9 +425,7 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
         setError('');
         setSuccess('');
 
-        /*
-        Admin validation
-        */
+        /* Admin validation */
 
         if (isAdmin) {
 
@@ -521,9 +483,7 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
 
                     return;
                 }
-
             }
-
         }
 
         try {
@@ -534,9 +494,7 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
 
             if (isAdmin) {
 
-                /*
-                Admin payload
-                */
+                /* Admin payload */
 
                 const adminPayload = {
 
@@ -594,13 +552,12 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
 
             } else {
 
-                /*
-                Student payload
-                */
+                /* Student payload */
 
                 const studentPayload = {
 
-                    name: formData.name.trim(),
+                    name:
+                        formData.name.trim(),
 
                     mobileNo:
                         formData.mobileNo.trim(),
@@ -661,12 +618,9 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
                     `/auth/profile/${user?._id || user?.id}`,
                     studentPayload
                 );
-
             }
 
-            /*
-            Get updated user/admin from response
-            */
+            /* Get updated user/admin from response */
 
             const updatedUser =
                 response?.data?.user ||
@@ -678,38 +632,41 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
                     ...formData
                 };
 
-            /*
-            Preserve role and ID if backend does not return them
-            */
+            /* Preserve role and ID */
 
             const finalUser = {
+
                 ...user,
+
                 ...updatedUser,
-                role: updatedUser.role || user?.role,
-                _id: updatedUser._id || user?._id,
-                id: updatedUser.id || user?.id
+
+                role:
+                    updatedUser.role ||
+                    user?.role,
+
+                _id:
+                    updatedUser._id ||
+                    user?._id,
+
+                id:
+                    updatedUser.id ||
+                    user?.id
             };
 
-            /*
-            Update localStorage
-            */
+            /* Update localStorage */
 
             localStorage.setItem(
                 'user',
                 JSON.stringify(finalUser)
             );
 
-            /*
-            Notify other components
-            */
+            /* Notify other components */
 
             window.dispatchEvent(
                 new Event('userUpdated')
             );
 
-            /*
-            Update parent
-            */
+            /* Update parent */
 
             if (onUpdateUser) {
                 onUpdateUser(finalUser);
@@ -740,41 +697,37 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
         } finally {
 
             setSaving(false);
-
         }
-
     };
 
-    /*
-    |--------------------------------------------------------------------------
-    | Responsive Input Classes
-    |--------------------------------------------------------------------------
-    */
+    /* ============================================================
+       Responsive classes
+    ============================================================ */
 
     const inputClass =
-        'w-full min-w-0 px-3 sm:px-4 py-2.5 sm:py-3 bg-white border border-slate-300 rounded-lg sm:rounded-xl text-sm font-medium text-slate-800 outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition';
+        'w-full min-w-0 h-11 sm:h-12 px-3 sm:px-4 bg-white border border-slate-300 rounded-lg sm:rounded-xl text-sm font-medium text-slate-800 outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition';
 
     const disabledInputClass =
-        'w-full min-w-0 px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-100 border border-slate-300 rounded-lg sm:rounded-xl text-sm font-medium text-slate-500 outline-none cursor-not-allowed';
+        'w-full min-w-0 h-11 sm:h-12 px-3 sm:px-4 bg-slate-100 border border-slate-300 rounded-lg sm:rounded-xl text-sm font-medium text-slate-500 outline-none cursor-not-allowed';
 
     const labelClass =
-        'block text-[11px] sm:text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5 sm:mb-2';
+        'block text-[10px] sm:text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5 sm:mb-2';
 
-    /*
-    |--------------------------------------------------------------------------
-    | Render
-    |--------------------------------------------------------------------------
-    */
+    /* ============================================================
+       Render
+    ============================================================ */
 
     return (
+
         <div
             className="
                 fixed inset-0 z-[100]
-                flex items-center justify-center
+                flex items-start sm:items-center justify-center
                 bg-slate-950/60
                 backdrop-blur-sm
-                p-2 sm:p-3 md:p-6
+                p-0 sm:p-3 md:p-6
                 overflow-y-auto
+                overflow-x-hidden
             "
         >
 
@@ -784,50 +737,79 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
                     w-full
                     min-w-0
                     max-w-4xl
-                    max-h-[97vh]
+                    h-[100dvh]
+                    sm:h-auto
+                    max-h-[100dvh]
                     sm:max-h-[95vh]
                     overflow-hidden
                     bg-slate-50
-                    rounded-xl
+                    rounded-none
                     sm:rounded-2xl
                     shadow-2xl
-                    border border-slate-200
-                    my-1 sm:my-2
+                    border-0
+                    sm:border
+                    border-slate-200
+                    flex
+                    flex-col
                 "
             >
 
-                {/* ======================================================
+                {/* ==================================================
                     HEADER
-                ====================================================== */}
+                ================================================== */}
 
                 <div
                     className="
                         sticky top-0 z-20
+                        shrink-0
                         bg-white
                         border-b border-slate-200
-                        px-3 sm:px-5 md:px-7
-                        py-3 sm:py-4
+                        px-3
+                        sm:px-5
+                        md:px-7
+                        py-3
+                        sm:py-4
                     "
                 >
 
-                    <div className="flex items-center justify-between gap-2 sm:gap-4 min-w-0">
+                    <div
+                        className="
+                            flex
+                            items-center
+                            justify-between
+                            gap-2
+                            sm:gap-4
+                            min-w-0
+                        "
+                    >
 
-                        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                        <div
+                            className="
+                                flex
+                                items-center
+                                gap-2
+                                sm:gap-3
+                                min-w-0
+                            "
+                        >
 
                             <div
                                 className="
                                     w-9 h-9
                                     sm:w-11 sm:h-11
-                                    rounded-lg sm:rounded-xl
+                                    rounded-lg
+                                    sm:rounded-xl
                                     bg-blue-50
                                     border border-blue-100
-                                    flex items-center justify-center
+                                    flex
+                                    items-center
+                                    justify-center
                                     shrink-0
                                 "
                             >
 
                                 <User
-                                    size={20}
+                                    size={19}
                                     className="sm:hidden text-blue-700"
                                 />
 
@@ -875,47 +857,54 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
                             type="button"
                             onClick={onClose}
                             className="
-                                w-8 h-8
-                                sm:w-9 sm:h-9
-                                rounded-lg sm:rounded-xl
-                                flex items-center justify-center
+                                w-9 h-9
+                                sm:w-10 sm:h-10
+                                rounded-lg
+                                sm:rounded-xl
+                                flex
+                                items-center
+                                justify-center
                                 text-slate-500
                                 hover:bg-slate-100
                                 hover:text-slate-800
+                                active:bg-slate-200
                                 transition
                                 shrink-0
                             "
                             title="Close"
+                            aria-label="Close profile"
                         >
-                            <X size={18} />
+                            <X size={20} />
                         </button>
 
                     </div>
 
                 </div>
 
-                {/* ======================================================
+                {/* ==================================================
                     CONTENT
-                ====================================================== */}
+                ================================================== */}
 
                 <div
                     className="
+                        flex-1
+                        min-h-0
                         overflow-y-auto
-                        max-h-[calc(97vh-66px)]
-                        sm:max-h-[calc(95vh-76px)]
-                        min-w-0
+                        overflow-x-hidden
+                        overscroll-contain
                     "
                 >
 
                     <form
                         onSubmit={handleSubmit}
                         className="
+                            w-full
+                            min-w-0
                             p-3
                             sm:p-5
                             md:p-7
                             space-y-4
                             sm:space-y-6
-                            min-w-0
                         "
                     >
 
@@ -927,9 +916,14 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
 
                             <div
                                 className="
-                                    flex items-start gap-2.5 sm:gap-3
-                                    p-3 sm:p-4
-                                    rounded-lg sm:rounded-xl
+                                    flex
+                                    items-start
+                                    gap-2.5
+                                    sm:gap-3
+                                    p-3
+                                    sm:p-4
+                                    rounded-lg
+                                    sm:rounded-xl
                                     bg-red-50
                                     border border-red-200
                                     text-red-700
@@ -939,10 +933,18 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
 
                                 <AlertCircle
                                     size={18}
-                                    className="mt-0.5 flex-shrink-0"
+                                    className="mt-0.5 shrink-0"
                                 />
 
-                                <p className="text-xs sm:text-sm font-medium break-words min-w-0">
+                                <p
+                                    className="
+                                        text-xs
+                                        sm:text-sm
+                                        font-medium
+                                        break-words
+                                        min-w-0
+                                    "
+                                >
                                     {error}
                                 </p>
 
@@ -954,9 +956,14 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
 
                             <div
                                 className="
-                                    flex items-start gap-2.5 sm:gap-3
-                                    p-3 sm:p-4
-                                    rounded-lg sm:rounded-xl
+                                    flex
+                                    items-start
+                                    gap-2.5
+                                    sm:gap-3
+                                    p-3
+                                    sm:p-4
+                                    rounded-lg
+                                    sm:rounded-xl
                                     bg-emerald-50
                                     border border-emerald-200
                                     text-emerald-700
@@ -966,10 +973,18 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
 
                                 <CheckCircle2
                                     size={18}
-                                    className="mt-0.5 flex-shrink-0"
+                                    className="mt-0.5 shrink-0"
                                 />
 
-                                <p className="text-xs sm:text-sm font-medium break-words min-w-0">
+                                <p
+                                    className="
+                                        text-xs
+                                        sm:text-sm
+                                        font-medium
+                                        break-words
+                                        min-w-0
+                                    "
+                                >
                                     {success}
                                 </p>
 
@@ -985,40 +1000,74 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
                             className="
                                 bg-white
                                 border border-slate-200
-                                rounded-xl sm:rounded-2xl
-                                p-3 sm:p-5
+                                rounded-xl
+                                sm:rounded-2xl
+                                p-3
+                                sm:p-5
                                 min-w-0
                             "
                         >
 
-                            <div className="flex items-center gap-2 mb-4 sm:mb-5">
+                            <div
+                                className="
+                                    flex
+                                    items-center
+                                    gap-2
+                                    mb-4
+                                    sm:mb-5
+                                "
+                            >
 
                                 <User
                                     size={18}
                                     className="text-blue-700 shrink-0"
                                 />
 
-                                <h3 className="font-bold text-slate-900 text-sm sm:text-base">
+                                <h3
+                                    className="
+                                        font-bold
+                                        text-slate-900
+                                        text-sm
+                                        sm:text-base
+                                    "
+                                >
                                     Basic Information
                                 </h3>
 
                             </div>
 
-                            <div className="flex flex-col sm:flex-row gap-5 sm:gap-6 min-w-0">
+                            <div
+                                className="
+                                    flex
+                                    flex-col
+                                    sm:flex-row
+                                    gap-4
+                                    sm:gap-6
+                                    min-w-0
+                                "
+                            >
 
-                                {/* Photo */}
+                                {/* ==================================================
+                                    PHOTO
+                                ================================================== */}
 
                                 <div
                                     className="
                                         flex
-                                        flex-col
+                                        flex-row
+                                        sm:flex-col
                                         items-center
+                                        justify-center
+                                        sm:justify-start
+                                        gap-4
+                                        sm:gap-0
+                                        w-full
                                         sm:w-36
                                         shrink-0
                                     "
                                 >
 
-                                    <div className="relative">
+                                    <div className="relative shrink-0">
 
                                         <div
                                             className="
@@ -1030,7 +1079,9 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
                                                 border-4 border-white
                                                 shadow-md
                                                 ring-1 ring-slate-200
-                                                flex items-center justify-center
+                                                flex
+                                                items-center
+                                                justify-center
                                             "
                                         >
 
@@ -1039,13 +1090,17 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
                                                 <img
                                                     src={formData.profilePhoto}
                                                     alt="Profile"
-                                                    className="w-full h-full object-cover"
+                                                    className="
+                                                        w-full
+                                                        h-full
+                                                        object-cover
+                                                    "
                                                 />
 
                                             ) : (
 
                                                 <User
-                                                    size={40}
+                                                    size={38}
                                                     className="text-slate-400"
                                                 />
 
@@ -1062,14 +1117,20 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
                                                     absolute
                                                     -right-1
                                                     -top-1
-                                                    w-7 h-7
+                                                    w-7
+                                                    h-7
                                                     rounded-full
                                                     bg-red-600
                                                     text-white
-                                                    flex items-center justify-center
-                                                    shadow
+                                                    flex
+                                                    items-center
+                                                    justify-center
+                                                    shadow-md
+                                                    active:scale-95
+                                                    transition
                                                 "
                                                 title="Remove photo"
+                                                aria-label="Remove photo"
                                             >
                                                 <X size={14} />
                                             </button>
@@ -1078,50 +1139,75 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
 
                                     </div>
 
-                                    <label
+                                    <div
                                         className="
-                                            mt-3
-                                            inline-flex
-                                            items-center
-                                            justify-center
-                                            gap-2
-                                            px-3
-                                            py-2
-                                            rounded-lg
-                                            bg-blue-50
-                                            border border-blue-100
-                                            text-blue-700
-                                            text-xs
-                                            font-bold
-                                            cursor-pointer
-                                            hover:bg-blue-100
-                                            transition
-                                            max-w-full
+                                            flex
+                                            flex-col
+                                            items-start
+                                            sm:items-center
+                                            min-w-0
                                         "
                                     >
 
-                                        <Camera size={14} />
+                                        <label
+                                            className="
+                                                inline-flex
+                                                items-center
+                                                justify-center
+                                                gap-2
+                                                px-3
+                                                py-2.5
+                                                rounded-lg
+                                                bg-blue-50
+                                                border border-blue-100
+                                                text-blue-700
+                                                text-xs
+                                                sm:text-sm
+                                                font-bold
+                                                cursor-pointer
+                                                hover:bg-blue-100
+                                                active:bg-blue-200
+                                                transition
+                                                max-w-full
+                                            "
+                                        >
 
-                                        <span className="truncate">
-                                            Change Photo
-                                        </span>
+                                            <Camera size={15} />
 
-                                        <input
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={handlePhotoUpload}
-                                            className="hidden"
-                                        />
+                                            <span className="truncate">
+                                                Change Photo
+                                            </span>
 
-                                    </label>
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={handlePhotoUpload}
+                                                className="hidden"
+                                            />
 
-                                    <p className="text-[10px] text-slate-400 text-center mt-2 leading-relaxed">
-                                        JPG/PNG • Automatically compressed
-                                    </p>
+                                        </label>
+
+                                        <p
+                                            className="
+                                                text-[10px]
+                                                text-slate-400
+                                                text-left
+                                                sm:text-center
+                                                mt-2
+                                                leading-relaxed
+                                                max-w-[180px]
+                                            "
+                                        >
+                                            JPG/PNG • Automatically compressed
+                                        </p>
+
+                                    </div>
 
                                 </div>
 
-                                {/* Basic fields */}
+                                {/* ==================================================
+                                    BASIC FIELDS
+                                ================================================== */}
 
                                 <div
                                     className="
@@ -1134,6 +1220,8 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
                                         sm:gap-4
                                     "
                                 >
+
+                                    {/* Full Name */}
 
                                     <div className="min-w-0">
 
@@ -1166,6 +1254,8 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
                                         </div>
 
                                     </div>
+
+                                    {/* Gender */}
 
                                     <div className="min-w-0">
 
@@ -1200,6 +1290,8 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
 
                                     </div>
 
+                                    {/* DOB */}
+
                                     <div className="min-w-0">
 
                                         <label className={labelClass}>
@@ -1215,6 +1307,8 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
                                         />
 
                                     </div>
+
+                                    {/* Student fields */}
 
                                     {!isAdmin && (
 
@@ -1268,26 +1362,54 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
                                 className="
                                     bg-white
                                     border border-slate-200
-                                    rounded-xl sm:rounded-2xl
-                                    p-3 sm:p-5
+                                    rounded-xl
+                                    sm:rounded-2xl
+                                    p-3
+                                    sm:p-5
                                     min-w-0
                                 "
                             >
 
-                                <div className="flex items-start gap-2 mb-4 sm:mb-5">
+                                <div
+                                    className="
+                                        flex
+                                        items-start
+                                        gap-2
+                                        mb-4
+                                        sm:mb-5
+                                    "
+                                >
 
                                     <ShieldCheck
                                         size={18}
-                                        className="text-blue-700 shrink-0 mt-0.5"
+                                        className="
+                                            text-blue-700
+                                            shrink-0
+                                            mt-0.5
+                                        "
                                     />
 
                                     <div className="min-w-0">
 
-                                        <h3 className="font-bold text-slate-900 text-sm sm:text-base">
+                                        <h3
+                                            className="
+                                                font-bold
+                                                text-slate-900
+                                                text-sm
+                                                sm:text-base
+                                            "
+                                        >
                                             Administrative Information
                                         </h3>
 
-                                        <p className="text-[10px] sm:text-xs text-slate-500 mt-0.5">
+                                        <p
+                                            className="
+                                                text-[10px]
+                                                sm:text-xs
+                                                text-slate-500
+                                                mt-0.5
+                                            "
+                                        >
                                             Institutional designation and responsibility
                                         </p>
 
@@ -1295,7 +1417,15 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
 
                                 </div>
 
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                                <div
+                                    className="
+                                        grid
+                                        grid-cols-1
+                                        sm:grid-cols-2
+                                        gap-3
+                                        sm:gap-4
+                                    "
+                                >
 
                                     {/* Teacher ID */}
 
@@ -1428,24 +1558,30 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
                                                         : 'Select Hostel'}
                                                 </option>
 
-                                                {hostelsList.map(
-                                                    (hostel) => (
+                                                {hostelsList.map(hostel => (
 
-                                                        <option
-                                                            key={hostel._id}
-                                                            value={hostel.hostelNumber}
-                                                        >
-                                                            {hostel.hostelNumber}
-                                                        </option>
+                                                    <option
+                                                        key={hostel._id}
+                                                        value={hostel.hostelNumber}
+                                                    >
+                                                        {hostel.hostelNumber}
+                                                    </option>
 
-                                                    )
-                                                )}
+                                                ))}
 
                                             </select>
 
                                         </div>
 
-                                        <p className="mt-1.5 text-[10px] sm:text-[11px] text-slate-500 leading-relaxed">
+                                        <p
+                                            className="
+                                                mt-1.5
+                                                text-[10px]
+                                                sm:text-[11px]
+                                                text-slate-500
+                                                leading-relaxed
+                                            "
+                                        >
                                             Select the hostel for which this administrator is responsible.
                                         </p>
 
@@ -1485,18 +1621,16 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
                                                     Select Faculty
                                                 </option>
 
-                                                {faculties.map(
-                                                    faculty => (
+                                                {faculties.map(faculty => (
 
-                                                        <option
-                                                            key={faculty.id || faculty.name}
-                                                            value={faculty.name}
-                                                        >
-                                                            {faculty.name}
-                                                        </option>
+                                                    <option
+                                                        key={faculty.id || faculty.name}
+                                                        value={faculty.name}
+                                                    >
+                                                        {faculty.name}
+                                                    </option>
 
-                                                    )
-                                                )}
+                                                ))}
 
                                             </select>
 
@@ -1545,24 +1679,30 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
 
                                                 </option>
 
-                                                {availableDepartments.map(
-                                                    department => (
+                                                {availableDepartments.map(department => (
 
-                                                        <option
-                                                            key={department.id || department.name}
-                                                            value={department.name}
-                                                        >
-                                                            {department.name}
-                                                        </option>
+                                                    <option
+                                                        key={department.id || department.name}
+                                                        value={department.name}
+                                                    >
+                                                        {department.name}
+                                                    </option>
 
-                                                    )
-                                                )}
+                                                ))}
 
                                             </select>
 
                                         </div>
 
-                                        <p className="mt-1.5 text-[10px] sm:text-[11px] text-slate-500 leading-relaxed">
+                                        <p
+                                            className="
+                                                mt-1.5
+                                                text-[10px]
+                                                sm:text-[11px]
+                                                text-slate-500
+                                                leading-relaxed
+                                            "
+                                        >
 
                                             {!formData.faculty
                                                 ? 'Choose a faculty to view its departments.'
@@ -1588,26 +1728,51 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
                                 className="
                                     bg-white
                                     border border-slate-200
-                                    rounded-xl sm:rounded-2xl
-                                    p-3 sm:p-5
+                                    rounded-xl
+                                    sm:rounded-2xl
+                                    p-3
+                                    sm:p-5
                                     min-w-0
                                 "
                             >
 
-                                <div className="flex items-center gap-2 mb-4 sm:mb-5">
+                                <div
+                                    className="
+                                        flex
+                                        items-center
+                                        gap-2
+                                        mb-4
+                                        sm:mb-5
+                                    "
+                                >
 
                                     <GraduationCap
                                         size={18}
                                         className="text-blue-700 shrink-0"
                                     />
 
-                                    <h3 className="font-bold text-slate-900 text-sm sm:text-base">
+                                    <h3
+                                        className="
+                                            font-bold
+                                            text-slate-900
+                                            text-sm
+                                            sm:text-base
+                                        "
+                                    >
                                         Academic Information
                                     </h3>
 
                                 </div>
 
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                                <div
+                                    className="
+                                        grid
+                                        grid-cols-1
+                                        sm:grid-cols-2
+                                        gap-3
+                                        sm:gap-4
+                                    "
+                                >
 
                                     <div className="min-w-0">
 
@@ -1684,26 +1849,54 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
                                 className="
                                     bg-white
                                     border border-slate-200
-                                    rounded-xl sm:rounded-2xl
-                                    p-3 sm:p-5
+                                    rounded-xl
+                                    sm:rounded-2xl
+                                    p-3
+                                    sm:p-5
                                     min-w-0
                                 "
                             >
 
-                                <div className="flex items-start gap-2 mb-4 sm:mb-5">
+                                <div
+                                    className="
+                                        flex
+                                        items-start
+                                        gap-2
+                                        mb-4
+                                        sm:mb-5
+                                    "
+                                >
 
                                     <UsersRound
                                         size={18}
-                                        className="text-blue-700 shrink-0 mt-0.5"
+                                        className="
+                                            text-blue-700
+                                            shrink-0
+                                            mt-0.5
+                                        "
                                     />
 
                                     <div className="min-w-0">
 
-                                        <h3 className="font-bold text-slate-900 text-sm sm:text-base">
+                                        <h3
+                                            className="
+                                                font-bold
+                                                text-slate-900
+                                                text-sm
+                                                sm:text-base
+                                            "
+                                        >
                                             Family Information
                                         </h3>
 
-                                        <p className="text-[10px] sm:text-xs text-slate-500 mt-0.5">
+                                        <p
+                                            className="
+                                                text-[10px]
+                                                sm:text-xs
+                                                text-slate-500
+                                                mt-0.5
+                                            "
+                                        >
                                             Parent / family information
                                         </p>
 
@@ -1711,7 +1904,15 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
 
                                 </div>
 
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                                <div
+                                    className="
+                                        grid
+                                        grid-cols-1
+                                        sm:grid-cols-2
+                                        gap-3
+                                        sm:gap-4
+                                    "
+                                >
 
                                     <div className="min-w-0">
 
@@ -1759,26 +1960,51 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
                             className="
                                 bg-white
                                 border border-slate-200
-                                rounded-xl sm:rounded-2xl
-                                p-3 sm:p-5
+                                rounded-xl
+                                sm:rounded-2xl
+                                p-3
+                                sm:p-5
                                 min-w-0
                             "
                         >
 
-                            <div className="flex items-center gap-2 mb-4 sm:mb-5">
+                            <div
+                                className="
+                                    flex
+                                    items-center
+                                    gap-2
+                                    mb-4
+                                    sm:mb-5
+                                "
+                            >
 
                                 <Phone
                                     size={18}
                                     className="text-blue-700 shrink-0"
                                 />
 
-                                <h3 className="font-bold text-slate-900 text-sm sm:text-base">
+                                <h3
+                                    className="
+                                        font-bold
+                                        text-slate-900
+                                        text-sm
+                                        sm:text-base
+                                    "
+                                >
                                     Contact Information
                                 </h3>
 
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                            <div
+                                className="
+                                    grid
+                                    grid-cols-1
+                                    sm:grid-cols-2
+                                    gap-3
+                                    sm:gap-4
+                                "
+                            >
 
                                 {/* Mobile */}
 
@@ -1806,7 +2032,10 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
                                             value={formData.mobileNo}
                                             onChange={handleChange}
                                             disabled={formData.isMobileLocked}
-                                            className={`${formData.isMobileLocked ? disabledInputClass : inputClass} pl-9 sm:pl-10 pr-9`}
+                                            className={`${formData.isMobileLocked
+                                                ? disabledInputClass
+                                                : inputClass
+                                                } pl-9 sm:pl-10 pr-9`}
                                             placeholder="Enter mobile number"
                                         />
 
@@ -1829,7 +2058,17 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
 
                                     {formData.isMobileLocked && (
 
-                                        <p className="mt-1.5 text-[10px] sm:text-[11px] text-amber-600 flex items-center gap-1">
+                                        <p
+                                            className="
+                                                mt-1.5
+                                                text-[10px]
+                                                sm:text-[11px]
+                                                text-amber-600
+                                                flex
+                                                items-center
+                                                gap-1
+                                            "
+                                        >
 
                                             <Lock size={11} />
 
@@ -1868,7 +2107,10 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
                                             value={formData.email}
                                             onChange={handleChange}
                                             disabled={formData.isEmailLocked}
-                                            className={`${formData.isEmailLocked ? disabledInputClass : inputClass} pl-9 sm:pl-10 pr-9`}
+                                            className={`${formData.isEmailLocked
+                                                ? disabledInputClass
+                                                : inputClass
+                                                } pl-9 sm:pl-10 pr-9`}
                                             placeholder="Enter email address"
                                         />
 
@@ -1891,7 +2133,17 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
 
                                     {formData.isEmailLocked && (
 
-                                        <p className="mt-1.5 text-[10px] sm:text-[11px] text-amber-600 flex items-center gap-1">
+                                        <p
+                                            className="
+                                                mt-1.5
+                                                text-[10px]
+                                                sm:text-[11px]
+                                                text-amber-600
+                                                flex
+                                                items-center
+                                                gap-1
+                                            "
+                                        >
 
                                             <Lock size={11} />
 
@@ -1913,12 +2165,16 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
 
                         <div
                             className="
-                                flex items-start
-                                gap-2.5 sm:gap-3
-                                p-3 sm:p-4
+                                flex
+                                items-start
+                                gap-2.5
+                                sm:gap-3
+                                p-3
+                                sm:p-4
                                 bg-slate-100
                                 border border-slate-200
-                                rounded-lg sm:rounded-xl
+                                rounded-lg
+                                sm:rounded-xl
                                 min-w-0
                             "
                         >
@@ -1928,17 +2184,32 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
                                 className="
                                     text-blue-700
                                     mt-0.5
-                                    flex-shrink-0
+                                    shrink-0
                                 "
                             />
 
                             <div className="min-w-0">
 
-                                <p className="text-xs sm:text-sm font-bold text-slate-800">
+                                <p
+                                    className="
+                                        text-xs
+                                        sm:text-sm
+                                        font-bold
+                                        text-slate-800
+                                    "
+                                >
                                     Profile Security
                                 </p>
 
-                                <p className="text-[11px] sm:text-xs text-slate-500 mt-1 leading-relaxed">
+                                <p
+                                    className="
+                                        text-[11px]
+                                        sm:text-xs
+                                        text-slate-500
+                                        mt-1
+                                        leading-relaxed
+                                    "
+                                >
                                     Locked contact details cannot be changed from the profile panel. Contact the system administrator if a locked detail needs correction.
                                 </p>
 
@@ -1956,8 +2227,11 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
                                 flex-col-reverse
                                 sm:flex-row
                                 justify-end
-                                gap-2.5 sm:gap-3
-                                pt-1 sm:pt-2
+                                gap-2.5
+                                sm:gap-3
+                                pt-1
+                                sm:pt-2
+                                pb-1
                             "
                         >
 
@@ -1966,17 +2240,21 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
                                 onClick={onClose}
                                 disabled={saving}
                                 className="
-                                    w-full sm:w-auto
+                                    w-full
+                                    sm:w-auto
                                     min-h-11
                                     px-5
-                                    py-2.5 sm:py-3
-                                    rounded-lg sm:rounded-xl
+                                    py-2.5
+                                    sm:py-3
+                                    rounded-lg
+                                    sm:rounded-xl
                                     border border-slate-300
                                     bg-white
                                     text-slate-700
                                     text-sm
                                     font-bold
                                     hover:bg-slate-50
+                                    active:bg-slate-100
                                     transition
                                     disabled:opacity-50
                                 "
@@ -1988,20 +2266,24 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
                                 type="submit"
                                 disabled={saving}
                                 className="
-                                    w-full sm:w-auto
+                                    w-full
+                                    sm:w-auto
                                     min-h-11
                                     inline-flex
                                     items-center
                                     justify-center
                                     gap-2
                                     px-6
-                                    py-2.5 sm:py-3
-                                    rounded-lg sm:rounded-xl
+                                    py-2.5
+                                    sm:py-3
+                                    rounded-lg
+                                    sm:rounded-xl
                                     bg-blue-700
                                     text-white
                                     text-sm
                                     font-bold
                                     hover:bg-blue-800
+                                    active:bg-blue-900
                                     transition
                                     disabled:opacity-60
                                     disabled:cursor-not-allowed
@@ -2012,20 +2294,24 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
                                 {saving ? (
 
                                     <>
+
                                         <Loader2
                                             size={17}
                                             className="animate-spin"
                                         />
 
                                         Saving...
+
                                     </>
 
                                 ) : (
 
                                     <>
+
                                         <Save size={17} />
 
                                         Save Changes
+
                                     </>
 
                                 )}
