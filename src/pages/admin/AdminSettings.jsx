@@ -170,33 +170,33 @@ export default function AdminSettings() {
         icon: Icon,
         onChange
     }) => (
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+        <div className="min-w-0 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:p-4">
 
-            <div className="mb-4 flex items-center justify-between">
+            <div className="mb-3 flex items-center justify-between gap-2 sm:mb-4">
 
-                <div className="flex items-center gap-3">
+                <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
 
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
-                        <Icon className="h-5 w-5" />
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-700 sm:h-10 sm:w-10">
+                        <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
                     </div>
 
-                    <div>
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    <div className="min-w-0">
+                        <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400 sm:text-[10px]">
                             Meal
                         </p>
 
-                        <p className="text-sm font-black text-slate-800">
+                        <p className="truncate text-xs font-black text-slate-800 sm:text-sm">
                             {label}
                         </p>
                     </div>
 
                 </div>
 
-                <IndianRupee className="h-4 w-4 text-slate-300" />
+                <IndianRupee className="h-4 w-4 shrink-0 text-slate-300" />
 
             </div>
 
-            <label className="mb-2 block text-[10px] font-bold uppercase tracking-wider text-slate-500">
+            <label className="mb-2 block text-[9px] font-bold uppercase tracking-wider text-slate-500 sm:text-[10px]">
                 Tariff Amount
             </label>
 
@@ -213,7 +213,7 @@ export default function AdminSettings() {
                     required
                     value={value}
                     onChange={onChange}
-                    className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 pl-8 pr-3 font-mono text-base font-black text-slate-800 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100"
+                    className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-8 pr-2 font-mono text-sm font-black text-slate-800 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 sm:h-12 sm:pr-3 sm:text-base"
                 />
 
             </div>
@@ -226,24 +226,24 @@ export default function AdminSettings() {
     // ---------------------------------------------------------
 
     return (
-        <div className="mx-auto max-w-5xl space-y-6 animate-in fade-in duration-300">
+        <div className="mx-auto w-full min-w-0 max-w-5xl space-y-4 pb-8 animate-in fade-in duration-300 sm:space-y-6">
 
             {/* =================================================
                 ALERTS
             ================================================= */}
 
             {errorMsg && (
-                <div className="flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 shadow-sm">
+                <div className="flex min-w-0 items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 px-3 py-3 text-xs text-red-800 shadow-sm sm:items-center sm:gap-3 sm:px-4 sm:text-sm">
 
-                    <AlertCircle className="h-5 w-5 shrink-0" />
+                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 sm:h-5 sm:w-5" />
 
-                    <span className="font-semibold">
+                    <span className="min-w-0 flex-1 font-semibold">
                         {errorMsg}
                     </span>
 
                     <button
                         onClick={() => setErrorMsg('')}
-                        className="ml-auto rounded-lg p-1 transition hover:bg-red-100"
+                        className="shrink-0 rounded-lg p-1 transition hover:bg-red-100"
                     >
                         <X className="h-4 w-4" />
                     </button>
@@ -252,17 +252,17 @@ export default function AdminSettings() {
             )}
 
             {successMsg && (
-                <div className="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 shadow-sm">
+                <div className="flex min-w-0 items-start gap-2.5 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-3 text-xs text-emerald-800 shadow-sm sm:items-center sm:gap-3 sm:px-4 sm:text-sm">
 
-                    <CheckCircle2 className="h-5 w-5 shrink-0" />
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 sm:h-5 sm:w-5" />
 
-                    <span className="font-semibold">
+                    <span className="min-w-0 flex-1 font-semibold">
                         {successMsg}
                     </span>
 
                     <button
                         onClick={() => setSuccessMsg('')}
-                        className="ml-auto rounded-lg p-1 transition hover:bg-emerald-100"
+                        className="shrink-0 rounded-lg p-1 transition hover:bg-emerald-100"
                     >
                         <X className="h-4 w-4" />
                     </button>
@@ -274,23 +274,23 @@ export default function AdminSettings() {
                 PAGE HEADER
             ================================================= */}
 
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
 
-                <div>
+                <div className="min-w-0">
 
-                    <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-blue-700">
+                    <div className="mb-2 inline-flex max-w-full items-center gap-2 rounded-full bg-blue-50 px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider text-blue-700 sm:px-3 sm:text-[10px]">
 
-                        <Settings className="h-3.5 w-3.5" />
+                        <Settings className="h-3.5 w-3.5 shrink-0" />
 
                         System Configuration
 
                     </div>
 
-                    <h1 className="text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">
+                    <h1 className="text-xl font-black tracking-tight text-slate-900 sm:text-3xl">
                         Mess Tariff Settings
                     </h1>
 
-                    <p className="mt-1 max-w-2xl text-sm text-slate-500">
+                    <p className="mt-1 max-w-2xl text-xs leading-5 text-slate-500 sm:text-sm">
                         Configure breakfast, lunch and dinner
                         charges for each residential hostel.
                     </p>
@@ -301,7 +301,7 @@ export default function AdminSettings() {
                     type="button"
                     onClick={fetchHostels}
                     disabled={loading}
-                    className="inline-flex items-center justify-center gap-2 self-start rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 sm:self-auto"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
                 >
 
                     <RefreshCw
@@ -320,21 +320,21 @@ export default function AdminSettings() {
                 INFORMATION BANNER
             ================================================= */}
 
-            <div className="flex gap-3 rounded-2xl border border-blue-100 bg-blue-50 p-4">
+            <div className="flex min-w-0 gap-2.5 rounded-2xl border border-blue-100 bg-blue-50 p-3 sm:gap-3 sm:p-4">
 
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-blue-600 shadow-sm">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white text-blue-600 shadow-sm sm:h-9 sm:w-9">
 
                     <Info className="h-4 w-4" />
 
                 </div>
 
-                <div>
+                <div className="min-w-0">
 
                     <p className="text-xs font-black text-blue-900">
                         Tariff configuration
                     </p>
 
-                    <p className="mt-1 text-[11px] leading-5 text-blue-700">
+                    <p className="mt-1 text-[10px] leading-5 text-blue-700 sm:text-[11px]">
                         Changes made here affect the meal-cost
                         calculation for the selected residence.
                         Review the amounts carefully before saving.
@@ -348,27 +348,27 @@ export default function AdminSettings() {
                 MAIN CONFIGURATION CARD
             ================================================= */}
 
-            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div className="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
 
                 {/* HEADER */}
 
-                <div className="border-b border-slate-200 px-5 py-5 sm:px-6">
+                <div className="border-b border-slate-200 px-4 py-4 sm:px-6 sm:py-5">
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
 
-                        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100 text-slate-700">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-700 sm:h-11 sm:w-11">
 
                             <Building2 className="h-5 w-5" />
 
                         </div>
 
-                        <div>
+                        <div className="min-w-0">
 
-                            <h2 className="text-base font-black text-slate-900">
+                            <h2 className="text-sm font-black text-slate-900 sm:text-base">
                                 Residence Configuration
                             </h2>
 
-                            <p className="mt-0.5 text-xs text-slate-500">
+                            <p className="mt-0.5 text-[10px] leading-4 text-slate-500 sm:text-xs">
                                 Select a hostel to view or modify
                                 its current meal tariffs.
                             </p>
@@ -381,15 +381,15 @@ export default function AdminSettings() {
 
                 {/* BODY */}
 
-                <div className="p-5 sm:p-6">
+                <div className="p-3.5 sm:p-6">
 
                     {loading ? (
 
-                        <div className="flex min-h-[300px] flex-col items-center justify-center">
+                        <div className="flex min-h-[260px] flex-col items-center justify-center sm:min-h-[300px]">
 
-                            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50">
+                            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-50 sm:h-12 sm:w-12">
 
-                                <Loader2 className="h-6 w-6 animate-spin text-blue-700" />
+                                <Loader2 className="h-5 w-5 animate-spin text-blue-700 sm:h-6 sm:w-6" />
 
                             </div>
 
@@ -397,7 +397,7 @@ export default function AdminSettings() {
                                 Loading residences...
                             </p>
 
-                            <p className="mt-1 text-xs text-slate-400">
+                            <p className="mt-1 text-[11px] text-slate-400">
                                 Retrieving tariff configuration.
                             </p>
 
@@ -411,14 +411,14 @@ export default function AdminSettings() {
 
                             <div>
 
-                                <label className="mb-2 block text-[10px] font-bold uppercase tracking-wider text-slate-600">
+                                <label className="mb-2 block text-[9px] font-bold uppercase tracking-wider text-slate-600 sm:text-[10px]">
                                     Select Residence
                                 </label>
 
                                 <select
                                     value={targetHostelId}
                                     onChange={handleHostelChange}
-                                    className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs font-bold text-slate-700 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100"
+                                    className="h-11 w-full min-w-0 rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs font-bold text-slate-700 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 sm:h-12"
                                 >
 
                                     <option value="">
@@ -446,23 +446,23 @@ export default function AdminSettings() {
                             {/* SELECTED HOSTEL */}
 
                             {targetHostelId && (
-                                <div className="mt-5 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:flex-row sm:items-center sm:justify-between">
+                                <div className="mt-4 flex min-w-0 flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3.5 sm:mt-5 sm:flex-row sm:items-center sm:justify-between sm:p-4">
 
-                                    <div className="flex items-center gap-3">
+                                    <div className="flex min-w-0 items-center gap-3">
 
-                                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-blue-600 shadow-sm">
+                                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-blue-600 shadow-sm sm:h-10 sm:w-10">
 
                                             <Building2 className="h-5 w-5" />
 
                                         </div>
 
-                                        <div>
+                                        <div className="min-w-0">
 
-                                            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                                            <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400 sm:text-[10px]">
                                                 Selected Residence
                                             </p>
 
-                                            <p className="text-sm font-black text-slate-800">
+                                            <p className="truncate text-sm font-black text-slate-800">
                                                 {selectedHostel?.hostelNumber ||
                                                     'Residence'}
                                             </p>
@@ -471,7 +471,7 @@ export default function AdminSettings() {
 
                                     </div>
 
-                                    <div className="inline-flex w-fit items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-[10px] font-bold text-emerald-700">
+                                    <div className="inline-flex w-fit items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-[9px] font-bold text-emerald-700 sm:text-[10px]">
 
                                         <ShieldCheck className="h-3.5 w-3.5" />
 
@@ -488,7 +488,7 @@ export default function AdminSettings() {
 
                                 <form
                                     onSubmit={handleUpdateRates}
-                                    className="mt-6"
+                                    className="mt-5 sm:mt-6"
                                 >
 
                                     <div className="mb-4">
@@ -497,14 +497,14 @@ export default function AdminSettings() {
                                             Meal Tariffs
                                         </h3>
 
-                                        <p className="mt-1 text-xs text-slate-500">
+                                        <p className="mt-1 text-[11px] leading-5 text-slate-500 sm:text-xs">
                                             Set the amount charged for
                                             each daily meal.
                                         </p>
 
                                     </div>
 
-                                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                                    <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 sm:gap-4">
 
                                         <RateCard
                                             label="Breakfast"
@@ -561,21 +561,21 @@ export default function AdminSettings() {
 
                                     {/* DAILY TOTAL */}
 
-                                    <div className="mt-5 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-900 p-4 sm:flex-row sm:items-center sm:justify-between">
+                                    <div className="mt-4 flex min-w-0 flex-col gap-2.5 rounded-2xl border border-slate-200 bg-slate-900 p-3.5 sm:mt-5 sm:flex-row sm:items-center sm:justify-between sm:p-4">
 
-                                        <div>
+                                        <div className="min-w-0">
 
-                                            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                                            <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400 sm:text-[10px]">
                                                 Total Daily Meal Cost
                                             </p>
 
-                                            <p className="mt-1 text-xs text-slate-300">
+                                            <p className="mt-1 text-[10px] text-slate-300 sm:text-xs">
                                                 Breakfast + Lunch + Dinner
                                             </p>
 
                                         </div>
 
-                                        <div className="flex items-center gap-1 text-2xl font-black text-white">
+                                        <div className="flex items-center gap-1 text-xl font-black text-white sm:text-2xl">
 
                                             <span className="text-sm text-slate-400">
                                                 ₹
@@ -589,9 +589,9 @@ export default function AdminSettings() {
 
                                     {/* SAVE BUTTON */}
 
-                                    <div className="mt-5 flex flex-col gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:items-center sm:justify-between">
+                                    <div className="mt-4 flex min-w-0 flex-col gap-3 border-t border-slate-100 pt-4 sm:mt-5 sm:flex-row sm:items-center sm:justify-between sm:pt-5">
 
-                                        <div className="flex items-start gap-2 text-[10px] leading-4 text-slate-400">
+                                        <div className="flex min-w-0 items-start gap-2 text-[9px] leading-4 text-slate-400 sm:text-[10px]">
 
                                             <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-500" />
 
@@ -605,7 +605,7 @@ export default function AdminSettings() {
                                         <button
                                             type="submit"
                                             disabled={saving}
-                                            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 text-xs font-bold text-white shadow-sm transition hover:bg-blue-700 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
+                                            className="inline-flex h-11 w-full shrink-0 items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 text-xs font-bold text-white shadow-sm transition hover:bg-blue-700 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:px-6"
                                         >
 
                                             {saving ? (
@@ -628,11 +628,11 @@ export default function AdminSettings() {
 
                             ) : (
 
-                                <div className="mt-6 flex min-h-[240px] flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 px-6 text-center">
+                                <div className="mt-5 flex min-h-[210px] flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 px-4 text-center sm:mt-6 sm:min-h-[240px] sm:px-6">
 
-                                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-slate-400 shadow-sm">
+                                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-slate-400 shadow-sm sm:h-14 sm:w-14">
 
-                                        <Settings className="h-6 w-6" />
+                                        <Settings className="h-5 w-5 sm:h-6 sm:w-6" />
 
                                     </div>
 
@@ -640,7 +640,7 @@ export default function AdminSettings() {
                                         Select a residence
                                     </h3>
 
-                                    <p className="mt-1 max-w-sm text-xs leading-5 text-slate-400">
+                                    <p className="mt-1 max-w-sm text-[11px] leading-5 text-slate-400 sm:text-xs">
                                         Choose a hostel from the selector
                                         above to configure its breakfast,
                                         lunch and dinner rates.
@@ -663,25 +663,25 @@ export default function AdminSettings() {
             ================================================= */}
 
             {!loading && hostelsList.length > 0 && (
-                <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                <div className="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
 
-                    <div className="border-b border-slate-200 px-5 py-4 sm:px-6">
+                    <div className="border-b border-slate-200 px-4 py-4 sm:px-6">
 
-                        <div className="flex items-center gap-3">
+                        <div className="flex min-w-0 items-center gap-3">
 
-                            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
 
                                 <Building2 className="h-4 w-4" />
 
                             </div>
 
-                            <div>
+                            <div className="min-w-0">
 
                                 <h2 className="text-sm font-black text-slate-900">
                                     Residence Tariff Overview
                                 </h2>
 
-                                <p className="text-[11px] text-slate-500">
+                                <p className="text-[10px] text-slate-500 sm:text-[11px]">
                                     Current configured rates by hostel.
                                 </p>
 
@@ -722,28 +722,28 @@ export default function AdminSettings() {
                             return (
                                 <div
                                     key={hostel._id}
-                                    className={`flex flex-col gap-4 p-4 transition sm:flex-row sm:items-center sm:justify-between ${
+                                    className={`flex min-w-0 flex-col gap-3 p-3.5 transition sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:p-4 ${
                                         isSelected
                                             ? 'bg-blue-50/50'
                                             : 'hover:bg-slate-50'
                                     }`}
                                 >
 
-                                    <div className="flex items-center gap-3">
+                                    <div className="flex min-w-0 items-center gap-3">
 
-                                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
+                                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
 
                                             <Building2 className="h-4 w-4" />
 
                                         </div>
 
-                                        <div>
+                                        <div className="min-w-0">
 
-                                            <p className="text-xs font-black text-slate-800">
+                                            <p className="truncate text-xs font-black text-slate-800">
                                                 {hostel.hostelNumber}
                                             </p>
 
-                                            <p className="text-[10px] text-slate-400">
+                                            <p className="truncate text-[10px] text-slate-400">
                                                 {hostel.name ||
                                                     hostel.type ||
                                                     'Residence'}
@@ -753,39 +753,39 @@ export default function AdminSettings() {
 
                                     </div>
 
-                                    <div className="grid grid-cols-3 gap-2 sm:flex sm:items-center">
+                                    <div className="grid min-w-0 grid-cols-3 gap-1.5 sm:flex sm:items-center sm:gap-2">
 
-                                        <div className="rounded-lg bg-slate-50 px-3 py-2 text-center">
+                                        <div className="min-w-0 rounded-lg bg-slate-50 px-1.5 py-2 text-center sm:px-3">
 
-                                            <p className="text-[8px] font-bold uppercase text-slate-400">
+                                            <p className="truncate text-[7px] font-bold uppercase text-slate-400 sm:text-[8px]">
                                                 Breakfast
                                             </p>
 
-                                            <p className="mt-0.5 text-xs font-black text-slate-700">
+                                            <p className="mt-0.5 text-[10px] font-black text-slate-700 sm:text-xs">
                                                 ₹{breakfast}
                                             </p>
 
                                         </div>
 
-                                        <div className="rounded-lg bg-slate-50 px-3 py-2 text-center">
+                                        <div className="min-w-0 rounded-lg bg-slate-50 px-1.5 py-2 text-center sm:px-3">
 
-                                            <p className="text-[8px] font-bold uppercase text-slate-400">
+                                            <p className="truncate text-[7px] font-bold uppercase text-slate-400 sm:text-[8px]">
                                                 Lunch
                                             </p>
 
-                                            <p className="mt-0.5 text-xs font-black text-slate-700">
+                                            <p className="mt-0.5 text-[10px] font-black text-slate-700 sm:text-xs">
                                                 ₹{lunch}
                                             </p>
 
                                         </div>
 
-                                        <div className="rounded-lg bg-slate-50 px-3 py-2 text-center">
+                                        <div className="min-w-0 rounded-lg bg-slate-50 px-1.5 py-2 text-center sm:px-3">
 
-                                            <p className="text-[8px] font-bold uppercase text-slate-400">
+                                            <p className="truncate text-[7px] font-bold uppercase text-slate-400 sm:text-[8px]">
                                                 Dinner
                                             </p>
 
-                                            <p className="mt-0.5 text-xs font-black text-slate-700">
+                                            <p className="mt-0.5 text-[10px] font-black text-slate-700 sm:text-xs">
                                                 ₹{dinner}
                                             </p>
 

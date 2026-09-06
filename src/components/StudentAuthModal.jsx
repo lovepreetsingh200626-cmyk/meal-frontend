@@ -366,8 +366,6 @@ export default function StudentAuthModal({
     setLoading(true);
     resetMessages();
 
-    /* STUDENT ID IS REQUIRED FOR LOGIN AND REGISTER */
-
     if (!formData.studentId.trim()) {
       setError('Student ID is required.');
       setLoading(false);
@@ -382,8 +380,6 @@ export default function StudentAuthModal({
       return;
     }
 
-    /* REGISTRATION */
-
     if (isRegistering) {
       const validationError =
         validateRegistration();
@@ -396,10 +392,6 @@ export default function StudentAuthModal({
     }
 
     try {
-      /* -----------------------------------------------------
-         REGISTER
-      ----------------------------------------------------- */
-
       if (isRegistering) {
         const payload = {
           name: formData.name.trim(),
@@ -459,13 +451,7 @@ export default function StudentAuthModal({
             password: '',
           }));
         }, 1800);
-      }
-
-      /* -----------------------------------------------------
-         LOGIN
-      ----------------------------------------------------- */
-
-      else {
+      } else {
         const loginPayload = {
           studentId:
             formData.studentId.trim(),
@@ -625,24 +611,24 @@ export default function StudentAuthModal({
   --------------------------------------------------------- */
 
   const inputClass =
-    'w-full mt-1.5 rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-600 focus:ring-2 focus:ring-blue-100';
+    'w-full min-w-0 mt-1.5 rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-600 focus:ring-2 focus:ring-blue-100';
 
   const selectClass =
-    'w-full mt-1.5 rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100 cursor-pointer';
+    'w-full min-w-0 mt-1.5 rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100 cursor-pointer';
 
   const disabledSelectClass =
-    'w-full mt-1.5 rounded-lg border border-slate-200 bg-slate-100 px-3 py-2.5 text-sm text-slate-400 outline-none cursor-not-allowed';
+    'w-full min-w-0 mt-1.5 rounded-lg border border-slate-200 bg-slate-100 px-3 py-2.5 text-sm text-slate-400 outline-none cursor-not-allowed';
 
   return (
-    <div className="min-h-screen bg-slate-100 text-slate-900 font-sans flex flex-col">
+    <div className="min-h-screen w-full min-w-0 overflow-x-hidden bg-slate-100 text-slate-900 font-sans flex flex-col">
 
       {/* =====================================================
           TOP INFORMATION BAR
       ===================================================== */}
 
-      <div className="bg-slate-900 text-slate-300 px-4 sm:px-6 lg:px-8 py-2">
+      <div className="bg-slate-900 text-slate-300 px-3 sm:px-6 lg:px-8 py-2">
 
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 text-[11px]">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-3 text-[10px] sm:text-[11px]">
 
           <div className="flex items-center gap-2 min-w-0">
 
@@ -654,7 +640,7 @@ export default function StudentAuthModal({
 
           </div>
 
-          <div className="hidden sm:flex items-center gap-2 text-slate-400">
+          <div className="hidden sm:flex items-center gap-2 text-slate-400 shrink-0">
 
             <ShieldCheck className="w-3.5 h-3.5" />
 
@@ -674,34 +660,34 @@ export default function StudentAuthModal({
 
       <header className="bg-white border-b border-slate-200">
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+        <div className="max-w-7xl mx-auto w-full px-3 sm:px-6 lg:px-8 py-4 sm:py-5">
 
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 sm:gap-5">
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3 sm:gap-4 min-w-0">
 
-              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-blue-700 flex items-center justify-center shadow-sm shrink-0">
+              <div className="w-11 h-11 sm:w-16 sm:h-16 rounded-xl bg-blue-700 flex items-center justify-center shadow-sm shrink-0">
 
-                <Landmark className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
+                <Landmark className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
 
               </div>
 
-              <div>
+              <div className="min-w-0">
 
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
 
-                  <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-900">
+                  <h1 className="text-base sm:text-xl md:text-2xl font-bold text-slate-900 leading-tight">
                     Hostel & Mess Management
                   </h1>
 
-                  <span className="inline-flex items-center rounded-full bg-blue-50 border border-blue-100 px-2.5 py-1 text-[10px] font-semibold text-blue-700">
+                  <span className="inline-flex items-center rounded-full bg-blue-50 border border-blue-100 px-2 py-0.5 sm:px-2.5 sm:py-1 text-[9px] sm:text-[10px] font-semibold text-blue-700">
                     Student Portal
                   </span>
 
                 </div>
 
-                <p className="text-xs sm:text-sm text-slate-500 mt-1">
-                 Students portal
+                <p className="text-[11px] sm:text-sm text-slate-500 mt-1">
+                  Students portal
                 </p>
 
               </div>
@@ -711,14 +697,16 @@ export default function StudentAuthModal({
             <button
               type="button"
               onClick={onSwitchToAdmin}
-              className="w-full md:w-auto inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:border-blue-300 hover:text-blue-700 transition"
+              className="w-full md:w-auto min-h-10 inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:border-blue-300 hover:text-blue-700 transition"
             >
 
-              <ShieldCheck className="w-4 h-4" />
+              <ShieldCheck className="w-4 h-4 shrink-0" />
 
-              Admin / Warden Login
+              <span className="truncate">
+                Admin / Warden Login
+              </span>
 
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-4 h-4 shrink-0" />
 
             </button>
 
@@ -732,29 +720,29 @@ export default function StudentAuthModal({
           MAIN
       ===================================================== */}
 
-      <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+      <main className="flex-1 w-full min-w-0 px-3 sm:px-6 lg:px-8 py-5 sm:py-8 lg:py-10">
 
-        <div className="max-w-2xl mx-auto">
+        <div className="w-full max-w-2xl mx-auto min-w-0">
 
           {/* MAIN CARD */}
 
-          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+          <div className="bg-white border border-slate-200 rounded-xl sm:rounded-2xl shadow-sm overflow-hidden">
 
             {/* =================================================
                 CARD HEADER
             ================================================= */}
 
-            <div className="px-5 sm:px-7 py-5 border-b border-slate-200 bg-slate-50">
+            <div className="px-4 sm:px-7 py-4 sm:py-5 border-b border-slate-200 bg-slate-50">
 
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
 
-                <div>
+                <div className="min-w-0">
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
 
                     {forgotPasswordStep > 0 ? (
 
-                      <div className="w-9 h-9 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center">
+                      <div className="w-9 h-9 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
 
                         <KeyRound className="w-4 h-4" />
 
@@ -762,7 +750,7 @@ export default function StudentAuthModal({
 
                     ) : (
 
-                      <div className="w-9 h-9 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center">
+                      <div className="w-9 h-9 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
 
                         {isRegistering ? (
                           <UserPlus className="w-4 h-4" />
@@ -774,9 +762,9 @@ export default function StudentAuthModal({
 
                     )}
 
-                    <div>
+                    <div className="min-w-0">
 
-                      <h2 className="text-base sm:text-lg font-bold text-slate-900">
+                      <h2 className="text-sm sm:text-lg font-bold text-slate-900 leading-tight">
 
                         {forgotPasswordStep > 0
                           ? 'Reset Password'
@@ -786,7 +774,7 @@ export default function StudentAuthModal({
 
                       </h2>
 
-                      <p className="text-xs text-slate-500 mt-0.5">
+                      <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5 leading-relaxed">
 
                         {forgotPasswordStep > 0
                           ? 'Recover access to your student account'
@@ -804,14 +792,14 @@ export default function StudentAuthModal({
 
                 {forgotPasswordStep === 0 && (
 
-                  <div className="flex w-full sm:w-auto rounded-lg bg-slate-200 p-1">
+                  <div className="flex w-full sm:w-auto rounded-lg bg-slate-200 p-1 shrink-0">
 
                     <button
                       type="button"
                       onClick={() =>
                         switchMode(false)
                       }
-                      className={`flex-1 sm:flex-none px-4 py-2 rounded-md text-xs sm:text-sm font-semibold transition ${
+                      className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-semibold transition ${
                         !isRegistering
                           ? 'bg-white text-blue-700 shadow-sm'
                           : 'text-slate-600 hover:text-slate-900'
@@ -825,7 +813,7 @@ export default function StudentAuthModal({
                       onClick={() =>
                         switchMode(true)
                       }
-                      className={`flex-1 sm:flex-none px-4 py-2 rounded-md text-xs sm:text-sm font-semibold transition ${
+                      className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-semibold transition ${
                         isRegistering
                           ? 'bg-white text-blue-700 shadow-sm'
                           : 'text-slate-600 hover:text-slate-900'
@@ -846,13 +834,13 @@ export default function StudentAuthModal({
                 FORM CONTENT
             ================================================= */}
 
-            <div className="p-5 sm:p-7">
+            <div className="p-4 sm:p-7 min-w-0">
 
               {/* ERROR */}
 
               {error && (
 
-                <div className="mb-5 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-red-800">
+                <div className="mb-4 sm:mb-5 flex items-start gap-2.5 sm:gap-3 rounded-xl border border-red-200 bg-red-50 px-3 sm:px-4 py-3 text-red-800 min-w-0">
 
                   <div className="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center shrink-0">
 
@@ -860,13 +848,13 @@ export default function StudentAuthModal({
 
                   </div>
 
-                  <div>
+                  <div className="min-w-0">
 
                     <p className="text-sm font-semibold">
                       Unable to continue
                     </p>
 
-                    <p className="text-xs leading-relaxed mt-0.5 text-red-700">
+                    <p className="text-xs leading-relaxed mt-0.5 text-red-700 break-words">
                       {error}
                     </p>
 
@@ -880,7 +868,7 @@ export default function StudentAuthModal({
 
               {successMsg && (
 
-                <div className="mb-5 flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-800">
+                <div className="mb-4 sm:mb-5 flex items-start gap-2.5 sm:gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 sm:px-4 py-3 text-emerald-800 min-w-0">
 
                   <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center shrink-0">
 
@@ -888,13 +876,13 @@ export default function StudentAuthModal({
 
                   </div>
 
-                  <div>
+                  <div className="min-w-0">
 
                     <p className="text-sm font-semibold">
                       Success
                     </p>
 
-                    <p className="text-xs leading-relaxed mt-0.5 text-emerald-700">
+                    <p className="text-xs leading-relaxed mt-0.5 text-emerald-700 break-words">
                       {successMsg}
                     </p>
 
@@ -912,10 +900,10 @@ export default function StudentAuthModal({
 
                 <form
                   onSubmit={handleRequestOTP}
-                  className="space-y-5"
+                  className="space-y-4 sm:space-y-5"
                 >
 
-                  <div className="rounded-xl border border-blue-100 bg-blue-50 p-4">
+                  <div className="rounded-xl border border-blue-100 bg-blue-50 p-3 sm:p-4">
 
                     <div className="flex gap-3">
 
@@ -925,7 +913,7 @@ export default function StudentAuthModal({
 
                       </div>
 
-                      <div>
+                      <div className="min-w-0">
 
                         <h3 className="text-sm font-semibold text-slate-900">
                           Password recovery
@@ -967,7 +955,7 @@ export default function StudentAuthModal({
 
                   </div>
 
-                  <div className="flex flex-col-reverse sm:flex-row gap-3 pt-2">
+                  <div className="flex flex-col-reverse sm:flex-row gap-3 pt-1 sm:pt-2">
 
                     <button
                       type="button"
@@ -975,7 +963,7 @@ export default function StudentAuthModal({
                         setForgotPasswordStep(0);
                         resetMessages();
                       }}
-                      className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition"
+                      className="flex-1 min-h-10 inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition"
                     >
 
                       <ArrowLeft className="w-4 h-4" />
@@ -987,18 +975,20 @@ export default function StudentAuthModal({
                     <button
                       type="submit"
                       disabled={loading}
-                      className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-800 transition disabled:opacity-60"
+                      className="flex-1 min-h-10 inline-flex items-center justify-center gap-2 rounded-lg bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-800 transition disabled:opacity-60"
                     >
 
                       {loading ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <Loader2 className="w-4 h-4 animate-spin shrink-0" />
                       ) : (
-                        <Mail className="w-4 h-4" />
+                        <Mail className="w-4 h-4 shrink-0" />
                       )}
 
-                      {loading
-                        ? 'Sending OTP...'
-                        : 'Send OTP'}
+                      <span className="truncate">
+                        {loading
+                          ? 'Sending OTP...'
+                          : 'Send OTP'}
+                      </span>
 
                     </button>
 
@@ -1016,10 +1006,10 @@ export default function StudentAuthModal({
 
                 <form
                   onSubmit={handleResetPassword}
-                  className="space-y-5"
+                  className="space-y-4 sm:space-y-5"
                 >
 
-                  <div className="rounded-xl border border-amber-100 bg-amber-50 p-4">
+                  <div className="rounded-xl border border-amber-100 bg-amber-50 p-3 sm:p-4">
 
                     <div className="flex gap-3">
 
@@ -1029,13 +1019,13 @@ export default function StudentAuthModal({
 
                       </div>
 
-                      <div>
+                      <div className="min-w-0">
 
                         <h3 className="text-sm font-semibold text-slate-900">
                           Verify and create a new password
                         </h3>
 
-                        <p className="text-xs text-slate-600 mt-1">
+                        <p className="text-xs text-slate-600 mt-1 leading-relaxed">
                           Enter the OTP received on your registered email address.
                         </p>
 
@@ -1132,18 +1122,20 @@ export default function StudentAuthModal({
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-blue-700 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-800 transition disabled:opacity-60"
+                    className="w-full min-h-11 inline-flex items-center justify-center gap-2 rounded-lg bg-blue-700 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-800 transition disabled:opacity-60"
                   >
 
                     {loading ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <Loader2 className="w-4 h-4 animate-spin shrink-0" />
                     ) : (
-                      <CheckCircle2 className="w-4 h-4" />
+                      <CheckCircle2 className="w-4 h-4 shrink-0" />
                     )}
 
-                    {loading
-                      ? 'Updating Password...'
-                      : 'Reset Password'}
+                    <span className="truncate">
+                      {loading
+                        ? 'Updating Password...'
+                        : 'Reset Password'}
+                    </span>
 
                   </button>
 
@@ -1153,7 +1145,7 @@ export default function StudentAuthModal({
                       setForgotPasswordStep(1);
                       resetMessages();
                     }}
-                    className="w-full text-sm font-medium text-blue-700 hover:text-blue-800"
+                    className="w-full text-xs sm:text-sm font-medium text-blue-700 hover:text-blue-800 break-words"
                   >
                     Use a different Student ID
                   </button>
@@ -1170,7 +1162,7 @@ export default function StudentAuthModal({
 
                 <form
                   onSubmit={handleSubmit}
-                  className="space-y-5"
+                  className="space-y-4 sm:space-y-5"
                 >
 
                   {/* =================================================
@@ -1183,11 +1175,11 @@ export default function StudentAuthModal({
 
                       {/* PROFILE PHOTO */}
 
-                      <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                      <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 sm:p-4">
 
                         <div className="flex flex-col sm:flex-row sm:items-center gap-4">
 
-                          <div className="w-20 h-20 rounded-xl bg-slate-200 border border-slate-300 overflow-hidden flex items-center justify-center shrink-0">
+                          <div className="w-20 h-20 rounded-xl bg-slate-200 border border-slate-300 overflow-hidden flex items-center justify-center shrink-0 mx-auto sm:mx-0">
 
                             {formData.profilePhoto ? (
 
@@ -1207,7 +1199,7 @@ export default function StudentAuthModal({
 
                           </div>
 
-                          <div className="flex-1">
+                          <div className="flex-1 min-w-0 text-center sm:text-left">
 
                             <label className="block text-sm font-semibold text-slate-800">
 
@@ -1219,11 +1211,11 @@ export default function StudentAuthModal({
 
                             </label>
 
-                            <p className="text-xs text-slate-500 mt-1 mb-3">
+                            <p className="text-xs text-slate-500 mt-1 mb-3 leading-relaxed">
                               Upload a clear photograph for your student profile.
                             </p>
 
-                            <label className="inline-flex items-center gap-2 rounded-lg bg-blue-700 px-3.5 py-2 text-xs font-semibold text-white hover:bg-blue-800 cursor-pointer transition">
+                            <label className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-700 px-3.5 py-2 text-xs font-semibold text-white hover:bg-blue-800 cursor-pointer transition">
 
                               <ImagePlus className="w-4 h-4" />
 
@@ -1245,7 +1237,7 @@ export default function StudentAuthModal({
 
                             </label>
 
-                            <p className="text-[11px] text-slate-400 mt-2">
+                            <p className="text-[11px] text-slate-400 mt-2 leading-relaxed">
                               Image is automatically resized before upload.
                             </p>
 
@@ -1291,7 +1283,7 @@ export default function StudentAuthModal({
 
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
 
                           <div>
 
@@ -1353,7 +1345,7 @@ export default function StudentAuthModal({
 
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
 
                           <div>
 
@@ -1449,11 +1441,11 @@ export default function StudentAuthModal({
                             className={inputClass}
                           />
 
-                          <div className="flex items-start gap-1.5 mt-2 text-xs text-slate-500">
+                          <div className="flex items-start gap-1.5 mt-2 text-xs text-slate-500 min-w-0">
 
                             <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5 text-blue-500" />
 
-                            <span>
+                            <span className="break-words">
                               Your registered email is used for password recovery.
                             </span>
 
@@ -1491,7 +1483,7 @@ export default function StudentAuthModal({
                           className={`${inputClass} uppercase`}
                         />
 
-                        <p className="text-[11px] text-slate-500 mt-1.5">
+                        <p className="text-[11px] text-slate-500 mt-1.5 leading-relaxed">
                           This ID will be used to sign in to your student account.
                         </p>
 
@@ -1730,7 +1722,7 @@ export default function StudentAuthModal({
                         description="Enter your hostel and campus details."
                       >
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
 
                           {/* ROLL NUMBER */}
 
@@ -1839,6 +1831,7 @@ export default function StudentAuthModal({
                               ) : (
 
                                 <>
+
                                   <option value="BH1">
                                     BH1 (BOYS 1)
                                   </option>
@@ -1846,6 +1839,7 @@ export default function StudentAuthModal({
                                   <option value="GH1">
                                     GH1 (GIRLS 1)
                                   </option>
+
                                 </>
 
                               )}
@@ -1856,7 +1850,7 @@ export default function StudentAuthModal({
 
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
 
                           {/* GENDER */}
 
@@ -1945,7 +1939,7 @@ export default function StudentAuthModal({
 
                         {/* DOMICILE + CATEGORY */}
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
 
                           {/* DOMICILE */}
 
@@ -2044,7 +2038,7 @@ export default function StudentAuthModal({
 
                             </select>
 
-                            <p className="text-[11px] text-slate-500 mt-1.5">
+                            <p className="text-[11px] text-slate-500 mt-1.5 leading-relaxed">
 
                               {isOutsidePunjab
                                 ? 'Category is set to General for out-of-state domicile.'
@@ -2093,10 +2087,10 @@ export default function StudentAuthModal({
                               e.target.value,
                           })
                         }
-                        className={`${inputClass} `}
+                        className={`${inputClass} uppercase`}
                       />
 
-                      <p className="text-[11px] text-slate-500 mt-1.5">
+                      <p className="text-[11px] text-slate-500 mt-1.5 leading-relaxed">
                         Enter the Student ID you used during registration.
                       </p>
 
@@ -2156,7 +2150,7 @@ export default function StudentAuthModal({
                         className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-medium text-blue-700 hover:text-blue-800 transition"
                       >
 
-                        <HelpCircle className="w-3.5 h-3.5" />
+                        <HelpCircle className="w-3.5 h-3.5 shrink-0" />
 
                         Forgot password?
 
@@ -2173,33 +2167,39 @@ export default function StudentAuthModal({
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-blue-700 hover:bg-blue-800 text-white px-4 py-3 text-sm font-semibold transition disabled:opacity-60 disabled:cursor-not-allowed shadow-sm"
+                    className="w-full min-h-11 inline-flex items-center justify-center gap-2 rounded-lg bg-blue-700 hover:bg-blue-800 text-white px-4 py-3 text-sm font-semibold transition disabled:opacity-60 disabled:cursor-not-allowed shadow-sm"
                   >
 
                     {loading ? (
 
                       <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <Loader2 className="w-4 h-4 animate-spin shrink-0" />
 
-                        {isRegistering
-                          ? 'Creating account...'
-                          : 'Signing in...'}
+                        <span className="truncate">
+                          {isRegistering
+                            ? 'Creating account...'
+                            : 'Signing in...'}
+                        </span>
                       </>
 
                     ) : isRegistering ? (
 
                       <>
-                        <UserPlus className="w-4 h-4" />
+                        <UserPlus className="w-4 h-4 shrink-0" />
 
-                        Create Student Account
+                        <span className="truncate">
+                          Create Student Account
+                        </span>
                       </>
 
                     ) : (
 
                       <>
-                        <LogIn className="w-4 h-4" />
+                        <LogIn className="w-4 h-4 shrink-0" />
 
-                        Sign In
+                        <span>
+                          Sign In
+                        </span>
                       </>
 
                     )}
@@ -2216,13 +2216,13 @@ export default function StudentAuthModal({
                 CARD FOOTER
             ================================================= */}
 
-            <div className="border-t border-slate-200 bg-slate-50 px-5 sm:px-7 py-3.5">
+            <div className="border-t border-slate-200 bg-slate-50 px-4 sm:px-7 py-3.5">
 
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-slate-500">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-[10px] sm:text-[11px] text-slate-500 text-center sm:text-left">
 
                 <div className="flex items-center gap-1.5">
 
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
 
                   <span>
                     Secure student account
@@ -2230,8 +2230,8 @@ export default function StudentAuthModal({
 
                 </div>
 
-                <span>
-                Mess records & payment portal (student dashboard)
+                <span className="break-words">
+                  Mess records & payment portal (student dashboard)
                 </span>
 
               </div>
@@ -2244,11 +2244,14 @@ export default function StudentAuthModal({
               BOTTOM HELP
           ================================================= */}
 
-          <div className="text-center mt-5 text-xs text-slate-500">
+          <div className="text-center mt-4 sm:mt-5 px-2 text-[11px] sm:text-xs text-slate-500 break-words leading-relaxed">
 
-           Need administrative assistance?  Contact: <Mail className="inline-block w-3.5 h-3.5 mr-1" />adminconnect.org@gmail.com
+            Need administrative assistance? Contact:{' '}
 
-            
+            <Mail className="inline-block w-3.5 h-3.5 mr-1 align-middle" />
+
+            adminconnect.org@gmail.com
+
           </div>
 
         </div>
@@ -2261,8 +2264,10 @@ export default function StudentAuthModal({
 
       <footer className="border-t border-slate-200 bg-white">
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 text-center text-xs text-slate-500">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4 text-center text-[10px] sm:text-xs text-slate-500">
+
           2026 @ALL RIGHTS RESERVED.
+
         </div>
 
       </footer>
@@ -2270,7 +2275,6 @@ export default function StudentAuthModal({
     </div>
   );
 }
-
 
 /* =========================================================
    REUSABLE FIELD LABEL
@@ -2282,16 +2286,18 @@ function FieldLabel({
   required = false,
 }) {
   return (
-    <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+    <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 min-w-0">
 
-      <span className="text-blue-600">
+      <span className="text-blue-600 shrink-0">
         {icon}
       </span>
 
-      <span>{label}</span>
+      <span className="truncate">
+        {label}
+      </span>
 
       {required && (
-        <span className="text-red-500">
+        <span className="text-red-500 shrink-0">
           *
         </span>
       )}
@@ -2299,7 +2305,6 @@ function FieldLabel({
     </label>
   );
 }
-
 
 /* =========================================================
    REUSABLE FORM SECTION
@@ -2312,11 +2317,11 @@ function FormSection({
   children,
 }) {
   return (
-    <section className="rounded-xl border border-slate-200 bg-white overflow-hidden">
+    <section className="rounded-xl border border-slate-200 bg-white overflow-hidden min-w-0">
 
-      <div className="bg-slate-50 border-b border-slate-200 px-4 py-3.5">
+      <div className="bg-slate-50 border-b border-slate-200 px-3 sm:px-4 py-3.5">
 
-        <div className="flex items-start gap-3">
+        <div className="flex items-start gap-3 min-w-0">
 
           <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
 
@@ -2324,7 +2329,7 @@ function FormSection({
 
           </div>
 
-          <div>
+          <div className="min-w-0">
 
             <h3 className="text-sm font-bold text-slate-900">
               {title}
@@ -2332,7 +2337,7 @@ function FormSection({
 
             {description && (
 
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5 leading-relaxed">
                 {description}
               </p>
 
@@ -2344,7 +2349,7 @@ function FormSection({
 
       </div>
 
-      <div className="p-4 space-y-4">
+      <div className="p-3 sm:p-4 space-y-4 min-w-0">
         {children}
       </div>
 
