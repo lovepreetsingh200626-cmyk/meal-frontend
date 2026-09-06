@@ -1,322 +1,1007 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useMemo, useState } from 'react';
 import API from '../../services/api';
-import { 
-  FileText, CreditCard, ChevronRight, 
-  Calendar, IndianRupee, Wallet, Landmark, 
-  ShieldCheck, Printer, Filter, Clock, Loader2
+import {
+  FileText,
+  Calendar,
+  IndianRupee,
+  Wallet,
+  Landmark,
+  ShieldCheck,
+  Printer,
+  Filter,
+  Clock,
+  Loader2,
+  ChevronRight,
+  Receipt,
+  Utensils,
+  RefreshCw,
+  Info,
+  CheckCircle2
 } from 'lucide-react';
 
 export default function StudentLedgerPage({ user }) {
-  const navigate = useNavigate();
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState('ALL');
+  const [error, setError] = useState('');
 
   const userId = user?._id || user?.id || user?.userId;
 
   useEffect(() => {
-    if (userId) {
-      setLoading(true);
-      API.get(`/meals/user/${userId}`)
-        .then(res => setHistory(Array.isArray(res.data) ? res.data : []))
-        .catch(console.error)
-        .finally(() => setLoading(false));
-    }
+    const fetchLedger = async () => {
+      if (!userId) {
+        setLoading(false);
+        setError('Student information could not be loaded.');
+        return;
+      }
+
+      try {
+        setLoading(true);
+        setError('');
+
+        const res = await API.get(`/meals/user/${userId}`);
+
+        setHistory(Array.isArray(res.data) ? res.data : []);
+      } catch (err) {
+        console.error('Failed to load meal ledger:', err);
+
+        setError(
+          err?.response?.data?.message ||
+            'Unable to load your mess ledger. Please try again.'
+        );
+
+        setHistory([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLedger();
   }, [userId]);
 
-  // Extract unique available statement months (YYYY-MM) from ledger records
-  const availableMonths = useMemo(() => {
-    const months = new Set();
-    history.forEach(r => {
-      if (r?.date && typeof r.date === 'string' && r.date.length >= 7) {
-        months.add(r.date.substring(0, 7));
-      }
-    });
-    return Array.from(months).sort().reverse();
-  }, [history]);
+  /* -----------------------------
+     Helpers
+  ----------------------------- */
 
-  // Filter records based on active month statement selection
-  const filteredHistory = useMemo(() => {
-    if (selectedMonth === 'ALL') return history;
-    return history.filter(r => r?.date && r.date.startsWith(selectedMonth));
-  }, [history, selectedMonth]);
+  const formatCurrency = (amount) => {
+    const value = Number(amount) || 0;
 
-  const currentMonthPrefix = new Date().toISOString().substring(0, 7);
-  const currentMonthBill = useMemo(() => {
-    return history
-      .filter(r => r && r.date && r.date.startsWith(currentMonthPrefix))
-      .reduce((sum, r) => sum + (Number(r.dailyTotalCost) || 0), 0);
-  }, [history, currentMonthPrefix]);
-
-  const totalSpentAllTime = useMemo(() => {
-    return history.reduce((sum, r) => sum + (Number(r.dailyTotalCost) || 0), 0);
-  }, [history]);
-
-  const handlePrint = () => {
-    window.print();
+    return `₹${value.toLocaleString('en-IN', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    })}`;
   };
 
-  const formatLogTime = (rec) => {
-    if (rec?.time) return rec.time;
-    const rawTimestamp = rec?.createdAt || rec?.updatedAt;
+  const formatDate = (dateValue) => {
+    if (!dateValue) return '—';
+
+    const date = new Date(dateValue);
+
+    if (Number.isNaN(date.getTime())) return dateValue;
+
+    return date.toLocaleDateString('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    });
+  };
+
+  const formatMonth = (monthValue) => {
+    if (!monthValue || monthValue.length < 7) return monthValue;
+
+    const date = new Date(`${monthValue}-01T00:00:00`);
+
+    if (Number.isNaN(date.getTime())) return monthValue;
+
+    return date.toLocaleDateString('en-IN', {
+      month: 'long',
+      year: 'numeric'
+    });
+  };
+
+  const formatLogTime = (record) => {
+    if (record?.time) return record.time;
+
+    const rawTimestamp = record?.createdAt || record?.updatedAt;
+
     if (!rawTimestamp) return null;
+
     try {
       const parsed = new Date(rawTimestamp);
-      if (isNaN(parsed.getTime())) return null;
-      return parsed.toLocaleTimeString([], { 
-        hour: '2-digit', 
+
+      if (Number.isNaN(parsed.getTime())) return null;
+
+      return parsed.toLocaleTimeString([], {
+        hour: '2-digit',
         minute: '2-digit',
-        hour12: true 
+        hour12: true
       });
     } catch {
       return null;
     }
   };
 
-  return (
-    <div className="min-h-screen bg-slate-100 text-slate-900 pb-16 font-sans selection:bg-blue-950 selection:text-white">
-      
-      {/* 1. TOP STATUTORY AUDIT STRIP */}
-      <div className="bg-slate-950 text-slate-300 text-[10px] font-bold px-4 md:px-8 py-2 border-b-2 border-amber-500/80 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-1 z-50 select-none print:hidden">
-        <div className="flex items-center gap-2 uppercase tracking-widest text-slate-200">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span>Central Residential Mess Cooperative</span>
-          <span className="text-slate-600 hidden md:inline">|</span>
-          <span className="text-amber-300 font-black hidden md:inline">Comptroller Audit Division &bull; Dietary Ledger</span>
+  /* -----------------------------
+     Meal Status
+  ----------------------------- */
+
+  const isMealTaken = (record, meal) => {
+    const value =
+      record?.[meal] ??
+      record?.meals?.[meal] ??
+      record?.mealStatus?.[meal];
+
+    return (
+      value === true ||
+      value === 'true' ||
+      value === 1 ||
+      value === '1' ||
+      value === 'Taken' ||
+      value === 'taken'
+    );
+  };
+
+  /* -----------------------------
+     Month Filter
+  ----------------------------- */
+
+  const availableMonths = useMemo(() => {
+    const months = new Set();
+
+    history.forEach((record) => {
+      if (
+        record?.date &&
+        typeof record.date === 'string' &&
+        record.date.length >= 7
+      ) {
+        months.add(record.date.substring(0, 7));
+      }
+    });
+
+    return Array.from(months).sort().reverse();
+  }, [history]);
+
+  const filteredHistory = useMemo(() => {
+    if (selectedMonth === 'ALL') {
+      return history;
+    }
+
+    return history.filter(
+      (record) =>
+        record?.date &&
+        typeof record.date === 'string' &&
+        record.date.startsWith(selectedMonth)
+    );
+  }, [history, selectedMonth]);
+
+  /* -----------------------------
+     Calculations
+  ----------------------------- */
+
+  const currentMonthPrefix = new Date().toISOString().substring(0, 7);
+
+  const currentMonthBill = useMemo(() => {
+    return history
+      .filter(
+        (record) =>
+          record?.date &&
+          typeof record.date === 'string' &&
+          record.date.startsWith(currentMonthPrefix)
+      )
+      .reduce(
+        (sum, record) => sum + (Number(record.dailyTotalCost) || 0),
+        0
+      );
+  }, [history, currentMonthPrefix]);
+
+  const totalSpentAllTime = useMemo(() => {
+    return history.reduce(
+      (sum, record) => sum + (Number(record.dailyTotalCost) || 0),
+      0
+    );
+  }, [history]);
+
+  const filteredTotal = useMemo(() => {
+    return filteredHistory.reduce(
+      (sum, record) => sum + (Number(record.dailyTotalCost) || 0),
+      0
+    );
+  }, [filteredHistory]);
+
+  const totalDays = history.length;
+  const filteredDays = filteredHistory.length;
+
+  const averageDailyCost = useMemo(() => {
+    if (!history.length) return 0;
+
+    return totalSpentAllTime / history.length;
+  }, [history, totalSpentAllTime]);
+
+  /* -----------------------------
+     Actions
+  ----------------------------- */
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const handleRefresh = async () => {
+    if (!userId) return;
+
+    try {
+      setLoading(true);
+      setError('');
+
+      const res = await API.get(`/meals/user/${userId}`);
+
+      setHistory(Array.isArray(res.data) ? res.data : []);
+    } catch (err) {
+      console.error('Failed to refresh ledger:', err);
+
+      setError(
+        err?.response?.data?.message ||
+          'Unable to refresh the ledger. Please try again.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* -----------------------------
+     Loading
+  ----------------------------- */
+
+  if (loading) {
+    return (
+      <div className="min-h-[500px] flex items-center justify-center px-4">
+        <div className="w-full max-w-md bg-white border border-slate-200 rounded-2xl shadow-sm p-8 text-center">
+          <div className="mx-auto mb-5 h-14 w-14 rounded-2xl bg-blue-50 flex items-center justify-center">
+            <Loader2 className="w-7 h-7 text-blue-700 animate-spin" />
+          </div>
+
+          <h2 className="text-lg font-bold text-slate-900">
+            Loading mess ledger
+          </h2>
+
+          <p className="text-sm text-slate-500 mt-2">
+            Please wait while your meal records are being retrieved.
+          </p>
         </div>
-        <div className="flex items-center gap-3 text-[9px] font-mono uppercase tracking-wider text-slate-400">
-          <span>Ledger Statute: <strong className="text-white">AUDIT 4.2</strong></span>
-          <span className="text-slate-600">•</span>
-          <span>Status: <strong className="text-emerald-400">CERTIFIED RECORDS</strong></span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-slate-100 text-slate-900 font-sans pb-10 print:bg-white">
+
+      {/* Institutional Strip */}
+      <div className="bg-slate-950 text-slate-200 print:hidden">
+        <div className="max-w-6xl mx-auto px-4 py-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-[11px] sm:text-xs">
+          <div className="flex items-center gap-2">
+            <Landmark className="w-3.5 h-3.5" />
+
+            <span className="font-medium">
+              University Hostel Mess Management System
+            </span>
+          </div>
+
+          <span className="text-slate-400">
+            Student Financial & Meal Ledger
+          </span>
         </div>
       </div>
 
-      <main className="max-w-6xl mx-auto px-4 py-8 space-y-6">
-        
-        {loading ? (
-            <div className="flex flex-col items-center justify-center min-h-[65vh] bg-white border-2 border-slate-300 shadow-sm border-t-4 border-t-blue-950 w-full animate-in fade-in duration-300">
-                <Loader2 className="w-10 h-10 animate-spin text-amber-600 mb-4" />
-                <p className="text-[11px] font-mono font-black uppercase tracking-widest text-slate-600">Accessing Dietary Ledger...</p>
+      <main className="max-w-6xl mx-auto px-4 py-6 sm:py-8 space-y-6">
+
+        {/* Error */}
+        {error && (
+          <div className="bg-white border border-red-200 rounded-2xl shadow-sm p-4 flex flex-col sm:flex-row sm:items-center gap-4">
+            <div className="h-10 w-10 shrink-0 rounded-xl bg-red-50 flex items-center justify-center">
+              <Info className="w-5 h-5 text-red-600" />
             </div>
-        ) : (
-            <div className="space-y-6 animate-in fade-in duration-500">
-                {/* 2. OFFICIAL EXPENDITURE STATEMENT BANNER */}
-                <div className="bg-white border-2 border-slate-300 shadow-xs p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 border-t-4 border-t-blue-950">
-                <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-blue-950 border-2 border-amber-500 text-amber-300 flex items-center justify-center font-serif shrink-0 shadow-xs mt-0.5">
-                    <Landmark className="w-6 h-6 text-amber-400" />
-                    </div>
-                    <div>
-                    <div className="flex items-center gap-2">
-                        <span className="text-[9px] font-black uppercase bg-blue-50 text-blue-950 border border-blue-200 px-2 py-0.5 font-mono">
-                        Official Statement
-                        </span>
-                        <span className="text-[9px] font-mono font-bold text-slate-500 uppercase">
-                        Statute 4.2 Verified
-                        </span>
-                    </div>
-                    <h1 className="text-lg md:text-xl font-black text-blue-950 uppercase tracking-tight font-serif mt-1">
-                        Audited Dietary Expenditure Register
-                    </h1>
-                    <p className="text-xs font-mono font-bold text-slate-600 uppercase mt-0.5">
-                        Member: <span className="text-blue-950 font-serif font-black">{user?.name}</span> &bull; Roll: <span className="text-slate-900">{user?.rollNo || 'N/A'}</span> &bull; Residence: <span className="text-slate-900">{user?.hostelNo || 'CAMPUS RESIDENCE'}</span>
-                    </p>
-                    </div>
-                </div>
 
-                <div className="flex flex-wrap items-center gap-2 w-full md:w-auto justify-start md:justify-end print:hidden">
-                    <button
-                    type="button"
-                    onClick={handlePrint}
-                    className="bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 font-black py-2.5 px-3.5 text-xs uppercase tracking-wider flex items-center gap-2 transition cursor-pointer shadow-xs active:scale-95"
-                    title="Print Certified Statement"
-                    >
-                    <Printer className="w-3.5 h-3.5 text-slate-600" />
-                    <span>Print Statement</span>
-                    </button>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-red-800">
+                Unable to load ledger
+              </p>
 
-                    <button
-                    type="button"
-                    onClick={() => navigate('/student/payments')}
-                    className="bg-blue-950 hover:bg-blue-900 text-white font-black py-2.5 px-4 text-xs uppercase tracking-widest flex items-center gap-2 transition cursor-pointer shadow-xs border-b-2 border-amber-500 active:scale-95"
-                    >
-                    <CreditCard className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Settle Dues &amp; Invoices</span>
-                    <ChevronRight className="w-4 h-4 text-amber-400" />
-                    </button>
-                </div>
-                </div>
-
-                {/* 3. AUDITED SUMMARY METRIC MATRIX */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="bg-white border border-slate-300 p-5 border-l-4 border-l-blue-950 shadow-xs">
-                    <div className="flex justify-between items-start">
-                    <div>
-                        <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest font-mono">Total Certified Entries</p>
-                        <p className="text-3xl font-black text-slate-950 font-serif mt-1">{history.length}</p>
-                    </div>
-                    <span className="p-2.5 bg-slate-100 text-slate-700 border border-slate-200"><Calendar className="w-5 h-5" /></span>
-                    </div>
-                    <p className="text-[9px] font-mono text-slate-500 uppercase mt-2">Recorded Attendance Days</p>
-                </div>
-
-                <div className="bg-white border border-slate-300 p-5 border-l-4 border-l-amber-600 shadow-xs">
-                    <div className="flex justify-between items-start">
-                    <div>
-                        <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest font-mono">Current Billing Cycle</p>
-                        <p className="text-3xl font-black text-blue-950 font-serif mt-1">₹{currentMonthBill.toLocaleString()}/-</p>
-                    </div>
-                    <span className="p-2.5 bg-amber-50 text-amber-800 border border-amber-200"><Wallet className="w-5 h-5" /></span>
-                    </div>
-                    <p className="text-[9px] font-mono text-slate-500 uppercase mt-2">Cycle: {currentMonthPrefix}</p>
-                </div>
-
-                <div className="bg-white border border-slate-300 p-5 border-l-4 border-l-emerald-700 shadow-xs">
-                    <div className="flex justify-between items-start">
-                    <div>
-                        <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest font-mono">Cumulative Expenditure</p>
-                        <p className="text-3xl font-black text-emerald-800 font-serif mt-1">₹{totalSpentAllTime.toLocaleString()}/-</p>
-                    </div>
-                    <span className="p-2.5 bg-emerald-50 text-emerald-800 border border-emerald-200"><IndianRupee className="w-5 h-5" /></span>
-                    </div>
-                    <p className="text-[9px] font-mono text-slate-500 uppercase mt-2">All-Time Residential Levy</p>
-                </div>
-                </div>
-
-                {/* 4. FORMAL EXPENDITURE LEDGER TABLE */}
-                <div className="bg-white border-2 border-slate-300 shadow-xs overflow-hidden">
-                
-                {/* Table Control Header */}
-                <div className="bg-slate-50 border-b border-slate-300 px-5 py-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                    <div>
-                    <h2 className="font-black text-xs text-blue-950 uppercase tracking-widest flex items-center gap-2 font-serif">
-                        <FileText className="w-4 h-4 text-amber-600" /> Formal Dietary Attendance &amp; Expense Ledger
-                    </h2>
-                    <p className="text-[9px] font-mono text-slate-500 uppercase mt-0.5">
-                        Displaying {filteredHistory.length} audited statement record{filteredHistory.length === 1 ? '' : 's'}
-                    </p>
-                    </div>
-
-                    {/* Monthly Statement Cycle Filter */}
-                    {availableMonths.length > 0 && (
-                    <div className="flex items-center gap-2 print:hidden">
-                        <label className="text-[9px] font-black text-slate-600 uppercase font-mono flex items-center gap-1">
-                        <Filter className="w-3 h-3 text-amber-600" /> Statement Cycle:
-                        </label>
-                        <select
-                        value={selectedMonth}
-                        onChange={(e) => setSelectedMonth(e.target.value)}
-                        className="bg-white border border-slate-400 py-1 px-2.5 text-xs font-mono font-bold text-slate-900 uppercase outline-none focus:border-blue-950 cursor-pointer"
-                        >
-                        <option value="ALL">ALL STATEMENTS</option>
-                        {availableMonths.map(m => (
-                            <option key={m} value={m}>{m}</option>
-                        ))}
-                        </select>
-                    </div>
-                    )}
-                </div>
-
-                {filteredHistory.length === 0 ? (
-                    <div className="text-center py-12 text-slate-400 text-xs font-mono font-bold uppercase tracking-widest">
-                    No expenditure entries logged for the selected cycle.
-                    </div>
-                ) : (
-                    <div className="overflow-x-auto max-h-[28rem] overflow-y-auto">
-                    <table className="w-full text-left border-collapse text-xs">
-                        <thead className="bg-slate-900 text-white sticky top-0 border-b-2 border-slate-950 z-10 select-none">
-                        <tr className="uppercase font-black text-[10px] tracking-wider">
-                            <th className="p-3 border-r border-slate-800">Date &amp; Time Logged</th>
-                            <th className="p-3 border-r border-slate-800">Dietary Attendance</th>
-                            <th className="p-3 border-r border-slate-800">Approved Supplementary Extras</th>
-                            <th className="p-3 text-right">Audited Total (INR)</th>
-                        </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-200 font-medium">
-                        {filteredHistory.map((rec) => {
-                            const logTime = formatLogTime(rec);
-                            return (
-                            <tr key={rec._id} className="hover:bg-slate-50/80 transition-colors">
-                                <td className="p-3 border-r border-slate-200 text-slate-900 font-mono font-bold whitespace-nowrap">
-                                <div className="flex flex-col">
-                                    <span className="text-slate-950 font-bold tracking-tight">{rec.date}</span>
-                                    {logTime ? (
-                                    <span className="text-[10px] font-mono text-slate-500 font-semibold flex items-center gap-1 mt-0.5">
-                                        <Clock className="w-3 h-3 text-amber-600 shrink-0" />
-                                        <span>{logTime}</span>
-                                    </span>
-                                    ) : (
-                                    <span className="text-[9px] font-mono text-slate-400 font-normal">Time unrecorded</span>
-                                    )}
-                                </div>
-                                </td>
-                                <td className="p-3 border-r border-slate-200">
-                                <div className="flex items-center gap-1.5 flex-wrap">
-                                    {rec.meals?.breakfast ? (
-                                    <span className="bg-white border border-slate-300 text-blue-950 px-1.5 py-0.5 font-black uppercase text-[9px]">
-                                        B: Breakfast
-                                    </span>
-                                    ) : null}
-                                    {rec.meals?.lunch ? (
-                                    <span className="bg-white border border-slate-300 text-blue-950 px-1.5 py-0.5 font-black uppercase text-[9px]">
-                                        L: Lunch
-                                    </span>
-                                    ) : null}
-                                    {rec.meals?.dinner ? (
-                                    <span className="bg-white border border-slate-300 text-blue-950 px-1.5 py-0.5 font-black uppercase text-[9px]">
-                                        D: Dinner
-                                    </span>
-                                    ) : null}
-                                    {rec.appliedDietRule === '1_DIET_BUMPED_TO_2' && (
-                                    <span className="text-[8px] bg-amber-50 text-amber-900 border border-amber-300 px-1.5 py-0.5 font-black uppercase ml-1">
-                                        Statute 4.2 Dual-Diet Quota
-                                    </span>
-                                    )}
-                                    {!rec.meals?.breakfast && !rec.meals?.lunch && !rec.meals?.dinner && (
-                                    <span className="text-[9px] font-mono text-slate-400 uppercase">
-                                        No standard diets logged
-                                    </span>
-                                    )}
-                                </div>
-                                </td>
-                                <td className="p-3 border-r border-slate-200 text-slate-700 uppercase font-mono text-[11px]">
-                                {rec.extras && rec.extras.length > 0 ? (
-                                    rec.extras.map(e => `${e.itemName} (₹${e.cost})`).join('; ')
-                                ) : (
-                                    <span className="text-slate-400">not applicable</span>
-                                )}
-                                </td>
-                                <td className="p-3 text-right font-black text-blue-950 font-serif text-sm whitespace-nowrap">
-                                ₹{rec.dailyTotalCost || 0}/-
-                                </td>
-                            </tr>
-                            );
-                        })}
-                        </tbody>
-                    </table>
-                    </div>
-                )}
-
-                {/* Statement Footer Summary */}
-                <div className="bg-slate-100 border-t border-slate-300 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs font-mono">
-                    <span className="text-slate-600 uppercase font-bold">
-                    Ledger Cycle: <strong className="text-slate-900">{selectedMonth === 'ALL' ? 'Cumulative Permanent Ledger' : selectedMonth}</strong>
-                    </span>
-                    <span className="text-blue-950 font-serif font-black text-sm">
-                    Statement Subtotal: ₹{filteredHistory.reduce((s, r) => s + (Number(r.dailyTotalCost) || 0), 0).toLocaleString()}/-
-                    </span>
-                </div>
-                </div>
+              <p className="text-xs text-red-600 mt-1">
+                {error}
+              </p>
             </div>
+
+            <button
+              onClick={handleRefresh}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-red-600 text-white text-sm font-semibold hover:bg-red-700 transition"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Retry
+            </button>
+          </div>
         )}
-      </main>
 
-      {/* 5. STATUTORY FOOTER WATERMARK */}
-      <footer className="mt-8 text-center text-[9px] font-mono text-slate-500 uppercase tracking-widest flex items-center justify-center gap-1.5 select-none print:hidden">
-        <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
-        <span>Central Autonomous Cooperative Registry &bull; Certified Student Residential Records</span>
-      </footer>
+        {/* Header */}
+        <section className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden print:border-0 print:shadow-none">
+          <div className="p-5 sm:p-6 border-b border-slate-100">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
+
+              <div className="flex items-start gap-4">
+                <div className="h-12 w-12 shrink-0 rounded-xl bg-blue-50 flex items-center justify-center">
+                  <FileText className="w-6 h-6 text-blue-700" />
+                </div>
+
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h1 className="text-xl sm:text-2xl font-bold text-slate-950">
+                      Mess Ledger
+                    </h1>
+
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-emerald-700">
+                      <ShieldCheck className="w-3 h-3" />
+                      Official Record
+                    </span>
+                  </div>
+
+                  <p className="text-sm text-slate-500 mt-1">
+                    Detailed record of your registered meals and daily mess
+                    charges.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 print:hidden">
+                <button
+                  onClick={handleRefresh}
+                  className="inline-flex items-center justify-center gap-2 h-10 px-3 sm:px-4 rounded-xl border border-slate-200 bg-white text-slate-700 text-sm font-semibold hover:bg-slate-50 transition"
+                >
+                  <RefreshCw className="w-4 h-4" />
+
+                  <span className="hidden sm:inline">
+                    Refresh
+                  </span>
+                </button>
+
+                <button
+                  onClick={handlePrint}
+                  className="inline-flex items-center justify-center gap-2 h-10 px-3 sm:px-4 rounded-xl bg-slate-950 text-white text-sm font-semibold hover:bg-slate-800 transition"
+                >
+                  <Printer className="w-4 h-4" />
+                  Print
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Student Information */}
+          <div className="px-5 sm:px-6 py-4 bg-slate-50/70">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+
+              <div>
+                <p className="text-[10px] uppercase tracking-wider font-bold text-slate-400">
+                  Student
+                </p>
+
+                <p className="text-sm font-semibold text-slate-800 mt-1 truncate">
+                  {user?.name || 'Student'}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-[10px] uppercase tracking-wider font-bold text-slate-400">
+                  Student ID
+                </p>
+
+                <p className="text-sm font-semibold text-slate-800 mt-1 truncate">
+                  {user?.studentId || user?.rollNo || '—'}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-[10px] uppercase tracking-wider font-bold text-slate-400">
+                  Hostel
+                </p>
+
+                <p className="text-sm font-semibold text-slate-800 mt-1 truncate">
+                  {user?.hostelNo ||
+                    user?.hostelId?.hostelNumber ||
+                    '—'}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-[10px] uppercase tracking-wider font-bold text-slate-400">
+                  Total Records
+                </p>
+
+                <p className="text-sm font-semibold text-slate-800 mt-1">
+                  {totalDays} days
+                </p>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        {/* Summary Cards */}
+        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 print:grid-cols-3">
+
+          {/* Current Month */}
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-5">
+            <div className="flex items-center justify-between">
+
+              <div className="h-10 w-10 rounded-xl bg-blue-50 flex items-center justify-center">
+                <Wallet className="w-5 h-5 text-blue-700" />
+              </div>
+
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                Current Month
+              </span>
+            </div>
+
+            <p className="text-xs font-medium text-slate-500 mt-4">
+              Current Month Bill
+            </p>
+
+            <p className="text-2xl font-bold text-slate-950 mt-1">
+              {formatCurrency(currentMonthBill)}
+            </p>
+
+            <p className="text-xs text-slate-400 mt-2">
+              {formatMonth(currentMonthPrefix)}
+            </p>
+          </div>
+
+          {/* Total */}
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-5">
+            <div className="flex items-center justify-between">
+
+              <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center">
+                <IndianRupee className="w-5 h-5 text-emerald-700" />
+              </div>
+
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                All Time
+              </span>
+            </div>
+
+            <p className="text-xs font-medium text-slate-500 mt-4">
+              Total Mess Charges
+            </p>
+
+            <p className="text-2xl font-bold text-slate-950 mt-1">
+              {formatCurrency(totalSpentAllTime)}
+            </p>
+
+            <p className="text-xs text-slate-400 mt-2">
+              Across {totalDays} recorded day
+              {totalDays === 1 ? '' : 's'}
+            </p>
+          </div>
+
+          {/* Average */}
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-5 sm:col-span-2 lg:col-span-1">
+            <div className="flex items-center justify-between">
+
+              <div className="h-10 w-10 rounded-xl bg-amber-50 flex items-center justify-center">
+                <Receipt className="w-5 h-5 text-amber-700" />
+              </div>
+
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                Average
+              </span>
+            </div>
+
+            <p className="text-xs font-medium text-slate-500 mt-4">
+              Average Daily Cost
+            </p>
+
+            <p className="text-2xl font-bold text-slate-950 mt-1">
+              {formatCurrency(averageDailyCost)}
+            </p>
+
+            <p className="text-xs text-slate-400 mt-2">
+              Based on available ledger records
+            </p>
+          </div>
+        </section>
+
+        {/* Ledger */}
+        <section className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden print:shadow-none">
+
+          {/* Toolbar */}
+          <div className="p-4 sm:p-5 border-b border-slate-200 flex flex-col md:flex-row md:items-center md:justify-between gap-4 print:hidden">
+
+            <div>
+              <div className="flex items-center gap-2">
+                <Receipt className="w-4 h-4 text-blue-700" />
+
+                <h2 className="font-bold text-slate-900">
+                  Daily Meal Ledger
+                </h2>
+              </div>
+
+              <p className="text-xs text-slate-500 mt-1">
+                {selectedMonth === 'ALL'
+                  ? `${filteredDays} record${
+                      filteredDays === 1 ? '' : 's'
+                    }`
+                  : `${filteredDays} record${
+                      filteredDays === 1 ? '' : 's'
+                    } for ${formatMonth(selectedMonth)}`}
+              </p>
+            </div>
+
+            <div className="relative">
+              <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+
+              <select
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(e.target.value)}
+                className="w-full sm:w-56 h-10 pl-9 pr-8 rounded-xl border border-slate-200 bg-white text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 appearance-none"
+              >
+                <option value="ALL">
+                  All Months
+                </option>
+
+                {availableMonths.map((month) => (
+                  <option key={month} value={month}>
+                    {formatMonth(month)}
+                  </option>
+                ))}
+              </select>
+
+              <ChevronRight className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 rotate-90 pointer-events-none" />
+            </div>
+          </div>
+
+          {/* Selected Month */}
+          <div className="px-4 sm:px-5 py-3 bg-blue-50/50 border-b border-blue-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+
+            <div className="flex items-center gap-2 text-sm">
+              <Calendar className="w-4 h-4 text-blue-700" />
+
+              <span className="text-slate-600">
+                Showing:
+              </span>
+
+              <span className="font-semibold text-slate-900">
+                {selectedMonth === 'ALL'
+                  ? 'All available records'
+                  : formatMonth(selectedMonth)}
+              </span>
+            </div>
+
+            <div className="text-sm font-bold text-blue-800">
+              {formatCurrency(filteredTotal)}
+            </div>
+          </div>
+
+          {/* Empty */}
+          {filteredHistory.length === 0 ? (
+            <div className="px-6 py-16 text-center">
+
+              <div className="mx-auto h-14 w-14 rounded-2xl bg-slate-100 flex items-center justify-center">
+                <FileText className="w-7 h-7 text-slate-400" />
+              </div>
+
+              <h3 className="mt-4 text-base font-bold text-slate-800">
+                No ledger records found
+              </h3>
+
+              <p className="max-w-md mx-auto text-sm text-slate-500 mt-2">
+                There are no meal records available for the selected period.
+              </p>
+
+              {selectedMonth !== 'ALL' && (
+                <button
+                  onClick={() => setSelectedMonth('ALL')}
+                  className="mt-5 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-950 text-white text-sm font-semibold hover:bg-slate-800 transition print:hidden"
+                >
+                  View All Records
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+          ) : (
+            <>
+              {/* Desktop Table */}
+              <div className="hidden md:block overflow-x-auto">
+
+                <table className="w-full text-left">
+
+                  <thead>
+                    <tr className="bg-slate-50 border-b border-slate-200">
+
+                      <th className="px-5 py-3 text-[10px] uppercase tracking-wider font-bold text-slate-500">
+                        Date
+                      </th>
+
+                      <th className="px-5 py-3 text-[10px] uppercase tracking-wider font-bold text-slate-500">
+                        Meals
+                      </th>
+
+                      <th className="px-5 py-3 text-[10px] uppercase tracking-wider font-bold text-slate-500 text-center">
+                        Breakfast
+                      </th>
+
+                      <th className="px-5 py-3 text-[10px] uppercase tracking-wider font-bold text-slate-500 text-center">
+                        Lunch
+                      </th>
+
+                      <th className="px-5 py-3 text-[10px] uppercase tracking-wider font-bold text-slate-500 text-center">
+                        Dinner
+                      </th>
+
+                      <th className="px-5 py-3 text-[10px] uppercase tracking-wider font-bold text-slate-500 text-right">
+                        Daily Total
+                      </th>
+
+                    </tr>
+                  </thead>
+
+                  <tbody className="divide-y divide-slate-100">
+
+                    {filteredHistory.map((record, index) => {
+
+                      const total =
+                        Number(record?.dailyTotalCost) || 0;
+
+                      const breakfastTaken = isMealTaken(
+                        record,
+                        'breakfast'
+                      );
+
+                      const lunchTaken = isMealTaken(
+                        record,
+                        'lunch'
+                      );
+
+                      const dinnerTaken = isMealTaken(
+                        record,
+                        'dinner'
+                      );
+
+                      const mealCount = [
+                        breakfastTaken,
+                        lunchTaken,
+                        dinnerTaken
+                      ].filter(Boolean).length;
+
+                      return (
+                        <tr
+                          key={
+                            record?._id ||
+                            `${record?.date}-${index}`
+                          }
+                          className="hover:bg-slate-50/80 transition"
+                        >
+
+                          {/* Date */}
+                          <td className="px-5 py-4 whitespace-nowrap">
+
+                            <div className="flex items-center gap-3">
+
+                              <div className="h-9 w-9 rounded-lg bg-slate-100 flex items-center justify-center">
+                                <Calendar className="w-4 h-4 text-slate-500" />
+                              </div>
+
+                              <div>
+
+                                <p className="text-sm font-semibold text-slate-800">
+                                  {formatDate(record?.date)}
+                                </p>
+
+                                {formatLogTime(record) && (
+                                  <div className="flex items-center gap-1 mt-0.5 text-[10px] text-slate-400">
+                                    <Clock className="w-3 h-3" />
+                                    {formatLogTime(record)}
+                                  </div>
+                                )}
+
+                              </div>
+
+                            </div>
+                          </td>
+
+                          {/* Meal Count */}
+                          <td className="px-5 py-4">
+
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 border border-blue-100 px-2.5 py-1 text-xs font-bold text-blue-700">
+                              <Utensils className="w-3 h-3" />
+                              {mealCount}/3
+                            </span>
+
+                          </td>
+
+                          {/* Breakfast */}
+                          <td className="px-5 py-4 text-center">
+                            <MealStatus taken={breakfastTaken} />
+                          </td>
+
+                          {/* Lunch */}
+                          <td className="px-5 py-4 text-center">
+                            <MealStatus taken={lunchTaken} />
+                          </td>
+
+                          {/* Dinner */}
+                          <td className="px-5 py-4 text-center">
+                            <MealStatus taken={dinnerTaken} />
+                          </td>
+
+                          {/* Daily Total */}
+                          <td className="px-5 py-4 text-right whitespace-nowrap">
+                            <span className="text-sm font-bold text-slate-950">
+                              {formatCurrency(total)}
+                            </span>
+                          </td>
+
+                        </tr>
+                      );
+                    })}
+
+                  </tbody>
+
+                  <tfoot>
+                    <tr className="bg-slate-50 border-t border-slate-200">
+
+                      <td
+                        colSpan="5"
+                        className="px-5 py-4 text-right text-xs font-bold uppercase tracking-wide text-slate-500"
+                      >
+                        Filtered Total
+                      </td>
+
+                      <td className="px-5 py-4 text-right text-base font-bold text-slate-950">
+                        {formatCurrency(filteredTotal)}
+                      </td>
+
+                    </tr>
+                  </tfoot>
+
+                </table>
+              </div>
+
+              {/* Mobile */}
+              <div className="md:hidden divide-y divide-slate-100">
+
+                {filteredHistory.map((record, index) => {
+
+                  const total =
+                    Number(record?.dailyTotalCost) || 0;
+
+                  const breakfastTaken = isMealTaken(
+                    record,
+                    'breakfast'
+                  );
+
+                  const lunchTaken = isMealTaken(
+                    record,
+                    'lunch'
+                  );
+
+                  const dinnerTaken = isMealTaken(
+                    record,
+                    'dinner'
+                  );
+
+                  const mealCount = [
+                    breakfastTaken,
+                    lunchTaken,
+                    dinnerTaken
+                  ].filter(Boolean).length;
+
+                  return (
+                    <div
+                      key={
+                        record?._id ||
+                        `${record?.date}-${index}`
+                      }
+                      className="p-4"
+                    >
+
+                      <div className="flex items-start justify-between gap-3">
+
+                        <div className="flex items-center gap-3">
+
+                          <div className="h-10 w-10 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
+                            <Calendar className="w-4 h-4 text-slate-500" />
+                          </div>
+
+                          <div>
+                            <p className="text-sm font-bold text-slate-900">
+                              {formatDate(record?.date)}
+                            </p>
+
+                            {formatLogTime(record) && (
+                              <p className="text-[10px] text-slate-400 mt-0.5 flex items-center gap-1">
+                                <Clock className="w-3 h-3" />
+                                {formatLogTime(record)}
+                              </p>
+                            )}
+                          </div>
+
+                        </div>
+
+                        <div className="text-right">
+
+                          <p className="text-sm font-bold text-slate-950">
+                            {formatCurrency(total)}
+                          </p>
+
+                          <span className="text-[10px] text-slate-400">
+                            {mealCount}/3 meals
+                          </span>
+
+                        </div>
+
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-2 mt-4">
+
+                        <MobileMealStatus
+                          label="Breakfast"
+                          taken={breakfastTaken}
+                        />
+
+                        <MobileMealStatus
+                          label="Lunch"
+                          taken={lunchTaken}
+                        />
+
+                        <MobileMealStatus
+                          label="Dinner"
+                          taken={dinnerTaken}
+                        />
+
+                      </div>
+
+                    </div>
+                  );
+                })}
+
+                <div className="p-4 bg-slate-50 flex items-center justify-between">
+
+                  <span className="text-xs font-bold uppercase tracking-wide text-slate-500">
+                    Filtered Total
+                  </span>
+
+                  <span className="text-base font-bold text-slate-950">
+                    {formatCurrency(filteredTotal)}
+                  </span>
+
+                </div>
+              </div>
+            </>
+          )}
+        </section>
+
+        {/* Information */}
+        <section className="bg-white border border-slate-200 rounded-2xl shadow-sm p-5 sm:p-6 print:hidden">
+
+          <div className="flex items-start gap-3">
+
+            <div className="h-9 w-9 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
+              <Info className="w-4 h-4 text-blue-700" />
+            </div>
+
+            <div>
+
+              <h3 className="text-sm font-bold text-slate-900">
+                Ledger information
+              </h3>
+
+              <p className="text-xs leading-5 text-slate-500 mt-1">
+                A green tick indicates that the meal was registered as
+                taken. The daily total represents the total mess charge
+                recorded for that day.
+              </p>
+
+            </div>
+
+          </div>
+
+        </section>
+
+        {/* Footer */}
+        <footer className="text-center pt-2 pb-4 print:hidden">
+
+          <div className="flex items-center justify-center gap-2 text-slate-400">
+
+            <ShieldCheck className="w-3.5 h-3.5" />
+
+            <span className="text-[10px] font-semibold uppercase tracking-wider">
+              Secure Student Record
+            </span>
+
+          </div>
+
+          <p className="text-[10px] text-slate-400 mt-1">
+            Hostel Mess Management System
+          </p>
+
+        </footer>
+
+      </main>
+    </div>
+  );
+}
+
+/* --------------------------------
+   Desktop Meal Status
+--------------------------------- */
+
+function MealStatus({ taken }) {
+  if (taken) {
+    return (
+      <span
+        className="inline-flex items-center justify-center gap-1.5 min-w-[82px] rounded-lg bg-emerald-50 border border-emerald-100 px-3 py-1.5 text-xs font-bold text-emerald-700"
+        title="Meal taken"
+      >
+        <CheckCircle2 className="w-4 h-4" />
+        Taken
+      </span>
+    );
+  }
+
+  return (
+    <span
+      className="inline-flex items-center justify-center min-w-[82px] rounded-lg bg-slate-50 border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-400"
+      title="Meal not taken"
+    >
+      —
+    </span>
+  );
+}
+
+/* --------------------------------
+   Mobile Meal Status
+--------------------------------- */
+
+function MobileMealStatus({ label, taken }) {
+  return (
+    <div
+      className={`rounded-xl border p-2.5 ${
+        taken
+          ? 'bg-emerald-50/60 border-emerald-100'
+          : 'bg-slate-50 border-slate-100'
+      }`}
+    >
+      <div className="flex items-center gap-1.5">
+
+        <span
+          className={`h-2 w-2 rounded-full ${
+            taken ? 'bg-emerald-500' : 'bg-slate-300'
+          }`}
+        />
+
+        <span
+          className={`text-[10px] font-bold ${
+            taken
+              ? 'text-emerald-800'
+              : 'text-slate-400'
+          }`}
+        >
+          {label}
+        </span>
+
+      </div>
+
+      <div
+        className={`flex items-center gap-1 mt-1 text-xs font-bold ${
+          taken
+            ? 'text-emerald-700'
+            : 'text-slate-400'
+        }`}
+      >
+        {taken ? (
+          <>
+            <CheckCircle2 className="w-3.5 h-3.5" />
+            Taken
+          </>
+        ) : (
+          'Not taken'
+        )}
+      </div>
     </div>
   );
 }

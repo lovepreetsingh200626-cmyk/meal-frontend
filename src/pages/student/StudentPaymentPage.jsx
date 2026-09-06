@@ -1,479 +1,1375 @@
-import React, { useState, useEffect } from 'react';
-import API from '../../services/api';
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
-import { 
-  CreditCard, Printer, CheckCircle2, 
-  AlertCircle, Check, Loader2, Clock, AlertTriangle,
-  ShieldCheck, Landmark, FileText
+import React, { useEffect, useMemo, useState } from 'react';
+import {
+  CreditCard,
+  Download,
+  FileText,
+  IndianRupee,
+  Loader2,
+  RefreshCw,
+  CalendarDays,
+  Utensils,
+  ReceiptText,
+  CheckCircle2,
+  AlertCircle,
 } from 'lucide-react';
 
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+
+import API from '../../services/api';
+
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+const getLocalDateString = (date = new Date()) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+};
+
+
+const getLocalMonthPrefix = (date = new Date()) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+
+  return `${year}-${month}`;
+};
+
+
+const formatCurrency = (value) => {
+  const amount = Number(value || 0);
+
+  return `₹${amount.toLocaleString('en-IN', {
+    maximumFractionDigits: 0,
+  })}`;
+};
+
+
+/*
+  PDF uses "Rs." instead of "₹".
+
+  jsPDF's default Helvetica font does not properly
+  support the Indian Rupee Unicode character.
+*/
+const formatPdfCurrency = (value) => {
+  const amount = Number(value || 0);
+
+  return `Rs. ${amount.toLocaleString('en-IN', {
+    maximumFractionDigits: 0,
+  })}`;
+};
+
+
+const formatDate = (dateValue) => {
+  if (!dateValue) return '—';
+
+  const date = new Date(dateValue);
+
+  if (Number.isNaN(date.getTime())) {
+    return String(dateValue);
+  }
+
+  return date.toLocaleDateString('en-IN', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
+};
+
+
+/* =========================================================
+   MEAL DETECTION
+========================================================= */
+
+const isMealTaken = (record, meal) => {
+  if (!record) return false;
+
+  const possibleValues = [
+    record?.[meal],
+    record?.meals?.[meal],
+    record?.mealStatus?.[meal],
+  ];
+
+  for (const value of possibleValues) {
+    if (value === true) return true;
+
+    if (typeof value === 'number') {
+      if (value > 0) return true;
+    }
+
+    if (typeof value === 'string') {
+      const normalized = value.trim().toLowerCase();
+
+      if (
+        normalized === 'true' ||
+        normalized === 'taken' ||
+        normalized === 'yes' ||
+        normalized === '1'
+      ) {
+        return true;
+      }
+
+      const numericValue = Number(normalized);
+
+      if (
+        normalized !== '' &&
+        Number.isFinite(numericValue) &&
+        numericValue > 0
+      ) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+};
+
+
+/* =========================================================
+   EXTRA ITEMS
+========================================================= */
+
+const getExtrasCost = (record) => {
+  if (!record) return 0;
+
+  const possibleValues = [
+    record.extraItemsCost,
+    record.extrasCost,
+    record.extraCost,
+    record.extraItems?.totalCost,
+    record.extras?.totalCost,
+  ];
+
+  for (const value of possibleValues) {
+    const numericValue = Number(value);
+
+    if (Number.isFinite(numericValue)) {
+      return numericValue;
+    }
+  }
+
+  return 0;
+};
+
+
+/* =========================================================
+   DAILY TOTAL
+========================================================= */
+
+const getDailyTotal = (record) => {
+  if (!record) return 0;
+
+  const possibleValues = [
+    record.totalCost,
+    record.dailyTotal,
+    record.total,
+    record.amount,
+  ];
+
+  for (const value of possibleValues) {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      return value;
+    }
+
+    if (typeof value === 'string' && value.trim() !== '') {
+      const numericValue = Number(value);
+
+      if (Number.isFinite(numericValue)) {
+        return numericValue;
+      }
+    }
+  }
+
+  /*
+    Fallback:
+
+    If backend doesn't provide totalCost,
+    calculate using the available meal costs.
+
+    This prevents incorrect 0 values.
+  */
+
+  const mealCosts = [
+    record?.breakfastCost,
+    record?.lunchCost,
+    record?.dinnerCost,
+  ];
+
+  const mealTotal = mealCosts.reduce((sum, value) => {
+    const numericValue = Number(value || 0);
+
+    return sum + (Number.isFinite(numericValue) ? numericValue : 0);
+  }, 0);
+
+  const extras = getExtrasCost(record);
+
+  if (mealTotal > 0 || extras > 0) {
+    return mealTotal + extras;
+  }
+
+  return 0;
+};
+
+
+/* =========================================================
+   MEAL COUNT
+========================================================= */
+
+const getMealCount = (record) => {
+  if (!record) return 0;
+
+  return ['breakfast', 'lunch', 'dinner'].filter((meal) =>
+    isMealTaken(record, meal)
+  ).length;
+};
+
+
+/* =========================================================
+   COMPONENT
+========================================================= */
+
 export default function StudentPaymentPage({ user }) {
-  const [history, setHistory] = useState([]);
+  const studentId = user?._id || user?.id;
+
+  const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [processingMockPay, setProcessingMockPay] = useState(false);
+  const [generating, setGenerating] = useState(false);
+
+  const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
-  useEffect(() => {
-    if (user && (user._id || user.id)) {
-      fetchHistory();
-    }
-  }, [user]);
 
-  const fetchHistory = async () => {
-    setLoading(true);
+  /* =======================================================
+     FETCH MEAL RECORDS
+  ======================================================= */
+
+  const fetchRecords = async () => {
+    if (!studentId) {
+      setRecords([]);
+      setLoading(false);
+      return;
+    }
+
     try {
-      const { data } = await API.get(`/meals/user/${user._id || user.id}`);
-      setHistory(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error('Could not fetch student meal ledger:', err);
+      setLoading(true);
+      setErrorMsg('');
+
+      const response = await API.get(`/meals/user/${studentId}`);
+
+      const data = response?.data;
+
+      if (Array.isArray(data)) {
+        setRecords(data);
+      } else if (Array.isArray(data?.records)) {
+        setRecords(data.records);
+      } else if (Array.isArray(data?.meals)) {
+        setRecords(data.meals);
+      } else {
+        setRecords([]);
+      }
+    } catch (error) {
+      console.error('Failed to fetch payment records:', error);
+
+      setErrorMsg(
+        error?.response?.data?.message ||
+          'Unable to load your mess payment records.'
+      );
+
+      setRecords([]);
     } finally {
-      setTimeout(() => setLoading(false), 400);
+      setLoading(false);
     }
   };
 
-  const currentMonthPrefix = new Date().toISOString().substring(0, 7);
-  
-  // STATUTORY FEE CALCULATION LOGIC
-  const currentMonthRecords = history.filter(r => r && r.date && r.date.startsWith(currentMonthPrefix));
-  
-  let totalDietCost = 0;
-  let totalExtrasCost = 0;
-  let totalDietsCount = 0;
 
-  currentMonthRecords.forEach(rec => {
-    // Count individual diets
-    if (rec.meals?.breakfast) totalDietsCount++;
-    if (rec.meals?.lunch) totalDietsCount++;
-    if (rec.meals?.dinner) totalDietsCount++;
-    if (rec.appliedDietRule === '1_DIET_BUMPED_TO_2') totalDietsCount++;
+  useEffect(() => {
+    fetchRecords();
+  }, [studentId]);
 
-    // Separate Extra Items cost from Standard Diet cost
-    let dailyExtraCost = 0;
-    if (rec.extras && rec.extras.length > 0) {
-      dailyExtraCost = rec.extras.reduce((sum, item) => sum + (Number(item.cost) || 0), 0);
-    }
-    
-    totalExtrasCost += dailyExtraCost;
-    totalDietCost += ((Number(rec.dailyTotalCost) || 0) - dailyExtraCost);
+
+  /* =======================================================
+     CURRENT MONTH
+  ======================================================= */
+
+  const currentMonthPrefix = getLocalMonthPrefix();
+
+  const currentMonthName = new Date().toLocaleDateString('en-IN', {
+    month: 'long',
+    year: 'numeric',
   });
 
-  const baseMaintenanceFee = (user?.gender?.toLowerCase() === 'female' || user?.category?.toLowerCase().includes('girl')) ? 1000 : 1100;
-  
-  // Extra diets cost applies ONLY if the consumed diet cost exceeds the 1100 base fee
-  const extraDietsCost = totalDietCost > baseMaintenanceFee ? (totalDietCost - baseMaintenanceFee) : 0;
-  
-  // Final Net Payable: Base Quota + Any Diet Excess + Total Extras
-  const billAmountToPay = baseMaintenanceFee + extraDietsCost + totalExtrasCost;
 
-  // Standardized Invoice Number Generation
-  const deterministicInvoiceNo = `INV-${currentMonthPrefix.replace('-', '')}-${user?.rollNo || '000'}`;
+  /* =======================================================
+     FILTER CURRENT MONTH RECORDS
+  ======================================================= */
 
-  const handlePrintReceipt = () => {
+  const monthlyRecords = useMemo(() => {
+    return records.filter((record) => {
+      const rawDate =
+        record?.date ||
+        record?.mealDate ||
+        record?.createdAt ||
+        record?.created_date;
+
+      if (!rawDate) return false;
+
+      const dateString =
+        typeof rawDate === 'string'
+          ? rawDate.slice(0, 10)
+          : getLocalDateString(new Date(rawDate));
+
+      return dateString.startsWith(currentMonthPrefix);
+    });
+  }, [records, currentMonthPrefix]);
+
+
+  /* =======================================================
+     MONTHLY CALCULATIONS
+  ======================================================= */
+
+  const summary = useMemo(() => {
+    const dietCost = monthlyRecords.reduce(
+      (sum, record) => sum + getDailyTotal(record),
+      0
+    );
+
+    const extrasCost = monthlyRecords.reduce(
+      (sum, record) => sum + getExtrasCost(record),
+      0
+    );
+
+    const mealsRecorded = monthlyRecords.reduce(
+      (sum, record) => sum + getMealCount(record),
+      0
+    );
+
+    const baseFee =
+      String(user?.gender || '').toLowerCase() === 'female'
+        ? 1000
+        : 1100;
+
+    const additionalDietCharges = Math.max(
+      dietCost - extrasCost,
+      0
+    );
+
+    const totalPayable = baseFee + additionalDietCharges + extrasCost;
+
+    return {
+      baseFee,
+      dietCost,
+      extrasCost,
+      additionalDietCharges,
+      mealsRecorded,
+      daysRecorded: monthlyRecords.length,
+      totalPayable,
+    };
+  }, [monthlyRecords, user]);
+
+
+  /* =======================================================
+     PDF GENERATION
+  ======================================================= */
+
+  const generatePDF = () => {
     try {
-      const doc = new jsPDF();
+      setGenerating(true);
+      setErrorMsg('');
+      setSuccessMsg('');
 
-      // 1. Header Banner & University Emblem
-      doc.setFillColor(15, 23, 42);
-      doc.rect(0, 0, 210, 24, 'F');
+      /*
+        A4 portrait.
+        Everything is deliberately kept inside the page.
+      */
 
-      doc.setFontSize(13);
-      doc.setTextColor(255, 255, 255);
+      const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+      });
+
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+
+      const margin = 14;
+
+      let y = 14;
+
+
+      /* ===================================================
+         HEADER
+      =================================================== */
+
       doc.setFont('helvetica', 'bold');
-      doc.text('CENTRAL STUDENT HOSTEL MESS & DIET AUDIT LEDGER', 105, 10, { align: 'center' });
+      doc.setFontSize(17);
 
-      doc.setFontSize(7.5);
+      doc.text(
+        'HOSTEL & MESS MANAGEMENT',
+        pageWidth / 2,
+        y,
+        { align: 'center' }
+      );
+
+      y += 7;
+
       doc.setFont('helvetica', 'normal');
-      doc.setTextColor(226, 232, 240);
-      doc.text('AUTONOMOUS RESIDENTIAL COOPERATIVE • STATUTORY DUE ASSESSMENT & CLEARANCE VOUCHER', 105, 17, { align: 'center' });
+      doc.setFontSize(10);
 
-      // 2. Receipt Identification Metadata
-      doc.setTextColor(15, 23, 42);
+      doc.text(
+        'Student Mess Payment Statement',
+        pageWidth / 2,
+        y,
+        { align: 'center' }
+      );
+
+      y += 8;
+
+
+      /* Header line */
+
+      doc.setDrawColor(210, 214, 220);
+      doc.line(margin, y, pageWidth - margin, y);
+
+      y += 8;
+
+
+      /* ===================================================
+         STATEMENT INFO
+      =================================================== */
+
+      doc.setFont('helvetica', 'bold');
       doc.setFontSize(9);
-      doc.setFont('helvetica', 'bold');
-      doc.text(`ASSESSMENT SLIP NO: ${deterministicInvoiceNo}`, 14, 33);
-      doc.text(`ISSUANCE TIMESTAMP: ${new Date().toLocaleString()}`, 14, 39);
 
-      doc.setFontSize(8.5);
-      doc.setTextColor(180, 83, 9);
-      doc.text(`BILLING CYCLE: ${currentMonthPrefix} (STATUTE 4.2)`, 196, 33, { align: 'right' });
-      doc.setTextColor(15, 23, 42);
-      doc.text(`CLEARANCE PHASE: IN-PERSON DESK DEPOSIT`, 196, 39, { align: 'right' });
+      doc.text(
+        'PAYMENT STATEMENT',
+        margin,
+        y
+      );
 
-      // 3. Member Academic Dossier Table
-      autoTable(doc, {
-        startY: 46,
-        theme: 'grid',
-        headStyles: { fillColor: [30, 58, 138], textColor: 255, fontStyle: 'bold', fontSize: 8 },
-        head: [['INSTITUTIONAL RECORD FIELD', 'VERIFIED STUDENT COOPERATIVE DOSSIER PARTICULARS']],
-        body: [
-          ['FULL CANDIDATE NAME', (user?.name || 'N/A').toUpperCase()],
-          ['CAMPUS ROLL NUMBER', String(user?.rollNo || 'N/A')],
-          ['STATUTORY STUDENT ID', String(user?.studentId || 'N/A')],
-          ['RESIDENCE ALLOTMENT', String(user?.hostelNo || 'CAMPUS HOSTEL').toUpperCase()],
-          ['COURSE / DEGREE PROGRAM', String(user?.university || 'B.Tech').toUpperCase()],
-          ['DEPARTMENT BRANCH', String(user?.department || 'N/A').toUpperCase()]
-        ],
-        styles: { fontSize: 8, cellPadding: 2.2, textColor: [30, 41, 59] }
-      });
-
-      // 4. Detailed Financial Assessment Breakdown
-      autoTable(doc, {
-        startY: doc.lastAutoTable ? doc.lastAutoTable.finalY + 6 : 100,
-        theme: 'striped',
-        headStyles: { fillColor: [15, 23, 42], textColor: 255, fontStyle: 'bold', fontSize: 8 },
-        head: [['STATUTORY HEAD OF EXPENSE', 'CONSUMPTION PARTICULARS', 'AUDITED SUM PAYABLE']],
-        body: [
-          [
-            'Mandatory Minimum Diet Quota',
-            'Compulsory Base Maintenance Fee',
-            `INR ${baseMaintenanceFee.toLocaleString()}/-`
-          ],
-          [
-            'Additional Standard Diets Consumed',
-            `Total Diets: ${totalDietsCount} (${extraDietsCost > 0 ? 'Excess Tariff Applied' : 'Covered Under Base Quota'})`,
-            extraDietsCost > 0 ? `INR ${extraDietsCost.toLocaleString()}/-` : 'INCLUDED'
-          ],
-          [
-            'Supplementary Extra Items',
-            'User Added Market-Rate Items',
-            totalExtrasCost > 0 ? `INR ${totalExtrasCost.toLocaleString()}/-` : 'NIL'
-          ],
-          [
-            'FINAL NET COOPERATIVE DUE',
-            'DIRECT TREASURY DESK DEPOSIT',
-            `INR ${billAmountToPay.toLocaleString()}/-`
-          ]
-        ],
-        styles: { fontSize: 8.5, cellPadding: 3.5, textColor: [15, 23, 42] }
-      });
-
-      // 5. Verification & Signature Blocks
-      const finalY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 14 : 175;
-      doc.setFontSize(7.5);
-      doc.setFont('helvetica', 'italic');
-      doc.setTextColor(100, 116, 139);
-      doc.text('* Official Statutory Notice: Online payment gateway is suspended for reconciliation. Present this slip at the treasury desk.', 14, finalY);
-      doc.text('* Candidate must preserve counterfoil with treasury clerk initial as legal clearance verification.', 14, finalY + 4);
-
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(8);
-      doc.setTextColor(15, 23, 42);
-      
-      doc.line(14, finalY + 22, 65, finalY + 22);
-      doc.text('Candidate Member Signature', 14, finalY + 26);
-
-      doc.line(145, finalY + 22, 196, finalY + 22);
-      doc.text('Mess Treasurer & Committee Desk', 196, finalY + 26, { align: 'right' });
-      doc.setFontSize(7);
       doc.setFont('helvetica', 'normal');
-      doc.text('Hostel Cooperative Audit Seal', 196, finalY + 30, { align: 'right' });
 
-      doc.save(`${deterministicInvoiceNo}_${user?.name?.replace(/\s+/g, '_')}.pdf`);
-    } catch (err) {
-      console.error('PDF generation crash caught:', err);
-      alert('Could not generate PDF.');
+      doc.text(
+        `Billing Period: ${currentMonthName}`,
+        pageWidth - margin,
+        y,
+        { align: 'right' }
+      );
+
+      y += 6;
+
+      doc.text(
+        `Invoice: INV-${currentMonthPrefix.replace('-', '')}-${String(
+          user?.rollNo || user?.studentId || 'STUDENT'
+        )}`,
+        margin,
+        y
+      );
+
+      y += 8;
+
+
+      /* ===================================================
+         STUDENT INFORMATION
+      =================================================== */
+
+      autoTable(doc, {
+        startY: y,
+
+        theme: 'grid',
+
+        margin: {
+          left: margin,
+          right: margin,
+        },
+
+        styles: {
+          font: 'helvetica',
+          fontSize: 8,
+          cellPadding: 2.4,
+          lineColor: [220, 224, 230],
+          lineWidth: 0.2,
+          textColor: [35, 42, 52],
+        },
+
+        headStyles: {
+          fillColor: [241, 245, 249],
+          textColor: [30, 41, 59],
+          fontStyle: 'bold',
+          fontSize: 8,
+        },
+
+        columnStyles: {
+          0: {
+            cellWidth: 28,
+            fontStyle: 'bold',
+          },
+          1: {
+            cellWidth: 58,
+          },
+          2: {
+            cellWidth: 28,
+            fontStyle: 'bold',
+          },
+          3: {
+            cellWidth: 'auto',
+          },
+        },
+
+        body: [
+          [
+            'Name',
+            user?.name || '—',
+            'Student ID',
+            user?.studentId || '—',
+          ],
+          [
+            'Roll No.',
+            user?.rollNo || '—',
+            'Hostel',
+            user?.hostelNo || user?.hostelId?.hostelNumber || '—',
+          ],
+          [
+            'Department',
+            user?.department || '—',
+            'Session',
+            user?.session || '—',
+          ],
+        ],
+
+        didDrawPage: () => {
+          // Prevent automatic page additions.
+          // The table is intentionally compact.
+        },
+      });
+
+
+      y = doc.lastAutoTable.finalY + 7;
+
+
+      /* ===================================================
+         MONTHLY PAYMENT SUMMARY
+      =================================================== */
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+
+      doc.text(
+        'Monthly Payment Summary',
+        margin,
+        y
+      );
+
+      y += 3;
+
+
+      autoTable(doc, {
+        startY: y,
+
+        theme: 'grid',
+
+        margin: {
+          left: margin,
+          right: margin,
+        },
+
+        styles: {
+          font: 'helvetica',
+          fontSize: 8,
+          cellPadding: 2.6,
+          lineColor: [220, 224, 230],
+          lineWidth: 0.2,
+          textColor: [35, 42, 52],
+        },
+
+        headStyles: {
+          fillColor: [37, 99, 235],
+          textColor: [255, 255, 255],
+          fontStyle: 'bold',
+          fontSize: 8,
+        },
+
+        columnStyles: {
+          0: {
+            cellWidth: 120,
+          },
+          1: {
+            cellWidth: 'auto',
+            halign: 'right',
+          },
+        },
+
+        head: [
+          ['Description', 'Amount'],
+        ],
+
+        body: [
+          [
+            'Base Maintenance Fee',
+            formatPdfCurrency(summary.baseFee),
+          ],
+          [
+            'Additional Diet Charges',
+            formatPdfCurrency(summary.additionalDietCharges),
+          ],
+          [
+            'Extra Items',
+            formatPdfCurrency(summary.extrasCost),
+          ],
+          [
+            'TOTAL PAYABLE',
+            formatPdfCurrency(summary.totalPayable),
+          ],
+        ],
+
+        didParseCell: (data) => {
+          if (
+            data.row.index === 3 &&
+            data.section === 'body'
+          ) {
+            data.cell.styles.fontStyle = 'bold';
+          }
+        },
+      });
+
+
+      y = doc.lastAutoTable.finalY + 7;
+
+
+      /* ===================================================
+         MESS USAGE
+      =================================================== */
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+
+      doc.text(
+        'Mess Usage',
+        margin,
+        y
+      );
+
+      y += 3;
+
+
+      autoTable(doc, {
+        startY: y,
+
+        theme: 'grid',
+
+        margin: {
+          left: margin,
+          right: margin,
+        },
+
+        styles: {
+          font: 'helvetica',
+          fontSize: 8,
+          cellPadding: 2.6,
+          lineColor: [220, 224, 230],
+          lineWidth: 0.2,
+          textColor: [35, 42, 52],
+        },
+
+        columnStyles: {
+          0: {
+            cellWidth: 90,
+          },
+          1: {
+            cellWidth: 'auto',
+            halign: 'right',
+          },
+        },
+
+        body: [
+          [
+            'Days Recorded',
+            String(summary.daysRecorded),
+          ],
+          [
+            'Meals Recorded',
+            String(summary.mealsRecorded),
+          ],
+          [
+            'Diet Cost',
+            formatPdfCurrency(summary.dietCost),
+          ],
+          [
+            'Extra Items Cost',
+            formatPdfCurrency(summary.extrasCost),
+          ],
+        ],
+      });
+
+
+      y = doc.lastAutoTable.finalY + 8;
+
+
+      /* ===================================================
+         FINAL TOTAL BOX
+      =================================================== */
+
+      const totalBoxHeight = 21;
+
+      /*
+        Safety check.
+
+        If somehow content becomes taller than expected,
+        reduce the position instead of creating page 2.
+      */
+
+      if (y + totalBoxHeight > pageHeight - 27) {
+        y = pageHeight - 27 - totalBoxHeight;
+      }
+
+      doc.setFillColor(239, 246, 255);
+      doc.setDrawColor(147, 197, 253);
+
+      doc.roundedRect(
+        margin,
+        y,
+        pageWidth - margin * 2,
+        totalBoxHeight,
+        3,
+        3,
+        'FD'
+      );
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
+
+      doc.text(
+        'TOTAL AMOUNT PAYABLE',
+        margin + 6,
+        y + 8
+      );
+
+      doc.setFontSize(15);
+
+      doc.text(
+        formatPdfCurrency(summary.totalPayable),
+        pageWidth - margin - 6,
+        y + 11,
+        { align: 'right' }
+      );
+
+
+      /* ===================================================
+         FOOTER
+      =================================================== */
+
+      const footerY = pageHeight - 15;
+
+      doc.setDrawColor(220, 224, 230);
+
+      doc.line(
+        margin,
+        footerY - 5,
+        pageWidth - margin,
+        footerY - 5
+      );
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7.5);
+
+      doc.setTextColor(90, 98, 108);
+
+      doc.text(
+        `Generated on ${formatDate(new Date())}`,
+        margin,
+        footerY
+      );
+
+      doc.text(
+        'Hostel & Mess Management Portal',
+        pageWidth / 2,
+        footerY,
+        { align: 'center' }
+      );
+
+      doc.text(
+        'Page 1 of 1',
+        pageWidth - margin,
+        footerY,
+        { align: 'right' }
+      );
+
+      doc.setTextColor(35, 42, 52);
+
+
+      /* ===================================================
+         FILE NAME
+      =================================================== */
+
+      const safeRollNo = String(
+        user?.rollNo ||
+          user?.studentId ||
+          'student'
+      ).replace(/[^a-zA-Z0-9_-]/g, '');
+
+      const fileName =
+        `Mess-Payment-${currentMonthPrefix}-${safeRollNo}.pdf`;
+
+
+      /* ===================================================
+         SAVE
+      =================================================== */
+
+      doc.save(fileName);
+
+      setSuccessMsg(
+        'Payment statement generated successfully.'
+      );
+
+      setTimeout(() => {
+        setSuccessMsg('');
+      }, 3500);
+
+    } catch (error) {
+      console.error('PDF generation failed:', error);
+
+      setErrorMsg(
+        'Unable to generate the payment statement. Please try again.'
+      );
+    } finally {
+      setGenerating(false);
     }
   };
 
-  return (
-    <div className="min-h-screen bg-slate-100 text-slate-900 pb-16 font-sans selection:bg-blue-900 selection:text-white flex flex-col">
-      
-      <div className="print:hidden space-y-5">
-        <div className="bg-slate-950 text-slate-300 text-[9px] sm:text-[10px] font-bold px-4 md:px-8 py-2 border-b-2 border-amber-500/70 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-1 z-50 select-none">
-          <div className="flex items-center gap-2 uppercase tracking-widest text-slate-200 truncate">
-            <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shrink-0"></span>
-            <span className="truncate">Autonomous Student Cooperative Association</span>
-          </div>
-          <div className="text-[8px] sm:text-[9px] font-mono text-slate-400 uppercase tracking-tight">
-            Fiscal Period: {currentMonthPrefix} • Statute 4.2
-          </div>
+
+  /* =======================================================
+     LOADING
+  ======================================================= */
+
+  if (loading) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center px-4">
+        <div className="flex flex-col items-center gap-3 text-slate-600">
+          <Loader2
+            size={30}
+            className="animate-spin text-blue-600"
+          />
+
+          <p className="text-sm font-medium">
+            Loading payment statement...
+          </p>
         </div>
       </div>
+    );
+  }
 
-      <main className="max-w-5xl mx-auto px-3 sm:px-6 w-full space-y-5">
-        {loading ? (
-            <div className="flex flex-col items-center justify-center min-h-[65vh] bg-white border-2 border-slate-300 shadow-sm border-t-4 border-t-blue-950 w-full animate-in fade-in duration-300 mt-5 print:hidden">
-                <Loader2 className="w-10 h-10 animate-spin text-amber-600 mb-4" />
-                <p className="text-[11px] font-mono font-black uppercase tracking-widest text-slate-600">Accessing Fee Clearance Records...</p>
+
+  /* =======================================================
+     UI
+  ======================================================= */
+
+  return (
+    <div className="space-y-6">
+
+      {/* ===================================================
+          PAGE HEADER
+      =================================================== */}
+
+      <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
+
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+
+          <div className="flex items-start gap-4">
+
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
+              <CreditCard size={23} />
             </div>
-        ) : (
-            <div className="animate-in fade-in duration-500">
-                <div className="print:hidden space-y-5 mt-5">
-                    
-                    <div className="bg-white border border-slate-300 shadow-sm p-4 sm:p-7 border-t-4 border-t-blue-950">
-                        <div className="border-b border-slate-200 pb-5 mb-5 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
-                            <div className="flex items-start gap-3">
-                            <div className="p-2 sm:p-2.5 bg-blue-950 text-amber-400 border border-blue-900 shrink-0 mt-0.5">
-                                <Landmark className="w-5 h-5 sm:w-6 sm:h-6" />
-                            </div>
-                            <div>
-                                <div className="flex items-center gap-2 flex-wrap">
-                                <h2 className="text-sm sm:text-lg font-black text-blue-950 uppercase tracking-tight font-serif">
-                                    Statutory Fee Invoicing &amp; Assessment Desk
-                                </h2>
-                                <span className="text-[8px] sm:text-[9px] font-black bg-slate-100 text-slate-700 border border-slate-300 px-2 py-0.5 uppercase tracking-wider">
-                                    Official Voucher
-                                </span>
-                                </div>
-                                <p className="text-[11px] sm:text-xs text-slate-600 font-semibold uppercase tracking-wide mt-1">
-                                Autonomous Hostel Committee • Certified Consumption Assessment
-                                </p>
-                            </div>
-                            </div>
-                            
-                            <div className="w-full lg:w-auto bg-slate-50 border-2 border-blue-950 p-3 sm:px-6 sm:py-3 text-left lg:text-right min-w-[200px]">
-                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest block">
-                                Net Assessed Monthly Dues
-                            </span>
-                            <div className="flex lg:flex-col items-baseline justify-between lg:justify-end gap-2 mt-0.5">
-                                <span className="text-xl sm:text-2xl font-black text-blue-950 font-serif tracking-tight">
-                                    ₹{billAmountToPay.toLocaleString()}/-
-                                </span>
-                                <span className="text-[8px] sm:text-[9px] font-bold text-amber-800 uppercase tracking-wider bg-amber-100 border border-amber-300 px-1.5 py-0.5">
-                                    Pending Clearance
-                                </span>
-                            </div>
-                            </div>
-                        </div>
 
-                        <div className="bg-amber-50 border border-amber-300 border-l-4 border-l-amber-600 text-amber-950 p-4 sm:p-5 mb-5">
-                            <div className="flex items-start gap-3">
-                            <AlertTriangle className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
-                            <div className="space-y-2">
-                                <div className="flex flex-wrap items-center gap-2">
-                                <h3 className="text-xs font-black uppercase tracking-wider text-amber-950 font-serif">
-                                    Official Executive Notice: Gateway Reconciliation Underway
-                                </h3>
-                                </div>
-                                <p className="text-xs text-amber-950/90 leading-relaxed font-medium">
-                                The automated Unified Payments Interface is presently reserved for institutional auditing. <strong>Direct checkout is temporarily restricted to prevent dual debits.</strong>
-                                </p>
-                                <div className="bg-white/80 border border-amber-300 p-2.5 text-[11px] font-bold text-amber-900 uppercase tracking-wide space-y-1">
-                                <p className="flex items-center gap-1.5 text-amber-950">
-                                    <Check className="w-3.5 h-3.5 text-emerald-700" />
-                                    <span>Mandatory Desk Clearance Protocol:</span>
-                                </p>
-                                <p className="text-slate-700 font-semibold normal-case">
-                                    Please download your <strong>Certified Due Assessment Slip (PDF)</strong> below and remit cash directly to the <strong>Hostel Treasury Desk</strong>.
-                                </p>
-                                </div>
-                            </div>
-                            </div>
-                        </div>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wider text-blue-700">
+                Student Finance
+              </p>
 
-                        <div className="border border-slate-300 bg-slate-100 p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                            <div>
-                            <div className="text-xs font-black uppercase text-slate-900 tracking-wide">
-                                Total Payable Amount: <span className="text-blue-950 text-base sm:text-lg font-serif font-black">₹{billAmountToPay.toLocaleString()}/-</span>
-                            </div>
-                            <div className="text-[10px] font-bold text-slate-500 uppercase mt-0.5">
-                                Authorized Mode: Physical Cash Counterfoil Deposit
-                            </div>
-                            </div>
+              <h1 className="mt-1 text-xl sm:text-2xl font-bold text-slate-900">
+                Payment Statement
+              </h1>
 
-                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
-                            <button 
-                                type="button"
-                                disabled={true}
-                                className="bg-slate-200 text-slate-500 border border-slate-300 font-bold px-4 py-3 text-xs uppercase tracking-wider cursor-not-allowed flex items-center justify-center gap-2 select-none"
-                            >
-                                <CreditCard className="w-4 h-4 opacity-40" />
-                                <span>UPI Clearance Paused</span>
-                            </button>
-
-                            <button 
-                                type="button"
-                                onClick={handlePrintReceipt}
-                                className="bg-blue-950 hover:bg-blue-900 active:bg-blue-950 text-white font-black px-5 py-3 text-xs uppercase tracking-widest transition cursor-pointer flex items-center justify-center gap-2 border-b-2 border-amber-500 shadow-sm active:scale-95"
-                            >
-                                <Printer className="w-4 h-4 text-amber-400" />
-                                <span>Print Assessment Slip (PDF)</span>
-                            </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="mt-8 bg-white border-2 border-slate-400 shadow-md p-5 sm:p-10 relative">
-                    <div className="border-b-4 border-amber-600 pb-5 mb-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div className="flex items-center gap-3.5">
-                        <div className="w-12 h-12 sm:w-14 sm:h-14 bg-blue-950 border-2 border-amber-500 text-white flex flex-col items-center justify-center text-center shrink-0 shadow-xs">
-                        <ShieldCheck className="w-5 h-5 text-amber-400" />
-                        <span className="text-[5px] sm:text-[6px] font-black uppercase tracking-widest text-amber-200">SEAL</span>
-                        </div>
-                        <div>
-                        <span className="text-[8px] font-black bg-slate-900 text-amber-300 px-2 py-0.5 uppercase tracking-widest inline-block mb-1">
-                            Statutory Student Cooperative Voucher
-                        </span>
-                        <h1 className="text-base sm:text-xl font-black text-blue-950 uppercase tracking-tight font-serif">
-                            Student Mess &amp; Diet Ledger System
-                        </h1>
-                        <h2 className="text-[11px] sm:text-xs font-bold text-slate-600 uppercase tracking-wide">
-                            Independent Mess Committee • Official Due Assessment
-                        </h2>
-                        </div>
-                    </div>
-                    
-                    <div className="text-left sm:text-right border-t sm:border-t-0 pt-2 sm:pt-0 w-full sm:w-auto">
-                        <span className="text-[9px] font-black bg-amber-700 text-white px-2.5 py-1 uppercase tracking-wider inline-block">
-                        Desk Clearance Mandated
-                        </span>
-                        <div className="text-[9px] font-mono text-slate-500 uppercase mt-1">
-                        Gateway: RECONCILIATION HOLD
-                        </div>
-                    </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 bg-slate-50 border border-slate-300 p-3 mb-5 text-xs uppercase font-bold text-slate-800 font-mono">
-                    <div>
-                        <span className="text-[8px] text-slate-500 block uppercase font-sans">Assessment Slip Serial</span>
-                        <span className="font-black text-blue-950">{deterministicInvoiceNo}</span>
-                    </div>
-                    <div className="sm:text-right">
-                        <span className="text-[8px] text-slate-500 block uppercase font-sans">Assessment Issued On</span>
-                        <span className="text-slate-900">{new Date().toLocaleString()}</span>
-                    </div>
-                    </div>
-
-                    <div className="mb-5">
-                    <div className="flex items-center justify-between border-b border-slate-300 pb-1.5 mb-2">
-                        <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 font-serif flex items-center gap-1.5">
-                        <FileText className="w-3.5 h-3.5 text-amber-700" />
-                        <span>Member Academic Dossier &amp; Residence Identification</span>
-                        </h3>
-                        <span className="text-[8px] font-bold text-slate-500 uppercase">Registry Statute 3.1</span>
-                    </div>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse border border-slate-300 text-xs uppercase min-w-[450px]">
-                        <tbody>
-                            <tr className="border-b border-slate-300">
-                            <td className="p-2.5 bg-slate-100 font-bold w-1/3 border-r border-slate-300 text-slate-700">Candidate Full Name</td>
-                            <td className="p-2.5 font-black text-blue-950 font-serif">{user?.name || 'N/A'}</td>
-                            </tr>
-                            <tr className="border-b border-slate-300">
-                            <td className="p-2.5 bg-slate-100 font-bold border-r border-slate-300 text-slate-700">Campus Roll Number</td>
-                            <td className="p-2.5 font-bold text-slate-900">{user?.rollNo || 'N/A'}</td>
-                            </tr>
-                            <tr className="border-b border-slate-300">
-                            <td className="p-2.5 bg-slate-100 font-bold border-r border-slate-300 text-slate-700">Student ID Number</td>
-                            <td className="p-2.5 font-bold text-slate-900">{user?.studentId || 'N/A'}</td>
-                            </tr>
-                            <tr className="border-b border-slate-300">
-                            <td className="p-2.5 bg-slate-100 font-bold border-r border-slate-300 text-slate-700">Allotted Residence Hall</td>
-                            <td className="p-2.5 font-black text-blue-950">{user?.hostelNo || 'N/A'}</td>
-                            </tr>
-                        </tbody>
-                        </table>
-                    </div>
-                    </div>
-
-                    {/* Highly Detailed Fee Breakdown */}
-                    <div className="mb-6">
-                    <div className="flex items-center justify-between border-b border-slate-300 pb-1.5 mb-2">
-                        <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 font-serif flex items-center gap-1.5">
-                        <Landmark className="w-3.5 h-3.5 text-amber-700" />
-                        <span>Assessment Dues &amp; Statutory Breakdown</span>
-                        </h3>
-                        <span className="text-[8px] font-bold text-slate-500 uppercase">Billing Cycle: {currentMonthPrefix}</span>
-                    </div>
-
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse border border-slate-300 text-xs uppercase min-w-[500px]">
-                        <thead className="bg-blue-950 text-white font-black">
-                            <tr>
-                            <th className="p-2.5 border-r border-slate-700">Statutory Head of Expense</th>
-                            <th className="p-2.5 border-r border-slate-700">Consumption Particulars</th>
-                            <th className="p-2.5 text-right">Computed Amount</th>
-                            </tr>
-                        </thead>
-                        <tbody className="font-semibold divide-y divide-slate-300">
-                            <tr>
-                            <td className="p-2.5 border-r border-slate-300 text-slate-900">
-                                Mandatory Minimum Diet Quota
-                            </td>
-                            <td className="p-2.5 border-r border-slate-300 text-slate-500 font-bold">
-                                Compulsory Base Maintenance Fee
-                            </td>
-                            <td className="p-2.5 text-right text-slate-900 font-bold whitespace-nowrap">
-                                ₹{baseMaintenanceFee.toLocaleString()}/-
-                            </td>
-                            </tr>
-                            <tr>
-                            <td className="p-2.5 border-r border-slate-300 text-slate-900">
-                                Additional Standard Diets Consumed
-                            </td>
-                            <td className="p-2.5 border-r border-slate-300 text-slate-700">
-                                Total Diets Logged: <strong className="text-blue-950">{totalDietsCount}</strong><br/>
-                                <span className="text-[9px] text-slate-400">({extraDietsCost > 0 ? 'Excess Tariff Applied' : 'Covered Under Base Quota'})</span>
-                            </td>
-                            <td className="p-2.5 text-right text-slate-900 font-bold whitespace-nowrap">
-                                {extraDietsCost > 0 ? `₹${extraDietsCost.toLocaleString()}/-` : 'INCLUDED'}
-                            </td>
-                            </tr>
-                            <tr>
-                            <td className="p-2.5 border-r border-slate-300 text-slate-900">
-                                Supplementary Extra Items
-                            </td>
-                            <td className="p-2.5 border-r border-slate-300 text-slate-700">
-                                User Added Market-Rate Extras
-                            </td>
-                            <td className="p-2.5 text-right text-slate-900 font-bold whitespace-nowrap">
-                                {totalExtrasCost > 0 ? `₹${totalExtrasCost.toLocaleString()}/-` : 'NIL'}
-                            </td>
-                            </tr>
-                            <tr className="bg-slate-100 font-black">
-                            <td className="p-2.5 border-r border-slate-300 text-blue-950">
-                                Total Assessed Dues to Remit
-                            </td>
-                            <td className="p-2.5 border-r border-slate-300 text-amber-800">
-                                Direct Treasury Desk Deposit
-                            </td>
-                            <td className="p-2.5 text-right text-blue-950 text-sm font-serif whitespace-nowrap">
-                                ₹{billAmountToPay.toLocaleString()}/-
-                            </td>
-                            </tr>
-                        </tbody>
-                        </table>
-                    </div>
-                    </div>
-
-                    <div className="relative my-6 border-t-2 border-dashed border-slate-400">
-                    <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white px-3 text-[7px] sm:text-[8px] font-mono uppercase text-slate-400 font-bold tracking-widest whitespace-nowrap">
-                        ✂ Tear-off Voucher Counterfoil for Treasury Desk Reconciliation ✂
-                    </span>
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 pt-2 text-[10px] text-slate-600 uppercase font-bold">
-                    <div className="space-y-1">
-                        <p className="text-slate-800 font-black flex items-center gap-1.5">
-                        <ShieldCheck className="w-4 h-4 text-emerald-700 shrink-0 inline" />
-                        <span>Legally Audited under Independent Mess Bylaws</span>
-                        </p>
-                        <p className="text-[9px] text-slate-500 normal-case font-medium">
-                        * The candidate must retain this stamped counterfoil until the conclusion of the academic session.
-                        </p>
-                    </div>
-
-                    <div className="flex items-center gap-6 sm:gap-8 w-full sm:w-auto justify-between sm:justify-end">
-                        <div className="text-center">
-                        <div className="h-10 border-b border-slate-400 w-28 sm:w-32"></div>
-                        <p className="pt-1 text-slate-700 font-black text-[9px]">Candidate Member</p>
-                        <p className="text-[8px] text-slate-400 font-mono">Signatory</p>
-                        </div>
-
-                        <div className="text-right">
-                        <div className="h-10 border-b border-slate-400 w-36 sm:w-40"></div>
-                        <p className="pt-1 text-blue-950 font-black text-[9px]">Mess Treasurer &amp; Desk</p>
-                        <p className="text-[8px] text-slate-500 font-mono">Cooperative Audit Seal</p>
-                        </div>
-                    </div>
-                    </div>
-
-                </div>
+              <p className="mt-1 text-sm text-slate-500">
+                View your current monthly mess charges and
+                generate an official payment statement.
+              </p>
             </div>
-        )}
-      </main>
+
+          </div>
+
+
+          <div className="flex flex-col sm:flex-row gap-2">
+
+            <button
+              type="button"
+              onClick={fetchRecords}
+              disabled={loading || generating}
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <RefreshCw size={17} />
+
+              Refresh
+            </button>
+
+
+            <button
+              type="button"
+              onClick={generatePDF}
+              disabled={generating}
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {generating ? (
+                <>
+                  <Loader2
+                    size={17}
+                    className="animate-spin"
+                  />
+
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Download size={17} />
+
+                  Download Statement
+                </>
+              )}
+            </button>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      {/* ===================================================
+          ALERTS
+      =================================================== */}
+
+      {errorMsg && (
+        <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          <AlertCircle
+            size={19}
+            className="mt-0.5 shrink-0"
+          />
+
+          <p>{errorMsg}</p>
+        </div>
+      )}
+
+
+      {successMsg && (
+        <div className="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700">
+          <CheckCircle2
+            size={19}
+            className="mt-0.5 shrink-0"
+          />
+
+          <p>{successMsg}</p>
+        </div>
+      )}
+
+
+      {/* ===================================================
+          MONTH / TOTAL
+      =================================================== */}
+
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+
+          <div className="flex items-center justify-between">
+
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                Billing Period
+              </p>
+
+              <p className="mt-2 text-lg font-bold text-slate-900">
+                {currentMonthName}
+              </p>
+            </div>
+
+            <div className="rounded-xl bg-blue-50 p-2.5 text-blue-700">
+              <CalendarDays size={20} />
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+
+          <div className="flex items-center justify-between">
+
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                Days Recorded
+              </p>
+
+              <p className="mt-2 text-2xl font-bold text-slate-900">
+                {summary.daysRecorded}
+              </p>
+            </div>
+
+            <div className="rounded-xl bg-slate-100 p-2.5 text-slate-700">
+              <FileText size={20} />
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+
+          <div className="flex items-center justify-between">
+
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                Meals Recorded
+              </p>
+
+              <p className="mt-2 text-2xl font-bold text-slate-900">
+                {summary.mealsRecorded}
+              </p>
+            </div>
+
+            <div className="rounded-xl bg-emerald-50 p-2.5 text-emerald-700">
+              <Utensils size={20} />
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div className="rounded-2xl border border-blue-200 bg-blue-50 p-5 shadow-sm">
+
+          <div className="flex items-center justify-between">
+
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-blue-700">
+                Total Payable
+              </p>
+
+              <p className="mt-2 text-2xl font-bold text-blue-900">
+                {formatCurrency(summary.totalPayable)}
+              </p>
+            </div>
+
+            <div className="rounded-xl bg-white p-2.5 text-blue-700 shadow-sm">
+              <IndianRupee size={20} />
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      {/* ===================================================
+          PAYMENT BREAKDOWN
+      =================================================== */}
+
+      <section className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+
+        <div className="border-b border-slate-200 px-5 py-4 sm:px-6">
+
+          <div className="flex items-center gap-3">
+
+            <div className="rounded-lg bg-slate-100 p-2 text-slate-700">
+              <ReceiptText size={19} />
+            </div>
+
+            <div>
+              <h2 className="font-bold text-slate-900">
+                Monthly Payment Summary
+              </h2>
+
+              <p className="text-xs text-slate-500">
+                Charges calculated from your current mess records.
+              </p>
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div className="divide-y divide-slate-100">
+
+          <div className="flex items-center justify-between gap-4 px-5 py-4 sm:px-6">
+
+            <div>
+              <p className="font-medium text-slate-800">
+                Base Maintenance Fee
+              </p>
+
+              <p className="mt-0.5 text-xs text-slate-500">
+                Monthly hostel mess maintenance
+              </p>
+            </div>
+
+            <p className="font-bold text-slate-900">
+              {formatCurrency(summary.baseFee)}
+            </p>
+
+          </div>
+
+
+          <div className="flex items-center justify-between gap-4 px-5 py-4 sm:px-6">
+
+            <div>
+              <p className="font-medium text-slate-800">
+                Additional Diet Charges
+              </p>
+
+              <p className="mt-0.5 text-xs text-slate-500">
+                Charges from recorded meals
+              </p>
+            </div>
+
+            <p className="font-bold text-slate-900">
+              {formatCurrency(summary.additionalDietCharges)}
+            </p>
+
+          </div>
+
+
+          <div className="flex items-center justify-between gap-4 px-5 py-4 sm:px-6">
+
+            <div>
+              <p className="font-medium text-slate-800">
+                Extra Items
+              </p>
+
+              <p className="mt-0.5 text-xs text-slate-500">
+                Additional items recorded
+              </p>
+            </div>
+
+            <p className="font-bold text-slate-900">
+              {formatCurrency(summary.extrasCost)}
+            </p>
+
+          </div>
+
+
+          <div className="flex items-center justify-between gap-4 bg-blue-50 px-5 py-5 sm:px-6">
+
+            <div>
+              <p className="text-sm font-bold text-blue-900">
+                Total Payable
+              </p>
+
+              <p className="mt-0.5 text-xs text-blue-700">
+                Current monthly statement amount
+              </p>
+            </div>
+
+            <p className="text-xl font-bold text-blue-900">
+              {formatCurrency(summary.totalPayable)}
+            </p>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      {/* ===================================================
+          USAGE SUMMARY
+      =================================================== */}
+
+      <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
+
+        <div className="flex items-center gap-3 mb-5">
+
+          <div className="rounded-lg bg-emerald-50 p-2 text-emerald-700">
+            <Utensils size={19} />
+          </div>
+
+          <div>
+            <h2 className="font-bold text-slate-900">
+              Mess Usage
+            </h2>
+
+            <p className="text-xs text-slate-500">
+              Activity recorded for {currentMonthName}.
+            </p>
+          </div>
+
+        </div>
+
+
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <p className="text-xs font-semibold text-slate-500">
+              Days Recorded
+            </p>
+
+            <p className="mt-1 text-xl font-bold text-slate-900">
+              {summary.daysRecorded}
+            </p>
+          </div>
+
+
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <p className="text-xs font-semibold text-slate-500">
+              Meals Recorded
+            </p>
+
+            <p className="mt-1 text-xl font-bold text-slate-900">
+              {summary.mealsRecorded}
+            </p>
+          </div>
+
+
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <p className="text-xs font-semibold text-slate-500">
+              Diet Cost
+            </p>
+
+            <p className="mt-1 text-xl font-bold text-slate-900">
+              {formatCurrency(summary.dietCost)}
+            </p>
+          </div>
+
+
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <p className="text-xs font-semibold text-slate-500">
+              Extra Items
+            </p>
+
+            <p className="mt-1 text-xl font-bold text-slate-900">
+              {formatCurrency(summary.extrasCost)}
+            </p>
+          </div>
+
+        </div>
+
+      </section>
+
+
+      {/* ===================================================
+          STUDENT INFORMATION
+      =================================================== */}
+
+      <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
+
+        <div className="flex items-center gap-3 mb-5">
+
+          <div className="rounded-lg bg-blue-50 p-2 text-blue-700">
+            <FileText size={19} />
+          </div>
+
+          <div>
+            <h2 className="font-bold text-slate-900">
+              Student Information
+            </h2>
+
+            <p className="text-xs text-slate-500">
+              Information used on your payment statement.
+            </p>
+          </div>
+
+        </div>
+
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Name
+            </p>
+
+            <p className="mt-1 font-semibold text-slate-900">
+              {user?.name || '—'}
+            </p>
+          </div>
+
+
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Student ID
+            </p>
+
+            <p className="mt-1 font-semibold text-slate-900">
+              {user?.studentId || '—'}
+            </p>
+          </div>
+
+
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Roll Number
+            </p>
+
+            <p className="mt-1 font-semibold text-slate-900">
+              {user?.rollNo || '—'}
+            </p>
+          </div>
+
+
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Hostel
+            </p>
+
+            <p className="mt-1 font-semibold text-slate-900">
+              {user?.hostelNo ||
+                user?.hostelId?.hostelNumber ||
+                '—'}
+            </p>
+          </div>
+
+
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Department
+            </p>
+
+            <p className="mt-1 font-semibold text-slate-900">
+              {user?.department || '—'}
+            </p>
+          </div>
+
+
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Session
+            </p>
+
+            <p className="mt-1 font-semibold text-slate-900">
+              {user?.session || '—'}
+            </p>
+          </div>
+
+        </div>
+
+      </section>
+
+
+      {/* ===================================================
+          INFO NOTE
+      =================================================== */}
+
+      <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs leading-5 text-slate-600">
+        The downloadable statement is generated from the mess
+        records currently available in the system. If any meal
+        or charge appears incorrect, please contact the hostel
+        mess administration.
+      </div>
+
     </div>
   );
 }

@@ -20,4 +20,4 @@ export const FACULTIES_AND_DEPARTMENTS = [
   { id: "1018", name: "MULTIDISCIPLINARY COURSES" },
   { id: "1019", name: "B.A. B.Sc. Skill Enhancement Courses" },
   { id: "1020", name: "Internship & Community Outreach I-II for Private Candidates" }
-];
+];z

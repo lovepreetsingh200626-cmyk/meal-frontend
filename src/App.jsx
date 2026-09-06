@@ -16,6 +16,10 @@ import AdminLayout from './pages/admin/AdminLayout';
 import AdminOverview from './pages/admin/AdminOverview';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminMeals from './pages/admin/AdminMeals';
+import AdminPayments from './pages/admin/AdminPayments';
+import AdminComplaints from './pages/admin/AdminComplaints';
+import AdminNotices from './pages/admin/AdminNotices';
+import AdminSettings from './pages/admin/AdminSettings';
 
 function AppRoutes() {
   const navigate = useNavigate();
@@ -27,10 +31,10 @@ function AppRoutes() {
     const storedUser = localStorage.getItem('user');
     const token = localStorage.getItem('token');
     if (storedUser && token) {
-      try { 
-        setUser(JSON.parse(storedUser)); 
-      } catch (e) { 
-        localStorage.clear(); 
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (e) {
+        localStorage.clear();
       }
     }
     setLoadingUser(false);
@@ -74,19 +78,19 @@ function AppRoutes() {
   return (
     <div className="relative min-h-screen bg-slate-100 text-slate-900 font-sans">
       <Routes>
-        <Route 
-          path="/" 
-          element={<Navigate to={user ? (user.role === 'admin' ? '/admin' : '/student') : '/login'} replace />} 
+        <Route
+          path="/"
+          element={<Navigate to={user ? (user.role === 'admin' ? '/admin' : '/student') : '/login'} replace />}
         />
 
-        <Route 
-          path="/login" 
-          element={!user ? <AuthModal onLoginSuccess={handleLoginSuccess} /> : <Navigate to={user.role === 'admin' ? '/admin' : '/student'} replace />} 
+        <Route
+          path="/login"
+          element={!user ? <AuthModal onLoginSuccess={handleLoginSuccess} /> : <Navigate to={user.role === 'admin' ? '/admin' : '/student'} replace />}
         />
 
         {/* STUDENT ROUTES */}
-        <Route 
-          path="/student" 
+        <Route
+          path="/student"
           element={
             user && user.role === 'student' ? (
               <>
@@ -96,11 +100,11 @@ function AppRoutes() {
             ) : (
               <Navigate to="/login" replace />
             )
-          } 
+          }
         />
 
-        <Route 
-          path="/student/logger" 
+        <Route
+          path="/student/logger"
           element={
             user && user.role === 'student' ? (
               <>
@@ -110,11 +114,11 @@ function AppRoutes() {
             ) : (
               <Navigate to="/login" replace />
             )
-          } 
+          }
         />
 
-        <Route 
-          path="/student/ledger" 
+        <Route
+          path="/student/ledger"
           element={
             user && user.role === 'student' ? (
               <>
@@ -124,11 +128,11 @@ function AppRoutes() {
             ) : (
               <Navigate to="/login" replace />
             )
-          } 
+          }
         />
 
-        <Route 
-          path="/student/complaints" 
+        <Route
+          path="/student/complaints"
           element={
             user && user.role === 'student' ? (
               <>
@@ -138,11 +142,11 @@ function AppRoutes() {
             ) : (
               <Navigate to="/login" replace />
             )
-          } 
+          }
         />
-        
-        <Route 
-          path="/student/payments" 
+
+        <Route
+          path="/student/payments"
           element={
             user && user.role === 'student' ? (
               <>
@@ -152,31 +156,64 @@ function AppRoutes() {
             ) : (
               <Navigate to="/login" replace />
             )
-          } 
+          }
         />
 
         {/* ADMIN PORTAL ROUTING */}
-        <Route 
-          path="/admin" 
+        <Route
+          path="/admin"
           element={
-            user && user.role === 'admin' 
-              ? <AdminLayout user={user} onLogout={handleLogout} onUpdateUser={handleUpdateUser} /> 
-              : <Navigate to="/login" replace />
-          } 
+            user && user.role === 'admin' ? (
+              <AdminLayout
+                user={user}
+                onLogout={handleLogout}
+                onUpdateUser={handleUpdateUser}
+              />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
         >
           <Route index element={<AdminOverview />} />
-          <Route path="users" element={<AdminUsers />} />
-          <Route path="meals" element={<AdminMeals />} />
-        </Route>
 
+          <Route
+            path="users"
+            element={<AdminUsers />}
+          />
+
+          <Route
+            path="meals"
+            element={<AdminMeals />}
+          />
+
+          <Route
+            path="payments"
+            element={<AdminPayments />}
+          />
+
+          <Route
+            path="complaints"
+            element={<AdminComplaints />}
+          />
+
+          <Route
+            path="notices"
+            element={<AdminNotices />}
+          />
+
+          <Route
+            path="settings"
+            element={<AdminSettings />}
+          />
+        </Route>
         <Route path="*" element={<Navigate to={user ? (user.role === 'admin' ? '/admin' : '/student') : '/login'} replace />} />
       </Routes>
 
       {isProfileModalOpen && user && (
-        <ProfileModal 
-          user={user} 
-          onClose={() => setIsProfileModalOpen(false)} 
-          onUpdateUser={handleUpdateUser} 
+        <ProfileModal
+          user={user}
+          onClose={() => setIsProfileModalOpen(false)}
+          onUpdateUser={handleUpdateUser}
         />
       )}
     </div>

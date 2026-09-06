@@ -1,180 +1,396 @@
 import React, { useEffect, useRef, useCallback } from 'react';
-import { 
-  AlertTriangle, 
-  Trash2, 
-  CheckCircle2, 
-  ShieldAlert, 
-  X, 
-  Loader2, 
-  CreditCard,
+import {
+  AlertTriangle,
+  Trash2,
+  CheckCircle2,
+  X,
+  Loader2,
   Lock,
-  Landmark
+  Info
 } from 'lucide-react';
 
-export default function ConfirmModal({ 
-  isOpen, 
-  title, 
-  message, 
-  onConfirm, 
-  onClose, 
-  loading = false, 
+export default function ConfirmModal({
+  isOpen,
+  title,
+  message,
+  onConfirm,
+  onClose,
+  loading = false,
   confirmText,
-  cancelText = "Cancel",
-  variant // 'danger' | 'warning' | 'success' | 'info'
+  cancelText = 'Cancel',
+  variant
 }) {
   const modalRef = useRef(null);
 
-  // Auto-detect aesthetic variant from action intent if not explicitly passed
-  const resolvedVariant = variant || (() => {
-    const text = `${title || ''} ${message || ''}`.toLowerCase();
-    if (text.includes('cash') || text.includes('settle') || text.includes('accept')) return 'success';
-    if (text.includes('revoke') || text.includes('reset') || text.includes('override')) return 'warning';
-    return 'danger'; // Default fallback for administrative purges & destructive actions
-  })();
+  // Automatically determine the visual variant when one isn't provided.
+  const resolvedVariant =
+    variant ||
+    (() => {
+      const text = `${title || ''} ${message || ''}`.toLowerCase();
 
-  // Visual institutional theming schemes
+      if (
+        text.includes('success') ||
+        text.includes('settle') ||
+        text.includes('accept') ||
+        text.includes('approve') ||
+        text.includes('confirm payment')
+      ) {
+        return 'success';
+      }
+
+      if (
+        text.includes('reset') ||
+        text.includes('override') ||
+        text.includes('change') ||
+        text.includes('update')
+      ) {
+        return 'warning';
+      }
+
+      if (
+        text.includes('delete') ||
+        text.includes('remove') ||
+        text.includes('reject') ||
+        text.includes('cancel')
+      ) {
+        return 'danger';
+      }
+
+      return 'info';
+    })();
+
   const themes = {
     danger: {
-      borderTop: 'border-t-red-800',
-      badgeBg: 'bg-red-50 text-red-950 border-red-300',
-      icon: <Trash2 className="w-4 h-4 text-red-800 shrink-0" />,
-      confirmBtn: 'bg-red-800 hover:bg-red-900 text-white border-red-950 shadow-xs',
-      tag: 'Critical Override Required'
+      icon: <Trash2 className="w-5 h-5" />,
+      iconWrapper: 'bg-red-50 text-red-600 border-red-100',
+      topBorder: 'border-t-red-500',
+      badge: 'bg-red-50 text-red-700 border-red-200',
+      badgeText: 'Destructive Action',
+      confirm:
+        'bg-red-600 hover:bg-red-700 active:bg-red-800 text-white'
     },
+
     warning: {
-      borderTop: 'border-t-amber-600',
-      badgeBg: 'bg-amber-50 text-amber-950 border-amber-300',
-      icon: <AlertTriangle className="w-4 h-4 text-amber-700 shrink-0" />,
-      confirmBtn: 'bg-amber-700 hover:bg-amber-800 text-white border-amber-900 shadow-xs',
-      tag: 'Ledger Modification Notice'
+      icon: <AlertTriangle className="w-5 h-5" />,
+      iconWrapper: 'bg-amber-50 text-amber-600 border-amber-100',
+      topBorder: 'border-t-amber-500',
+      badge: 'bg-amber-50 text-amber-700 border-amber-200',
+      badgeText: 'Action Requires Attention',
+      confirm:
+        'bg-amber-600 hover:bg-amber-700 active:bg-amber-800 text-white'
     },
+
     success: {
-      borderTop: 'border-t-emerald-700',
-      badgeBg: 'bg-emerald-50 text-emerald-950 border-emerald-300',
-      icon: <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />,
-      confirmBtn: 'bg-emerald-800 hover:bg-emerald-700 text-white border-emerald-950 shadow-xs',
-      tag: 'Financial Clearance Authorization'
+      icon: <CheckCircle2 className="w-5 h-5" />,
+      iconWrapper: 'bg-emerald-50 text-emerald-600 border-emerald-100',
+      topBorder: 'border-t-emerald-500',
+      badge: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+      badgeText: 'Confirmation Required',
+      confirm:
+        'bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white'
+    },
+
+    info: {
+      icon: <Info className="w-5 h-5" />,
+      iconWrapper: 'bg-blue-50 text-blue-600 border-blue-100',
+      topBorder: 'border-t-blue-600',
+      badge: 'bg-blue-50 text-blue-700 border-blue-200',
+      badgeText: 'Confirmation Required',
+      confirm:
+        'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white'
     }
   };
 
-  const currentTheme = themes[resolvedVariant] || themes.danger;
-  const resolvedConfirmText = confirmText || (resolvedVariant === 'success' ? 'Authorize & Settle' : 'Execute & Commit');
+  const currentTheme =
+    themes[resolvedVariant] || themes.info;
 
-  // Prevent background scrolling while modal is open
+  const resolvedConfirmText =
+    confirmText ||
+    (resolvedVariant === 'danger'
+      ? 'Delete'
+      : resolvedVariant === 'success'
+        ? 'Confirm'
+        : 'Continue');
+
+  // Prevent background scrolling while the modal is open.
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
+    if (!isOpen) {
       document.body.style.overflow = '';
+      return;
     }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
     return () => {
-      document.body.style.overflow = '';
+      document.body.style.overflow = previousOverflow;
     };
   }, [isOpen]);
 
-  // Keyboard navigation: Escape to dismiss
-  const handleKeyDown = useCallback((e) => {
-    if (!isOpen || loading) return;
-    if (e.key === 'Escape') {
-      e.preventDefault();
-      onClose();
-    }
-  }, [isOpen, loading, onClose]);
+  // Escape key closes the modal.
+  const handleKeyDown = useCallback(
+    (event) => {
+      if (!isOpen || loading) return;
+
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        onClose();
+      }
+    },
+    [isOpen, loading, onClose]
+  );
 
   useEffect(() => {
+    if (!isOpen) return;
+
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleKeyDown]);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, handleKeyDown]);
+
+  // Focus the modal when opened.
+  useEffect(() => {
+    if (isOpen) {
+      requestAnimationFrame(() => {
+        modalRef.current?.focus();
+      });
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
   return (
-    <div 
-      className="fixed inset-0 z-[250] flex items-center justify-center bg-slate-950/80 backdrop-blur-xs p-4 font-sans select-none animate-in fade-in duration-200"
-      onClick={(e) => {
-        if (!loading && e.target === e.currentTarget) onClose();
+    <div
+      className="
+        fixed inset-0 z-[250]
+        flex items-center justify-center
+        bg-slate-950/60
+        backdrop-blur-sm
+        p-4
+        font-sans
+      "
+      onMouseDown={(event) => {
+        if (
+          !loading &&
+          event.target === event.currentTarget
+        ) {
+          onClose();
+        }
       }}
       role="dialog"
       aria-modal="true"
       aria-labelledby="confirm-modal-title"
+      aria-describedby="confirm-modal-message"
     >
-      <div 
+      <div
         ref={modalRef}
-        className={`bg-white w-full max-w-md shadow-2xl border-2 border-slate-300 border-t-4 ${currentTheme.borderTop} rounded-xs overflow-hidden relative`}
+        tabIndex={-1}
+        className={`
+          w-full max-w-md
+          bg-white
+          rounded-2xl
+          border border-slate-200
+          border-t-4
+          ${currentTheme.topBorder}
+          shadow-2xl
+          overflow-hidden
+          outline-none
+        `}
       >
-        {/* Institutional Header */}
-        <div className="bg-slate-50 border-b border-slate-300 px-5 py-3.5 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <span className="p-1.5 bg-blue-950 text-amber-400 border border-blue-900 rounded-xs shadow-xs flex items-center justify-center">
-              {currentTheme.icon}
-            </span>
-            <div>
-              <h3 id="confirm-modal-title" className="text-xs font-black text-blue-950 uppercase tracking-widest font-serif">
-                {title || "Confirmation Required"}
-              </h3>
-              <p className="text-[9px] font-mono font-bold text-slate-500 uppercase tracking-tight flex items-center gap-1 mt-0.5">
-                <Lock className="w-2.5 h-2.5 text-amber-600" /> Committee Verification Protocol
-              </p>
+
+        {/* Header */}
+        <div className="px-5 sm:px-6 py-4 border-b border-slate-200 bg-slate-50">
+
+          <div className="flex items-start justify-between gap-4">
+
+            <div className="flex items-center gap-3">
+
+              <div
+                className={`
+                  w-10 h-10
+                  rounded-xl
+                  border
+                  flex items-center justify-center
+                  shrink-0
+                  ${currentTheme.iconWrapper}
+                `}
+              >
+                {currentTheme.icon}
+              </div>
+
+              <div>
+                <h2
+                  id="confirm-modal-title"
+                  className="text-sm sm:text-base font-bold text-slate-900"
+                >
+                  {title || 'Confirmation Required'}
+                </h2>
+
+                <div className="flex items-center gap-1.5 mt-1">
+                  <Lock className="w-3 h-3 text-slate-400" />
+
+                  <p className="text-[10px] text-slate-500">
+                    Secure administrative action
+                  </p>
+                </div>
+              </div>
+
             </div>
+
+            {!loading && (
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="Close dialog"
+                className="
+                  w-8 h-8
+                  rounded-lg
+                  flex items-center justify-center
+                  border border-slate-200
+                  bg-white
+                  text-slate-500
+                  hover:bg-slate-100
+                  hover:text-slate-800
+                  transition
+                  shrink-0
+                "
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+
           </div>
 
-          {!loading && (
-            <button 
-              type="button"
-              onClick={onClose} 
-              aria-label="Close dialog"
-              className="w-7 h-7 flex items-center justify-center bg-slate-200 hover:bg-slate-300 text-slate-800 transition cursor-pointer rounded-xs border border-slate-300 active:scale-95"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          )}
         </div>
 
-        {/* Modal Body */}
-        <div className="p-6 bg-white space-y-4">
-          {/* Status Tag Badge */}
-          <div>
-            <span className={`inline-flex items-center gap-1 text-[9px] font-black uppercase px-2.5 py-0.5 rounded-xs border font-mono ${currentTheme.badgeBg}`}>
-              {currentTheme.tag}
+        {/* Body */}
+        <div className="p-5 sm:p-6">
+
+          {/* Status badge */}
+          <div className="mb-4">
+            <span
+              className={`
+                inline-flex
+                items-center
+                px-2.5 py-1
+                rounded-lg
+                border
+                text-[10px]
+                font-bold
+                uppercase
+                tracking-wide
+                ${currentTheme.badge}
+              `}
+            >
+              {currentTheme.badgeText}
             </span>
           </div>
 
-          <div className="text-xs font-bold text-slate-800 leading-relaxed uppercase bg-slate-50 border border-slate-300 p-4 rounded-xs font-mono shadow-xs">
-            {message || "Are you sure you want to execute this administrative operation in the ledger?"}
+          {/* Message */}
+          <div
+            id="confirm-modal-message"
+            className="
+              rounded-xl
+              border border-slate-200
+              bg-slate-50
+              px-4 py-4
+              text-sm
+              text-slate-700
+              leading-relaxed
+            "
+          >
+            {message ||
+              'Are you sure you want to continue with this action?'}
           </div>
 
-          {/* Institutional Compliance Notice */}
-          <p className="text-[9px] text-slate-500 font-mono font-bold uppercase tracking-tight">
-            * Records altered through this prompt are logged permanently in the cooperative ledger audit trail under Statute 2.4.
-          </p>
+          {/* Information */}
+          <div className="mt-4 flex items-start gap-2.5">
 
-          {/* Action Button Strip */}
-          <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-slate-200">
-            <button 
-              type="button" 
-              onClick={onClose} 
+            <Info className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
+
+            <p className="text-[11px] text-slate-500 leading-relaxed">
+              Please review this action before continuing.
+              Administrative changes may affect records visible
+              to students and other authorized staff.
+            </p>
+
+          </div>
+
+          {/* Actions */}
+          <div className="mt-6 pt-4 border-t border-slate-200 flex flex-col-reverse sm:flex-row sm:justify-end gap-2.5">
+
+            <button
+              type="button"
+              onClick={onClose}
               disabled={loading}
-              className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-800 font-bold text-[10px] uppercase tracking-wider transition cursor-pointer border border-slate-300 rounded-xs disabled:opacity-50 disabled:cursor-not-allowed shadow-xs"
+              className="
+                w-full sm:w-auto
+                px-4 py-2.5
+                rounded-xl
+                border border-slate-300
+                bg-white
+                text-slate-700
+                text-xs
+                font-bold
+                hover:bg-slate-50
+                active:bg-slate-100
+                transition
+                disabled:opacity-50
+                disabled:cursor-not-allowed
+              "
             >
               {cancelText}
             </button>
-            <button 
-              type="button" 
-              onClick={onConfirm} 
+
+            <button
+              type="button"
+              onClick={onConfirm}
               disabled={loading}
-              className={`px-5 py-2.5 font-black text-[10px] uppercase tracking-widest transition cursor-pointer border-b-2 rounded-xs shadow-xs flex items-center gap-1.5 focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed ${currentTheme.confirmBtn}`}
+              className={`
+                w-full sm:w-auto
+                px-5 py-2.5
+                rounded-xl
+                text-xs
+                font-bold
+                shadow-sm
+                transition
+                flex
+                items-center
+                justify-center
+                gap-2
+                disabled:opacity-60
+                disabled:cursor-not-allowed
+                ${currentTheme.confirm}
+              `}
             >
               {loading ? (
                 <>
-                  <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-300" />
+                  <Loader2 className="w-4 h-4 animate-spin" />
                   <span>Processing...</span>
                 </>
               ) : (
                 <span>{resolvedConfirmText}</span>
               )}
             </button>
+
           </div>
+
         </div>
+
+        {/* Footer */}
+        <div className="px-5 py-3 border-t border-slate-200 bg-slate-50">
+
+          <div className="flex items-center justify-center gap-2 text-[10px] text-slate-500">
+            <Lock className="w-3 h-3" />
+            <span>
+              Authorized portal action
+            </span>
+          </div>
+
+        </div>
+
       </div>
     </div>
   );
