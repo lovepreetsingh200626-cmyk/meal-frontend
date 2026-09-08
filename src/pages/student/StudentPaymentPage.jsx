@@ -18,7 +18,6 @@ import autoTable from 'jspdf-autotable';
 
 import API from '../../services/api';
 
-
 /* =========================================================
    HELPERS
 ========================================================= */
@@ -31,14 +30,12 @@ const getLocalDateString = (date = new Date()) => {
   return `${year}-${month}-${day}`;
 };
 
-
 const getLocalMonthPrefix = (date = new Date()) => {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
 
   return `${year}-${month}`;
 };
-
 
 const formatCurrency = (value) => {
   const amount = Number(value || 0);
@@ -48,13 +45,6 @@ const formatCurrency = (value) => {
   })}`;
 };
 
-
-/*
-  PDF uses "Rs." instead of "₹".
-
-  jsPDF's default Helvetica font does not properly
-  support the Indian Rupee Unicode character.
-*/
 const formatPdfCurrency = (value) => {
   const amount = Number(value || 0);
 
@@ -62,7 +52,6 @@ const formatPdfCurrency = (value) => {
     maximumFractionDigits: 0,
   })}`;
 };
-
 
 const formatDate = (dateValue) => {
   if (!dateValue) return '—';
@@ -79,7 +68,6 @@ const formatDate = (dateValue) => {
     year: 'numeric',
   });
 };
-
 
 /* =========================================================
    MEAL DETECTION
@@ -128,7 +116,6 @@ const isMealTaken = (record, meal) => {
   return false;
 };
 
-
 /* =========================================================
    EXTRA ITEMS
 ========================================================= */
@@ -154,7 +141,6 @@ const getExtrasCost = (record) => {
 
   return 0;
 };
-
 
 /* =========================================================
    DAILY TOTAL
@@ -184,15 +170,6 @@ const getDailyTotal = (record) => {
     }
   }
 
-  /*
-    Fallback:
-
-    If backend doesn't provide totalCost,
-    calculate using the available meal costs.
-
-    This prevents incorrect 0 values.
-  */
-
   const mealCosts = [
     record?.breakfastCost,
     record?.lunchCost,
@@ -214,7 +191,6 @@ const getDailyTotal = (record) => {
   return 0;
 };
 
-
 /* =========================================================
    MEAL COUNT
 ========================================================= */
@@ -226,7 +202,6 @@ const getMealCount = (record) => {
     isMealTaken(record, meal)
   ).length;
 };
-
 
 /* =========================================================
    COMPONENT
@@ -241,7 +216,6 @@ export default function StudentPaymentPage({ user }) {
 
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
-
 
   /* =======================================================
      FETCH MEAL RECORDS
@@ -285,11 +259,9 @@ export default function StudentPaymentPage({ user }) {
     }
   };
 
-
   useEffect(() => {
     fetchRecords();
   }, [studentId]);
-
 
   /* =======================================================
      CURRENT MONTH
@@ -301,7 +273,6 @@ export default function StudentPaymentPage({ user }) {
     month: 'long',
     year: 'numeric',
   });
-
 
   /* =======================================================
      FILTER CURRENT MONTH RECORDS
@@ -325,7 +296,6 @@ export default function StudentPaymentPage({ user }) {
       return dateString.startsWith(currentMonthPrefix);
     });
   }, [records, currentMonthPrefix]);
-
 
   /* =======================================================
      MONTHLY CALCULATIONS
@@ -357,7 +327,10 @@ export default function StudentPaymentPage({ user }) {
       0
     );
 
-    const totalPayable = baseFee + additionalDietCharges + extrasCost;
+    const totalPayable =
+      baseFee +
+      additionalDietCharges +
+      extrasCost;
 
     return {
       baseFee,
@@ -370,7 +343,6 @@ export default function StudentPaymentPage({ user }) {
     };
   }, [monthlyRecords, user]);
 
-
   /* =======================================================
      PDF GENERATION
   ======================================================= */
@@ -380,11 +352,6 @@ export default function StudentPaymentPage({ user }) {
       setGenerating(true);
       setErrorMsg('');
       setSuccessMsg('');
-
-      /*
-        A4 portrait.
-        Everything is deliberately kept inside the page.
-      */
 
       const doc = new jsPDF({
         orientation: 'portrait',
@@ -398,7 +365,6 @@ export default function StudentPaymentPage({ user }) {
       const margin = 14;
 
       let y = 14;
-
 
       /* ===================================================
          HEADER
@@ -428,14 +394,15 @@ export default function StudentPaymentPage({ user }) {
 
       y += 8;
 
-
-      /* Header line */
-
       doc.setDrawColor(210, 214, 220);
-      doc.line(margin, y, pageWidth - margin, y);
+      doc.line(
+        margin,
+        y,
+        pageWidth - margin,
+        y
+      );
 
       y += 8;
-
 
       /* ===================================================
          STATEMENT INFO
@@ -463,14 +430,15 @@ export default function StudentPaymentPage({ user }) {
 
       doc.text(
         `Invoice: INV-${currentMonthPrefix.replace('-', '')}-${String(
-          user?.rollNo || user?.studentId || 'STUDENT'
+          user?.rollNo ||
+            user?.studentId ||
+            'STUDENT'
         )}`,
         margin,
         y
       );
 
       y += 8;
-
 
       /* ===================================================
          STUDENT INFORMATION
@@ -530,7 +498,9 @@ export default function StudentPaymentPage({ user }) {
             'Roll No.',
             user?.rollNo || '—',
             'Hostel',
-            user?.hostelNo || user?.hostelId?.hostelNumber || '—',
+            user?.hostelNo ||
+              user?.hostelId?.hostelNumber ||
+              '—',
           ],
           [
             'Department',
@@ -539,16 +509,9 @@ export default function StudentPaymentPage({ user }) {
             user?.session || '—',
           ],
         ],
-
-        didDrawPage: () => {
-          // Prevent automatic page additions.
-          // The table is intentionally compact.
-        },
       });
 
-
       y = doc.lastAutoTable.finalY + 7;
-
 
       /* ===================================================
          MONTHLY PAYMENT SUMMARY
@@ -564,7 +527,6 @@ export default function StudentPaymentPage({ user }) {
       );
 
       y += 3;
-
 
       autoTable(doc, {
         startY: y,
@@ -613,7 +575,9 @@ export default function StudentPaymentPage({ user }) {
           ],
           [
             'Additional Diet Charges',
-            formatPdfCurrency(summary.additionalDietCharges),
+            formatPdfCurrency(
+              summary.additionalDietCharges
+            ),
           ],
           [
             'Extra Items',
@@ -635,9 +599,7 @@ export default function StudentPaymentPage({ user }) {
         },
       });
 
-
       y = doc.lastAutoTable.finalY + 7;
-
 
       /* ===================================================
          MESS USAGE
@@ -653,7 +615,6 @@ export default function StudentPaymentPage({ user }) {
       );
 
       y += 3;
-
 
       autoTable(doc, {
         startY: y,
@@ -704,9 +665,7 @@ export default function StudentPaymentPage({ user }) {
         ],
       });
 
-
       y = doc.lastAutoTable.finalY + 8;
-
 
       /* ===================================================
          FINAL TOTAL BOX
@@ -714,15 +673,14 @@ export default function StudentPaymentPage({ user }) {
 
       const totalBoxHeight = 21;
 
-      /*
-        Safety check.
-
-        If somehow content becomes taller than expected,
-        reduce the position instead of creating page 2.
-      */
-
-      if (y + totalBoxHeight > pageHeight - 27) {
-        y = pageHeight - 27 - totalBoxHeight;
+      if (
+        y + totalBoxHeight >
+        pageHeight - 27
+      ) {
+        y =
+          pageHeight -
+          27 -
+          totalBoxHeight;
       }
 
       doc.setFillColor(239, 246, 255);
@@ -755,7 +713,6 @@ export default function StudentPaymentPage({ user }) {
         y + 11,
         { align: 'right' }
       );
-
 
       /* ===================================================
          FOOTER
@@ -799,7 +756,6 @@ export default function StudentPaymentPage({ user }) {
 
       doc.setTextColor(35, 42, 52);
 
-
       /* ===================================================
          FILE NAME
       =================================================== */
@@ -808,15 +764,13 @@ export default function StudentPaymentPage({ user }) {
         user?.rollNo ||
           user?.studentId ||
           'student'
-      ).replace(/[^a-zA-Z0-9_-]/g, '');
+      ).replace(
+        /[^a-zA-Z0-9_-]/g,
+        ''
+      );
 
       const fileName =
         `Mess-Payment-${currentMonthPrefix}-${safeRollNo}.pdf`;
-
-
-      /* ===================================================
-         SAVE
-      =================================================== */
 
       doc.save(fileName);
 
@@ -829,7 +783,10 @@ export default function StudentPaymentPage({ user }) {
       }, 3500);
 
     } catch (error) {
-      console.error('PDF generation failed:', error);
+      console.error(
+        'PDF generation failed:',
+        error
+      );
 
       setErrorMsg(
         'Unable to generate the payment statement. Please try again.'
@@ -839,21 +796,20 @@ export default function StudentPaymentPage({ user }) {
     }
   };
 
-
   /* =======================================================
      LOADING
   ======================================================= */
 
   if (loading) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center px-4">
-        <div className="flex flex-col items-center gap-3 text-slate-600">
+      <div className="flex min-h-[55vh] w-full items-center justify-center px-3">
+        <div className="flex flex-col items-center gap-2.5 text-slate-600">
           <Loader2
-            size={30}
+            size={27}
             className="animate-spin text-blue-600"
           />
 
-          <p className="text-sm font-medium">
+          <p className="text-xs sm:text-sm font-medium">
             Loading payment statement...
           </p>
         </div>
@@ -861,80 +817,114 @@ export default function StudentPaymentPage({ user }) {
     );
   }
 
-
   /* =======================================================
      UI
   ======================================================= */
 
   return (
-    <div className="space-y-6">
+    <div className="w-full min-w-0 space-y-3 overflow-x-hidden pb-4 sm:space-y-5 sm:pb-6">
 
       {/* ===================================================
           PAGE HEADER
       =================================================== */}
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
+      <section className="w-full min-w-0 rounded-xl border border-slate-200 bg-white p-3 shadow-sm sm:rounded-2xl sm:p-6">
 
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex min-w-0 flex-col gap-3 sm:gap-5 lg:flex-row lg:items-center lg:justify-between">
 
-          <div className="flex items-start gap-4">
+          <div className="flex min-w-0 items-start gap-2.5 sm:gap-4">
 
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
-              <CreditCard size={23} />
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-700 sm:h-12 sm:w-12 sm:rounded-xl">
+              <CreditCard
+                size={18}
+                className="sm:hidden"
+              />
+
+              <CreditCard
+                size={23}
+                className="hidden sm:block"
+              />
             </div>
 
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-blue-700">
+            <div className="min-w-0">
+
+              <p className="text-[9px] font-bold uppercase tracking-wider text-blue-700 sm:text-xs">
                 Student Finance
               </p>
 
-              <h1 className="mt-1 text-xl sm:text-2xl font-bold text-slate-900">
+              <h1 className="mt-0.5 truncate text-base font-bold text-slate-900 sm:mt-1 sm:text-2xl">
                 Payment Statement
               </h1>
 
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="mt-1 max-w-2xl text-[10px] leading-4 text-slate-500 sm:text-sm sm:leading-5">
                 View your current monthly mess charges and
                 generate an official payment statement.
               </p>
+
             </div>
 
           </div>
 
-
-          <div className="flex flex-col sm:flex-row gap-2">
+          <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto">
 
             <button
               type="button"
               onClick={fetchRecords}
               disabled={loading || generating}
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-[11px] font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 sm:min-h-0 sm:gap-2 sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm"
             >
-              <RefreshCw size={17} />
+              <RefreshCw
+                size={14}
+                className="sm:hidden"
+              />
+
+              <RefreshCw
+                size={17}
+                className="hidden sm:block"
+              />
 
               Refresh
             </button>
-
 
             <button
               type="button"
               onClick={generatePDF}
               disabled={generating}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-lg bg-blue-700 px-2.5 py-2 text-[11px] font-semibold text-white shadow-sm transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60 sm:min-h-0 sm:gap-2 sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm"
             >
               {generating ? (
                 <>
                   <Loader2
+                    size={14}
+                    className="animate-spin sm:hidden"
+                  />
+
+                  <Loader2
                     size={17}
-                    className="animate-spin"
+                    className="hidden animate-spin sm:block"
                   />
 
                   Generating...
                 </>
               ) : (
                 <>
-                  <Download size={17} />
+                  <Download
+                    size={14}
+                    className="sm:hidden"
+                  />
 
-                  Download Statement
+                  <Download
+                    size={17}
+                    className="hidden sm:block"
+                  />
+
+                  <span className="sm:hidden">
+                    Download
+                  </span>
+
+                  <span className="hidden sm:inline">
+                    Download Statement
+                  </span>
                 </>
               )}
             </button>
@@ -945,126 +935,186 @@ export default function StudentPaymentPage({ user }) {
 
       </section>
 
-
       {/* ===================================================
           ALERTS
       =================================================== */}
 
       {errorMsg && (
-        <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+        <div className="flex min-w-0 items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-2.5 text-[11px] leading-4 text-red-700 sm:gap-3 sm:rounded-xl sm:p-4 sm:text-sm sm:leading-5">
+
+          <AlertCircle
+            size={16}
+            className="mt-0.5 shrink-0 sm:hidden"
+          />
+
           <AlertCircle
             size={19}
-            className="mt-0.5 shrink-0"
+            className="mt-0.5 hidden shrink-0 sm:block"
           />
 
-          <p>{errorMsg}</p>
+          <p className="min-w-0 break-words">
+            {errorMsg}
+          </p>
+
         </div>
       )}
-
 
       {successMsg && (
-        <div className="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700">
+        <div className="flex min-w-0 items-start gap-2 rounded-lg border border-emerald-200 bg-emerald-50 p-2.5 text-[11px] leading-4 text-emerald-700 sm:gap-3 sm:rounded-xl sm:p-4 sm:text-sm sm:leading-5">
+
           <CheckCircle2
-            size={19}
-            className="mt-0.5 shrink-0"
+            size={16}
+            className="mt-0.5 shrink-0 sm:hidden"
           />
 
-          <p>{successMsg}</p>
+          <CheckCircle2
+            size={19}
+            className="mt-0.5 hidden shrink-0 sm:block"
+          />
+
+          <p className="min-w-0 break-words">
+            {successMsg}
+          </p>
+
         </div>
       )}
-
 
       {/* ===================================================
           MONTH / TOTAL
       =================================================== */}
 
-      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="grid grid-cols-2 gap-2.5 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        {/* Billing Period */}
 
-          <div className="flex items-center justify-between">
+        <div className="min-w-0 rounded-xl border border-slate-200 bg-white p-3 shadow-sm sm:rounded-2xl sm:p-5">
 
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <div className="flex min-w-0 items-center justify-between gap-2">
+
+            <div className="min-w-0">
+
+              <p className="text-[9px] font-semibold uppercase tracking-wide text-slate-500 sm:text-xs">
                 Billing Period
               </p>
 
-              <p className="mt-2 text-lg font-bold text-slate-900">
+              <p className="mt-1 truncate text-xs font-bold text-slate-900 sm:mt-2 sm:text-lg">
                 {currentMonthName}
               </p>
+
             </div>
 
-            <div className="rounded-xl bg-blue-50 p-2.5 text-blue-700">
-              <CalendarDays size={20} />
+            <div className="shrink-0 rounded-lg bg-blue-50 p-1.5 text-blue-700 sm:rounded-xl sm:p-2.5">
+              <CalendarDays
+                size={15}
+                className="sm:hidden"
+              />
+
+              <CalendarDays
+                size={20}
+                className="hidden sm:block"
+              />
             </div>
 
           </div>
 
         </div>
 
+        {/* Days */}
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="min-w-0 rounded-xl border border-slate-200 bg-white p-3 shadow-sm sm:rounded-2xl sm:p-5">
 
-          <div className="flex items-center justify-between">
+          <div className="flex min-w-0 items-center justify-between gap-2">
 
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+
+              <p className="text-[9px] font-semibold uppercase tracking-wide text-slate-500 sm:text-xs">
                 Days Recorded
               </p>
 
-              <p className="mt-2 text-2xl font-bold text-slate-900">
+              <p className="mt-1 text-xl font-bold text-slate-900 sm:mt-2 sm:text-2xl">
                 {summary.daysRecorded}
               </p>
+
             </div>
 
-            <div className="rounded-xl bg-slate-100 p-2.5 text-slate-700">
-              <FileText size={20} />
+            <div className="shrink-0 rounded-lg bg-slate-100 p-1.5 text-slate-700 sm:rounded-xl sm:p-2.5">
+              <FileText
+                size={15}
+                className="sm:hidden"
+              />
+
+              <FileText
+                size={20}
+                className="hidden sm:block"
+              />
             </div>
 
           </div>
 
         </div>
 
+        {/* Meals */}
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="min-w-0 rounded-xl border border-slate-200 bg-white p-3 shadow-sm sm:rounded-2xl sm:p-5">
 
-          <div className="flex items-center justify-between">
+          <div className="flex min-w-0 items-center justify-between gap-2">
 
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+
+              <p className="text-[9px] font-semibold uppercase tracking-wide text-slate-500 sm:text-xs">
                 Meals Recorded
               </p>
 
-              <p className="mt-2 text-2xl font-bold text-slate-900">
+              <p className="mt-1 text-xl font-bold text-slate-900 sm:mt-2 sm:text-2xl">
                 {summary.mealsRecorded}
               </p>
+
             </div>
 
-            <div className="rounded-xl bg-emerald-50 p-2.5 text-emerald-700">
-              <Utensils size={20} />
+            <div className="shrink-0 rounded-lg bg-emerald-50 p-1.5 text-emerald-700 sm:rounded-xl sm:p-2.5">
+              <Utensils
+                size={15}
+                className="sm:hidden"
+              />
+
+              <Utensils
+                size={20}
+                className="hidden sm:block"
+              />
             </div>
 
           </div>
 
         </div>
 
+        {/* Total */}
 
-        <div className="rounded-2xl border border-blue-200 bg-blue-50 p-5 shadow-sm">
+        <div className="min-w-0 rounded-xl border border-blue-200 bg-blue-50 p-3 shadow-sm sm:rounded-2xl sm:p-5">
 
-          <div className="flex items-center justify-between">
+          <div className="flex min-w-0 items-center justify-between gap-2">
 
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-blue-700">
+            <div className="min-w-0">
+
+              <p className="text-[9px] font-semibold uppercase tracking-wide text-blue-700 sm:text-xs">
                 Total Payable
               </p>
 
-              <p className="mt-2 text-2xl font-bold text-blue-900">
+              <p className="mt-1 truncate text-xl font-bold text-blue-900 sm:mt-2 sm:text-2xl">
                 {formatCurrency(summary.totalPayable)}
               </p>
+
             </div>
 
-            <div className="rounded-xl bg-white p-2.5 text-blue-700 shadow-sm">
-              <IndianRupee size={20} />
+            <div className="shrink-0 rounded-lg bg-white p-1.5 text-blue-700 shadow-sm sm:rounded-xl sm:p-2.5">
+              <IndianRupee
+                size={15}
+                className="sm:hidden"
+              />
+
+              <IndianRupee
+                size={20}
+                className="hidden sm:block"
+              />
             </div>
 
           </div>
@@ -1073,108 +1123,123 @@ export default function StudentPaymentPage({ user }) {
 
       </section>
 
-
       {/* ===================================================
           PAYMENT BREAKDOWN
       =================================================== */}
 
-      <section className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+      <section className="w-full min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm sm:rounded-2xl">
 
-        <div className="border-b border-slate-200 px-5 py-4 sm:px-6">
+        <div className="border-b border-slate-200 px-3 py-3 sm:px-6 sm:py-4">
 
-          <div className="flex items-center gap-3">
+          <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
 
-            <div className="rounded-lg bg-slate-100 p-2 text-slate-700">
-              <ReceiptText size={19} />
+            <div className="shrink-0 rounded-lg bg-slate-100 p-1.5 text-slate-700 sm:p-2">
+              <ReceiptText
+                size={16}
+                className="sm:hidden"
+              />
+
+              <ReceiptText
+                size={19}
+                className="hidden sm:block"
+              />
             </div>
 
-            <div>
-              <h2 className="font-bold text-slate-900">
+            <div className="min-w-0">
+
+              <h2 className="text-sm font-bold text-slate-900 sm:text-base">
                 Monthly Payment Summary
               </h2>
 
-              <p className="text-xs text-slate-500">
+              <p className="mt-0.5 truncate text-[9px] text-slate-500 sm:text-xs">
                 Charges calculated from your current mess records.
               </p>
+
             </div>
 
           </div>
 
         </div>
 
-
         <div className="divide-y divide-slate-100">
 
-          <div className="flex items-center justify-between gap-4 px-5 py-4 sm:px-6">
+          <div className="flex min-w-0 items-center justify-between gap-3 px-3 py-3 sm:px-6 sm:py-4">
 
-            <div>
-              <p className="font-medium text-slate-800">
+            <div className="min-w-0">
+
+              <p className="text-xs font-medium text-slate-800 sm:text-sm">
                 Base Maintenance Fee
               </p>
 
-              <p className="mt-0.5 text-xs text-slate-500">
+              <p className="mt-0.5 hidden text-xs text-slate-500 sm:block">
                 Monthly hostel mess maintenance
               </p>
+
             </div>
 
-            <p className="font-bold text-slate-900">
+            <p className="shrink-0 text-xs font-bold text-slate-900 sm:text-sm">
               {formatCurrency(summary.baseFee)}
             </p>
 
           </div>
 
+          <div className="flex min-w-0 items-center justify-between gap-3 px-3 py-3 sm:px-6 sm:py-4">
 
-          <div className="flex items-center justify-between gap-4 px-5 py-4 sm:px-6">
+            <div className="min-w-0">
 
-            <div>
-              <p className="font-medium text-slate-800">
+              <p className="text-xs font-medium text-slate-800 sm:text-sm">
                 Additional Diet Charges
               </p>
 
-              <p className="mt-0.5 text-xs text-slate-500">
+              <p className="mt-0.5 hidden text-xs text-slate-500 sm:block">
                 Charges from recorded meals
               </p>
+
             </div>
 
-            <p className="font-bold text-slate-900">
-              {formatCurrency(summary.additionalDietCharges)}
+            <p className="shrink-0 text-xs font-bold text-slate-900 sm:text-sm">
+              {formatCurrency(
+                summary.additionalDietCharges
+              )}
             </p>
 
           </div>
 
+          <div className="flex min-w-0 items-center justify-between gap-3 px-3 py-3 sm:px-6 sm:py-4">
 
-          <div className="flex items-center justify-between gap-4 px-5 py-4 sm:px-6">
+            <div className="min-w-0">
 
-            <div>
-              <p className="font-medium text-slate-800">
+              <p className="text-xs font-medium text-slate-800 sm:text-sm">
                 Extra Items
               </p>
 
-              <p className="mt-0.5 text-xs text-slate-500">
+              <p className="mt-0.5 hidden text-xs text-slate-500 sm:block">
                 Additional items recorded
               </p>
+
             </div>
 
-            <p className="font-bold text-slate-900">
+            <p className="shrink-0 text-xs font-bold text-slate-900 sm:text-sm">
               {formatCurrency(summary.extrasCost)}
             </p>
 
           </div>
 
+          <div className="flex min-w-0 items-center justify-between gap-3 bg-blue-50 px-3 py-3.5 sm:px-6 sm:py-5">
 
-          <div className="flex items-center justify-between gap-4 bg-blue-50 px-5 py-5 sm:px-6">
+            <div className="min-w-0">
 
-            <div>
-              <p className="text-sm font-bold text-blue-900">
+              <p className="text-xs font-bold text-blue-900 sm:text-sm">
                 Total Payable
               </p>
 
-              <p className="mt-0.5 text-xs text-blue-700">
+              <p className="mt-0.5 hidden text-xs text-blue-700 sm:block">
                 Current monthly statement amount
               </p>
+
             </div>
 
-            <p className="text-xl font-bold text-blue-900">
+            <p className="shrink-0 text-base font-bold text-blue-900 sm:text-xl">
               {formatCurrency(summary.totalPayable)}
             </p>
 
@@ -1184,73 +1249,78 @@ export default function StudentPaymentPage({ user }) {
 
       </section>
 
-
       {/* ===================================================
           USAGE SUMMARY
       =================================================== */}
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
+      <section className="w-full min-w-0 rounded-xl border border-slate-200 bg-white p-3 shadow-sm sm:rounded-2xl sm:p-6">
 
-        <div className="flex items-center gap-3 mb-5">
+        <div className="mb-3 flex items-center gap-2.5 sm:mb-5 sm:gap-3">
 
-          <div className="rounded-lg bg-emerald-50 p-2 text-emerald-700">
-            <Utensils size={19} />
+          <div className="shrink-0 rounded-lg bg-emerald-50 p-1.5 text-emerald-700 sm:p-2">
+            <Utensils
+              size={16}
+              className="sm:hidden"
+            />
+
+            <Utensils
+              size={19}
+              className="hidden sm:block"
+            />
           </div>
 
-          <div>
-            <h2 className="font-bold text-slate-900">
+          <div className="min-w-0">
+
+            <h2 className="text-sm font-bold text-slate-900 sm:text-base">
               Mess Usage
             </h2>
 
-            <p className="text-xs text-slate-500">
+            <p className="text-[9px] text-slate-500 sm:text-xs">
               Activity recorded for {currentMonthName}.
             </p>
+
           </div>
 
         </div>
 
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-4">
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <p className="text-xs font-semibold text-slate-500">
+          <div className="min-w-0 rounded-lg border border-slate-200 bg-slate-50 p-2.5 sm:rounded-xl sm:p-4">
+            <p className="text-[9px] font-semibold text-slate-500 sm:text-xs">
               Days Recorded
             </p>
 
-            <p className="mt-1 text-xl font-bold text-slate-900">
+            <p className="mt-0.5 text-base font-bold text-slate-900 sm:mt-1 sm:text-xl">
               {summary.daysRecorded}
             </p>
           </div>
 
-
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <p className="text-xs font-semibold text-slate-500">
+          <div className="min-w-0 rounded-lg border border-slate-200 bg-slate-50 p-2.5 sm:rounded-xl sm:p-4">
+            <p className="text-[9px] font-semibold text-slate-500 sm:text-xs">
               Meals Recorded
             </p>
 
-            <p className="mt-1 text-xl font-bold text-slate-900">
+            <p className="mt-0.5 text-base font-bold text-slate-900 sm:mt-1 sm:text-xl">
               {summary.mealsRecorded}
             </p>
           </div>
 
-
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <p className="text-xs font-semibold text-slate-500">
+          <div className="min-w-0 rounded-lg border border-slate-200 bg-slate-50 p-2.5 sm:rounded-xl sm:p-4">
+            <p className="text-[9px] font-semibold text-slate-500 sm:text-xs">
               Diet Cost
             </p>
 
-            <p className="mt-1 text-xl font-bold text-slate-900">
+            <p className="mt-0.5 truncate text-base font-bold text-slate-900 sm:mt-1 sm:text-xl">
               {formatCurrency(summary.dietCost)}
             </p>
           </div>
 
-
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <p className="text-xs font-semibold text-slate-500">
+          <div className="min-w-0 rounded-lg border border-slate-200 bg-slate-50 p-2.5 sm:rounded-xl sm:p-4">
+            <p className="text-[9px] font-semibold text-slate-500 sm:text-xs">
               Extra Items
             </p>
 
-            <p className="mt-1 text-xl font-bold text-slate-900">
+            <p className="mt-0.5 truncate text-base font-bold text-slate-900 sm:mt-1 sm:text-xl">
               {formatCurrency(summary.extrasCost)}
             </p>
           </div>
@@ -1259,97 +1329,103 @@ export default function StudentPaymentPage({ user }) {
 
       </section>
 
-
       {/* ===================================================
           STUDENT INFORMATION
       =================================================== */}
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
+      <section className="w-full min-w-0 rounded-xl border border-slate-200 bg-white p-3 shadow-sm sm:rounded-2xl sm:p-6">
 
-        <div className="flex items-center gap-3 mb-5">
+        <div className="mb-3 flex items-center gap-2.5 sm:mb-5 sm:gap-3">
 
-          <div className="rounded-lg bg-blue-50 p-2 text-blue-700">
-            <FileText size={19} />
+          <div className="shrink-0 rounded-lg bg-blue-50 p-1.5 text-blue-700 sm:p-2">
+            <FileText
+              size={16}
+              className="sm:hidden"
+            />
+
+            <FileText
+              size={19}
+              className="hidden sm:block"
+            />
           </div>
 
-          <div>
-            <h2 className="font-bold text-slate-900">
+          <div className="min-w-0">
+
+            <h2 className="text-sm font-bold text-slate-900 sm:text-base">
               Student Information
             </h2>
 
-            <p className="text-xs text-slate-500">
+            <p className="text-[9px] text-slate-500 sm:text-xs">
               Information used on your payment statement.
             </p>
+
           </div>
 
         </div>
 
+        <div className="grid grid-cols-2 gap-x-3 gap-y-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <div className="min-w-0">
+            <p className="text-[8px] font-semibold uppercase tracking-wide text-slate-500 sm:text-xs">
               Name
             </p>
 
-            <p className="mt-1 font-semibold text-slate-900">
+            <p className="mt-0.5 truncate text-[11px] font-semibold text-slate-900 sm:mt-1 sm:text-sm">
               {user?.name || '—'}
             </p>
           </div>
 
-
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <div className="min-w-0">
+            <p className="text-[8px] font-semibold uppercase tracking-wide text-slate-500 sm:text-xs">
               Student ID
             </p>
 
-            <p className="mt-1 font-semibold text-slate-900">
+            <p className="mt-0.5 truncate text-[11px] font-semibold text-slate-900 sm:mt-1 sm:text-sm">
               {user?.studentId || '—'}
             </p>
           </div>
 
-
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <div className="min-w-0">
+            <p className="text-[8px] font-semibold uppercase tracking-wide text-slate-500 sm:text-xs">
               Roll Number
             </p>
 
-            <p className="mt-1 font-semibold text-slate-900">
+            <p className="mt-0.5 truncate text-[11px] font-semibold text-slate-900 sm:mt-1 sm:text-sm">
               {user?.rollNo || '—'}
             </p>
           </div>
 
-
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <div className="min-w-0">
+            <p className="text-[8px] font-semibold uppercase tracking-wide text-slate-500 sm:text-xs">
               Hostel
             </p>
 
-            <p className="mt-1 font-semibold text-slate-900">
+            <p className="mt-0.5 truncate text-[11px] font-semibold text-slate-900 sm:mt-1 sm:text-sm">
               {user?.hostelNo ||
                 user?.hostelId?.hostelNumber ||
                 '—'}
             </p>
           </div>
 
-
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <div className="min-w-0">
+            <p className="text-[8px] font-semibold uppercase tracking-wide text-slate-500 sm:text-xs">
               Department
             </p>
 
-            <p className="mt-1 font-semibold text-slate-900">
+            <p
+              title={user?.department || ''}
+              className="mt-0.5 truncate text-[11px] font-semibold text-slate-900 sm:mt-1 sm:text-sm"
+            >
               {user?.department || '—'}
             </p>
           </div>
 
-
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <div className="min-w-0">
+            <p className="text-[8px] font-semibold uppercase tracking-wide text-slate-500 sm:text-xs">
               Session
             </p>
 
-            <p className="mt-1 font-semibold text-slate-900">
+            <p className="mt-0.5 truncate text-[11px] font-semibold text-slate-900 sm:mt-1 sm:text-sm">
               {user?.session || '—'}
             </p>
           </div>
@@ -1358,12 +1434,11 @@ export default function StudentPaymentPage({ user }) {
 
       </section>
 
-
       {/* ===================================================
           INFO NOTE
       =================================================== */}
 
-      <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs leading-5 text-slate-600">
+      <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-[9px] leading-4 text-slate-600 sm:rounded-xl sm:px-4 sm:py-3 sm:text-xs sm:leading-5">
         The downloadable statement is generated from the mess
         records currently available in the system. If any meal
         or charge appears incorrect, please contact the hostel

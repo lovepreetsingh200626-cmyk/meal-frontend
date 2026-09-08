@@ -279,12 +279,6 @@ export default function StudentLogger({ user }) {
       mealCost += dRate;
     }
 
-    /*
-      Existing minimum meal logic preserved.
-      If exactly one meal is selected, the cheapest missed meal
-      is added as the minimum diet charge.
-    */
-
     let penaltyCost = 0;
 
     if (mealCount === 1) {
@@ -319,7 +313,6 @@ export default function StudentLogger({ user }) {
   const handleSaveEntry = async () => {
     let activeExtras = [...extras];
 
-    // Automatically add an extra that is still inside the input box.
     if (
       extraName.trim() &&
       Number(extraCost) > 0
@@ -451,102 +444,108 @@ export default function StudentLogger({ user }) {
   ------------------------------------------------------- */
 
   return (
-    <div className="min-h-screen bg-slate-100 text-slate-900 pb-10">
+    <div className="min-h-screen w-full min-w-0 overflow-x-hidden bg-slate-100 text-slate-900 pb-6 sm:pb-10">
 
       {/* TOP INFORMATION STRIP */}
       <div className="bg-slate-950 text-white">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-2.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+        <div className="max-w-5xl mx-auto w-full px-3 sm:px-6 py-1.5 sm:py-2.5 flex items-center justify-between gap-2">
 
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+            <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
 
-            <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-200">
+            <span className="text-[8px] sm:text-xs font-semibold uppercase tracking-[0.08em] text-slate-200 truncate">
               Hostel Mess Management
             </span>
           </div>
 
-          <span className="text-[9px] sm:text-[10px] text-slate-400 font-medium">
+          <span className="text-[8px] sm:text-[10px] text-slate-400 font-medium whitespace-nowrap">
             Student Meal Registration
           </span>
+
         </div>
       </div>
 
-      <main className="max-w-5xl mx-auto px-3 sm:px-6 py-5 sm:py-7">
+      <main className="max-w-5xl mx-auto w-full min-w-0 px-2.5 sm:px-6 py-2.5 sm:py-7">
 
         {/* LOADING */}
         {loading ? (
-          <div className="min-h-[55vh] bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center justify-center">
+          <div className="min-h-[45vh] sm:min-h-[55vh] bg-white rounded-xl sm:rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center justify-center px-4">
 
-            <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center mb-4">
-              <Loader2 className="w-6 h-6 text-blue-700 animate-spin" />
+            <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-blue-50 flex items-center justify-center mb-2.5 sm:mb-4">
+              <Loader2 className="w-4 h-4 sm:w-6 sm:h-6 text-blue-700 animate-spin" />
             </div>
 
-            <p className="text-sm font-semibold text-slate-700">
+            <p className="text-xs sm:text-sm font-semibold text-slate-700">
               Loading meal record...
             </p>
 
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-[10px] sm:text-xs text-slate-400 mt-1 text-center">
               Please wait a moment
             </p>
+
           </div>
         ) : (
-          <div className="space-y-5">
+          <div className="space-y-2.5 sm:space-y-5">
 
             {/* PAGE HEADER */}
-            <section className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <section className="bg-white rounded-xl sm:rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
 
-              <div className="h-1 bg-blue-800" />
+              <div className="h-0.5 sm:h-1 bg-blue-800" />
 
-              <div className="p-5 sm:p-7">
+              <div className="p-3 sm:p-7">
 
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+                <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-5">
 
-                  <div className="flex items-start gap-4">
+                  <div className="flex items-start gap-2.5 sm:gap-4 min-w-0">
 
-                    <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0">
-                      <Landmark className="w-5 h-5 sm:w-6 sm:h-6 text-blue-700" />
+                    <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0">
+                      <Landmark className="w-3.5 h-3.5 sm:w-6 sm:h-6 text-blue-700" />
                     </div>
 
-                    <div>
-                      <div className="flex flex-wrap items-center gap-2 mb-1">
+                    <div className="min-w-0">
 
-                        <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-blue-50 text-blue-700 border border-blue-100 text-[9px] font-bold uppercase tracking-wide">
-                          <ReceiptText className="w-3 h-3" />
+                      <div className="flex flex-wrap items-center gap-1 sm:gap-2 mb-0.5 sm:mb-1">
+
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-100 text-[7px] sm:text-[9px] font-bold uppercase tracking-wide">
+                          <ReceiptText className="w-2.5 h-2.5" />
                           Meal Register
                         </span>
 
                         {allMealsLocked && (
-                          <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-100 text-[9px] font-bold uppercase tracking-wide">
-                            <Lock className="w-3 h-3" />
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-100 text-[7px] sm:text-[9px] font-bold uppercase tracking-wide">
+                            <Lock className="w-2.5 h-2.5" />
                             Locked
                           </span>
                         )}
 
                       </div>
 
-                      <h1 className="text-lg sm:text-2xl font-bold text-slate-900">
+                      <h1 className="text-sm sm:text-2xl font-bold text-slate-900 leading-tight">
                         Daily Meal Registration
                       </h1>
 
-                      <p className="text-xs sm:text-sm text-slate-500 mt-1">
+                      <p className="text-[9px] sm:text-sm text-slate-500 mt-0.5 sm:mt-1 leading-relaxed">
                         Select the meals you want to record for your hostel mess.
                       </p>
+
                     </div>
 
                   </div>
 
-                  <div className="sm:text-right">
-                    <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">
+                  <div className="border-t border-slate-100 pt-2 sm:border-0 sm:pt-0 sm:text-right">
+
+                    <p className="text-[8px] sm:text-[9px] uppercase tracking-wider text-slate-400 font-bold">
                       Student
                     </p>
 
-                    <p className="text-sm font-semibold text-slate-800 mt-0.5">
+                    <p className="text-[11px] sm:text-sm font-semibold text-slate-800 mt-0.5 truncate">
                       {user?.name || 'Student'}
                     </p>
 
-                    <p className="text-xs text-slate-500">
+                    <p className="text-[9px] sm:text-xs text-slate-500">
                       Roll No: {user?.rollNo || 'N/A'}
                     </p>
+
                   </div>
 
                 </div>
@@ -556,18 +555,18 @@ export default function StudentLogger({ user }) {
 
             {/* NOTIFICATIONS */}
             {errorMsg && (
-              <div className="rounded-xl border border-red-200 bg-red-50 p-4 flex items-start gap-3">
+              <div className="rounded-lg sm:rounded-xl border border-red-200 bg-red-50 p-2.5 sm:p-4 flex items-start gap-2 sm:gap-3 min-w-0">
 
-                <div className="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center shrink-0">
-                  <AlertCircle className="w-4 h-4 text-red-600" />
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-red-100 flex items-center justify-center shrink-0">
+                  <AlertCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-600" />
                 </div>
 
-                <div>
-                  <p className="text-sm font-semibold text-red-800">
+                <div className="min-w-0">
+                  <p className="text-[10px] sm:text-sm font-semibold text-red-800">
                     Unable to complete request
                   </p>
 
-                  <p className="text-xs text-red-700 mt-0.5">
+                  <p className="text-[9px] sm:text-xs text-red-700 mt-0.5 break-words leading-relaxed">
                     {errorMsg}
                   </p>
                 </div>
@@ -576,18 +575,18 @@ export default function StudentLogger({ user }) {
             )}
 
             {successMsg && (
-              <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 flex items-start gap-3">
+              <div className="rounded-lg sm:rounded-xl border border-emerald-200 bg-emerald-50 p-2.5 sm:p-4 flex items-start gap-2 sm:gap-3">
 
-                <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center shrink-0">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-emerald-100 flex items-center justify-center shrink-0">
+                  <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600" />
                 </div>
 
-                <div>
-                  <p className="text-sm font-semibold text-emerald-800">
+                <div className="min-w-0">
+                  <p className="text-[10px] sm:text-sm font-semibold text-emerald-800">
                     Meal record saved
                   </p>
 
-                  <p className="text-xs text-emerald-700 mt-0.5">
+                  <p className="text-[9px] sm:text-xs text-emerald-700 mt-0.5 break-words">
                     {successMsg}
                   </p>
                 </div>
@@ -596,22 +595,22 @@ export default function StudentLogger({ user }) {
             )}
 
             {/* DATE SELECTOR */}
-            <section className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+            <section className="bg-white rounded-xl sm:rounded-2xl border border-slate-200 shadow-sm p-2.5 sm:p-5">
 
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
 
-                  <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center">
-                    <CalendarDays className="w-5 h-5 text-slate-600" />
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
+                    <CalendarDays className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-slate-600" />
                   </div>
 
-                  <div>
-                    <h2 className="text-sm font-bold text-slate-800">
+                  <div className="min-w-0">
+                    <h2 className="text-[11px] sm:text-sm font-bold text-slate-800">
                       Select Date
                     </h2>
 
-                    <p className="text-xs text-slate-500 mt-0.5">
+                    <p className="text-[9px] sm:text-xs text-slate-500 mt-0.5 leading-relaxed">
                       Choose the day for your meal registration.
                     </p>
                   </div>
@@ -625,35 +624,35 @@ export default function StudentLogger({ user }) {
                   onChange={(e) =>
                     setSelectedDate(e.target.value)
                   }
-                  className="w-full sm:w-auto min-w-[180px] px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-medium text-slate-800 outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition"
+                  className="w-full sm:w-auto min-w-0 sm:min-w-[180px] h-9 sm:h-auto px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-lg sm:rounded-xl border border-slate-300 bg-white text-[11px] sm:text-sm font-medium text-slate-800 outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition"
                 />
 
               </div>
             </section>
 
             {/* MEALS */}
-            <section className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-6">
+            <section className="bg-white rounded-xl sm:rounded-2xl border border-slate-200 shadow-sm p-2.5 sm:p-6">
 
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-5">
+              <div className="flex items-center justify-between gap-2 mb-2.5 sm:mb-5">
 
-                <div>
-                  <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                    <Utensils className="w-4 h-4 text-blue-700" />
+                <div className="min-w-0">
+                  <h2 className="text-xs sm:text-base font-bold text-slate-900 flex items-center gap-1.5 sm:gap-2">
+                    <Utensils className="w-3 h-3 sm:w-4 sm:h-4 text-blue-700 shrink-0" />
                     Today's Meals
                   </h2>
 
-                  <p className="text-xs text-slate-500 mt-1">
+                  <p className="text-[9px] sm:text-xs text-slate-500 mt-0.5 sm:mt-1">
                     Tap a meal to mark it as taken.
                   </p>
                 </div>
 
-                <div className="text-xs text-slate-500">
-                  {liveCalc.mealCount} of 3 meals selected
+                <div className="shrink-0 text-[9px] sm:text-xs font-medium text-slate-500 bg-slate-50 border border-slate-200 rounded-full px-1.5 sm:px-2 py-0.5 sm:py-1">
+                  {liveCalc.mealCount}/3
                 </div>
 
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-1.5 sm:space-y-3">
 
                 {mealTiers.map((meal) => {
                   const isLocked = lockedMeals[meal.key];
@@ -667,7 +666,7 @@ export default function StudentLogger({ user }) {
                         handleMealToggle(meal.key)
                       }
                       disabled={isLocked}
-                      className={`w-full text-left rounded-xl border p-4 transition-all ${
+                      className={`w-full text-left rounded-lg sm:rounded-xl border p-2.5 sm:p-4 transition-all ${
                         isLocked
                           ? 'bg-emerald-50 border-emerald-200 cursor-not-allowed'
                           : isChecked
@@ -676,12 +675,12 @@ export default function StudentLogger({ user }) {
                       }`}
                     >
 
-                      <div className="flex items-center justify-between gap-4">
+                      <div className="flex items-center justify-between gap-2 sm:gap-4">
 
-                        <div className="flex items-center gap-3 min-w-0">
+                        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
 
                           <div
-                            className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                            className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0 ${
                               isLocked
                                 ? 'bg-emerald-100 text-emerald-700'
                                 : isChecked
@@ -690,29 +689,29 @@ export default function StudentLogger({ user }) {
                             }`}
                           >
                             {isLocked ? (
-                              <Lock className="w-4 h-4" />
+                              <Lock className="w-3 h-3 sm:w-4 sm:h-4" />
                             ) : (
-                              <Utensils className="w-4 h-4" />
+                              <Utensils className="w-3 h-3 sm:w-4 sm:h-4" />
                             )}
                           </div>
 
                           <div className="min-w-0">
 
-                            <div className="flex flex-wrap items-center gap-2">
+                            <div className="flex flex-wrap items-center gap-1">
 
-                              <h3 className="text-sm font-bold text-slate-900">
+                              <h3 className="text-[11px] sm:text-sm font-bold text-slate-900">
                                 {meal.label}
                               </h3>
 
                               {isLocked && (
-                                <span className="text-[9px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
+                                <span className="text-[6px] sm:text-[9px] font-bold uppercase tracking-wide px-1.5 sm:px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
                                   Recorded
                                 </span>
                               )}
 
                             </div>
 
-                            <p className="text-xs text-slate-500 mt-0.5">
+                            <p className="text-[8px] sm:text-xs text-slate-500 mt-0.5 truncate">
                               {meal.description} • {meal.schedule}
                             </p>
 
@@ -720,14 +719,14 @@ export default function StudentLogger({ user }) {
 
                         </div>
 
-                        <div className="flex items-center gap-3 shrink-0">
+                        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
 
-                          <span className="hidden sm:block text-sm font-bold text-slate-700">
+                          <span className="text-[9px] sm:text-sm font-bold text-slate-700">
                             ₹{meal.cost}
                           </span>
 
                           <div
-                            className={`w-6 h-6 rounded-md border-2 flex items-center justify-center ${
+                            className={`w-5 h-5 sm:w-6 sm:h-6 rounded-md border-2 flex items-center justify-center ${
                               isLocked
                                 ? 'bg-emerald-600 border-emerald-600 text-white'
                                 : isChecked
@@ -736,18 +735,12 @@ export default function StudentLogger({ user }) {
                             }`}
                           >
                             {isChecked && (
-                              <CheckCircle2 className="w-4 h-4" />
+                              <CheckCircle2 className="w-3 h-3 sm:w-4 sm:h-4" />
                             )}
                           </div>
 
                         </div>
 
-                      </div>
-
-                      <div className="sm:hidden mt-3 pt-3 border-t border-slate-200/70">
-                        <span className="text-xs font-semibold text-slate-600">
-                          Meal charge: ₹{meal.cost}
-                        </span>
                       </div>
 
                     </button>
@@ -758,31 +751,27 @@ export default function StudentLogger({ user }) {
             </section>
 
             {/* EXTRAS */}
-            <section className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-6">
+            <section className="bg-white rounded-xl sm:rounded-2xl border border-slate-200 shadow-sm p-2.5 sm:p-6">
 
-              <div className="flex items-start justify-between gap-3 mb-5">
+              <div className="flex items-start gap-2 sm:gap-3 mb-2.5 sm:mb-5">
 
-                <div className="flex items-start gap-3">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-orange-50 flex items-center justify-center shrink-0">
+                  <PlusCircle className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-orange-600" />
+                </div>
 
-                  <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center shrink-0">
-                    <PlusCircle className="w-5 h-5 text-orange-600" />
-                  </div>
+                <div className="min-w-0">
+                  <h2 className="text-xs sm:text-base font-bold text-slate-900">
+                    Extra Items
+                  </h2>
 
-                  <div>
-                    <h2 className="text-base font-bold text-slate-900">
-                      Extra Items
-                    </h2>
-
-                    <p className="text-xs text-slate-500 mt-1">
-                      Add any additional mess items charged separately.
-                    </p>
-                  </div>
-
+                  <p className="text-[9px] sm:text-xs text-slate-500 mt-0.5 sm:mt-1 leading-relaxed">
+                    Add additional mess items charged separately.
+                  </p>
                 </div>
 
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-[1fr_140px_auto] gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-[1fr_140px_auto] gap-1.5 sm:gap-2">
 
                 <input
                   type="text"
@@ -792,7 +781,7 @@ export default function StudentLogger({ user }) {
                     setExtraName(e.target.value)
                   }
                   placeholder="Item name"
-                  className="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition"
+                  className="w-full min-w-0 h-9 sm:h-auto px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-lg sm:rounded-xl border border-slate-300 bg-white text-[10px] sm:text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition"
                 />
 
                 <input
@@ -804,15 +793,15 @@ export default function StudentLogger({ user }) {
                     setExtraCost(e.target.value)
                   }
                   placeholder="Amount ₹"
-                  className="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition"
+                  className="w-full min-w-0 h-9 sm:h-auto px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-lg sm:rounded-xl border border-slate-300 bg-white text-[10px] sm:text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition"
                 />
 
                 <button
                   type="button"
                   onClick={addExtraItem}
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800 transition"
+                  className="w-full sm:w-auto min-h-9 inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl bg-slate-900 text-white text-[10px] sm:text-sm font-semibold hover:bg-slate-800 transition"
                 >
-                  <PlusCircle className="w-4 h-4" />
+                  <PlusCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   Add
                 </button>
 
@@ -820,29 +809,29 @@ export default function StudentLogger({ user }) {
 
               {/* EXTRA LIST */}
               {extras.length > 0 ? (
-                <div className="mt-4 space-y-2">
+                <div className="mt-2.5 sm:mt-4 space-y-1.5 sm:space-y-2">
 
                   {extras.map((item, index) => (
                     <div
                       key={`${item.itemName}-${index}`}
-                      className="flex items-center justify-between gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200"
+                      className="flex items-center justify-between gap-2 p-2 sm:p-3 rounded-lg sm:rounded-xl bg-slate-50 border border-slate-200"
                     >
 
-                      <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex items-center gap-2 min-w-0">
 
-                        <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center shrink-0">
-                          <PlusCircle className="w-4 h-4 text-slate-500" />
+                        <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-md sm:rounded-lg bg-white border border-slate-200 flex items-center justify-center shrink-0">
+                          <PlusCircle className="w-3 h-3 sm:w-4 sm:h-4 text-slate-500" />
                         </div>
 
-                        <span className="text-sm font-semibold text-slate-800 truncate">
+                        <span className="text-[10px] sm:text-sm font-semibold text-slate-800 truncate">
                           {item.itemName}
                         </span>
 
                       </div>
 
-                      <div className="flex items-center gap-3 shrink-0">
+                      <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
 
-                        <span className="text-sm font-bold text-slate-800">
+                        <span className="text-[10px] sm:text-sm font-bold text-slate-800">
                           ₹{Number(item.cost) || 0}
                         </span>
 
@@ -851,10 +840,10 @@ export default function StudentLogger({ user }) {
                           onClick={() =>
                             removeExtraItem(index)
                           }
-                          className="w-8 h-8 rounded-lg flex items-center justify-center text-red-500 hover:bg-red-50 transition"
+                          className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center text-red-500 hover:bg-red-50 transition"
                           title="Remove item"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
                         </button>
 
                       </div>
@@ -864,9 +853,9 @@ export default function StudentLogger({ user }) {
 
                 </div>
               ) : (
-                <div className="mt-4 py-5 rounded-xl border border-dashed border-slate-300 bg-slate-50 text-center">
+                <div className="mt-2.5 sm:mt-4 py-3.5 sm:py-5 rounded-lg sm:rounded-xl border border-dashed border-slate-300 bg-slate-50 text-center">
 
-                  <p className="text-xs font-medium text-slate-400">
+                  <p className="text-[9px] sm:text-xs font-medium text-slate-400">
                     No extra items added
                   </p>
 
@@ -876,21 +865,23 @@ export default function StudentLogger({ user }) {
             </section>
 
             {/* BILL SUMMARY */}
-            <section className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <section className="bg-white rounded-xl sm:rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
 
-              <div className="p-5 sm:p-6">
+              <div className="p-2.5 sm:p-6">
 
-                <div className="flex items-center gap-2 mb-5">
-                  <ReceiptText className="w-4 h-4 text-blue-700" />
+                <div className="flex items-center gap-1.5 sm:gap-2 mb-2.5 sm:mb-5">
 
-                  <h2 className="text-base font-bold text-slate-900">
+                  <ReceiptText className="w-3 h-3 sm:w-4 sm:h-4 text-blue-700" />
+
+                  <h2 className="text-xs sm:text-base font-bold text-slate-900">
                     Daily Summary
                   </h2>
+
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-2 sm:space-y-3">
 
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between items-center gap-3 text-[10px] sm:text-sm">
                     <span className="text-slate-500">
                       Selected meals
                     </span>
@@ -900,7 +891,7 @@ export default function StudentLogger({ user }) {
                     </span>
                   </div>
 
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between items-center gap-3 text-[10px] sm:text-sm">
                     <span className="text-slate-500">
                       Meal charges
                     </span>
@@ -911,7 +902,7 @@ export default function StudentLogger({ user }) {
                   </div>
 
                   {liveCalc.extrasCost > 0 && (
-                    <div className="flex justify-between text-sm">
+                    <div className="flex justify-between items-center gap-3 text-[10px] sm:text-sm">
                       <span className="text-slate-500">
                         Extra items
                       </span>
@@ -923,20 +914,22 @@ export default function StudentLogger({ user }) {
                   )}
 
                   {liveCalc.penaltyCost > 0 && (
-                    <div className="mt-3 p-3 rounded-xl bg-amber-50 border border-amber-200 flex items-start gap-2.5">
+                    <div className="mt-2.5 sm:mt-3 p-2 sm:p-3 rounded-lg sm:rounded-xl bg-amber-50 border border-amber-200 flex items-start gap-1.5 sm:gap-2">
 
-                      <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
+                      <AlertTriangle className="w-3 h-3 sm:w-4 sm:h-4 text-amber-600 mt-0.5 shrink-0" />
 
-                      <div>
-                        <p className="text-xs font-semibold text-amber-800">
+                      <div className="min-w-0">
+
+                        <p className="text-[9px] sm:text-xs font-semibold text-amber-800">
                           Minimum meal charge applied
                         </p>
 
-                        <p className="text-[11px] text-amber-700 mt-0.5">
+                        <p className="text-[8px] sm:text-[11px] text-amber-700 mt-0.5 leading-relaxed">
                           Only one meal is selected, so an additional ₹
                           {liveCalc.penaltyCost} minimum-diet charge has
                           been included.
                         </p>
+
                       </div>
 
                     </div>
@@ -944,19 +937,21 @@ export default function StudentLogger({ user }) {
 
                 </div>
 
-                <div className="border-t border-slate-200 mt-5 pt-5 flex items-center justify-between">
+                <div className="border-t border-slate-200 mt-3 sm:mt-5 pt-3 sm:pt-5 flex items-center justify-between gap-3">
 
-                  <div>
-                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                  <div className="min-w-0">
+
+                    <p className="text-[9px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wide">
                       Estimated Daily Total
                     </p>
 
-                    <p className="text-[11px] text-slate-400 mt-1">
-                      Based on the current hostel meal rates
+                    <p className="text-[8px] sm:text-[11px] text-slate-400 mt-0.5 sm:mt-1 leading-relaxed">
+                      Based on current hostel rates
                     </p>
+
                   </div>
 
-                  <p className="text-2xl sm:text-3xl font-bold text-blue-800">
+                  <p className="text-lg sm:text-3xl font-bold text-blue-800 shrink-0">
                     ₹{liveCalc.total}
                   </p>
 
@@ -972,33 +967,35 @@ export default function StudentLogger({ user }) {
                 type="button"
                 onClick={handleSaveEntry}
                 disabled={!canSave}
-                className="w-full rounded-xl bg-blue-800 hover:bg-blue-900 disabled:bg-slate-300 disabled:cursor-not-allowed text-white py-3.5 px-5 font-semibold text-sm transition flex items-center justify-center gap-2 shadow-sm"
+                className="w-full min-h-10 sm:min-h-11 rounded-lg sm:rounded-xl bg-blue-800 hover:bg-blue-900 disabled:bg-slate-300 disabled:cursor-not-allowed text-white py-2.5 sm:py-3 px-3 sm:px-5 font-semibold text-[10px] sm:text-sm transition flex items-center justify-center gap-1.5 sm:gap-2 shadow-sm"
               >
 
                 {saving ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" />
                     Saving meal record...
                   </>
                 ) : allMealsLocked &&
                   extras.length === 0 &&
                   !extraName.trim() ? (
                   <>
-                    <ShieldCheck className="w-4 h-4" />
+                    <ShieldCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     All meals recorded
                   </>
                 ) : (
                   <>
-                    <CheckCircle2 className="w-4 h-4" />
+                    <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     Save Meal Record
                   </>
                 )}
 
               </button>
 
-              <div className="flex items-center justify-center gap-1.5 mt-3 text-[10px] text-slate-400">
-                <Lock className="w-3 h-3" />
-                Recorded meals cannot be changed later.
+              <div className="flex items-center justify-center gap-1.5 mt-2 sm:mt-3 text-[8px] sm:text-[10px] text-slate-400 text-center">
+                <Lock className="w-2.5 h-2.5 sm:w-3 sm:h-3 shrink-0" />
+                <span>
+                  Recorded meals cannot be changed later.
+                </span>
               </div>
 
             </section>
@@ -1009,7 +1006,7 @@ export default function StudentLogger({ user }) {
       </main>
 
       {/* FOOTER */}
-      <footer className="max-w-5xl mx-auto px-4 sm:px-6 text-center text-[10px] text-slate-400">
+      <footer className="max-w-5xl mx-auto w-full px-3 sm:px-6 text-center text-[8px] sm:text-[10px] text-slate-400">
         Hostel Mess Management System • Student Services
       </footer>
 

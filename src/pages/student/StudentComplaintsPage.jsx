@@ -112,9 +112,7 @@ export default function StudentComplaintsPage({ user }) {
     }
 
     if (file.size > 2 * 1024 * 1024) {
-      setErrorMsg(
-        'Image size must be 2MB or less.'
-      );
+      setErrorMsg('Image size must be 2MB or less.');
       return;
     }
 
@@ -216,9 +214,7 @@ export default function StudentComplaintsPage({ user }) {
             prev.filter((c) => c._id !== complaintId)
           );
 
-          setSuccessMsg(
-            'Complaint withdrawn successfully.'
-          );
+          setSuccessMsg('Complaint withdrawn successfully.');
 
           setTimeout(() => {
             setSuccessMsg('');
@@ -311,18 +307,18 @@ export default function StudentComplaintsPage({ user }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 px-4 py-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm min-h-[55vh] flex flex-col items-center justify-center">
-            <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center mb-4">
-              <Loader2 className="w-6 h-6 text-blue-700 animate-spin" />
+      <div className="min-h-screen w-full min-w-0 overflow-x-hidden bg-slate-50 px-2.5 sm:px-4 py-3 sm:py-8">
+        <div className="max-w-6xl mx-auto w-full">
+          <div className="bg-white border border-slate-200 rounded-xl sm:rounded-2xl shadow-sm min-h-[45vh] sm:min-h-[55vh] flex flex-col items-center justify-center p-5">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-blue-50 flex items-center justify-center mb-3 sm:mb-4">
+              <Loader2 className="w-5 h-5 sm:w-6 sm:h-6 text-blue-700 animate-spin" />
             </div>
 
             <p className="text-sm font-semibold text-slate-800">
               Loading complaints
             </p>
 
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-[11px] sm:text-xs text-slate-500 mt-1 text-center">
               Please wait while we retrieve your records.
             </p>
           </div>
@@ -336,75 +332,85 @@ export default function StudentComplaintsPage({ user }) {
   // ---------------------------------------------------------
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 pb-12">
-      <main className="max-w-6xl mx-auto px-3 sm:px-5 lg:px-6 py-5 sm:py-7 space-y-5">
+    <div className="min-h-screen w-full min-w-0 overflow-x-hidden bg-slate-50 text-slate-900 pb-8 sm:pb-12">
+      <main className="w-full max-w-6xl mx-auto px-2.5 sm:px-5 lg:px-6 py-3 sm:py-7 space-y-3 sm:space-y-5">
 
-        {/* PAGE HEADER */}
-        <section className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-          <div className="h-1 bg-blue-900" />
+        {/* =====================================================
+            PAGE HEADER
+        ====================================================== */}
 
-          <div className="p-4 sm:p-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <section className="w-full min-w-0 bg-white border border-slate-200 rounded-xl sm:rounded-2xl shadow-sm overflow-hidden">
+          <div className="h-0.5 sm:h-1 bg-blue-900" />
 
-              <div className="flex items-start gap-3 sm:gap-4">
-                <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0">
-                  <MessageSquareWarning className="w-5 h-5 sm:w-6 sm:h-6 text-blue-800" />
+          <div className="p-3 sm:p-6">
+
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+
+              <div className="flex items-start gap-2.5 sm:gap-4 min-w-0">
+
+                <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0">
+                  <MessageSquareWarning className="w-4.5 h-4.5 sm:w-6 sm:h-6 text-blue-800" />
                 </div>
 
-                <div>
+                <div className="min-w-0">
+
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 text-blue-800 border border-blue-100 text-[10px] font-bold uppercase tracking-wide">
-                      <ShieldCheck className="w-3 h-3" />
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full bg-blue-50 text-blue-800 border border-blue-100 text-[8px] sm:text-[10px] font-bold uppercase tracking-wide">
+                      <ShieldCheck className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                       Student Support
                     </span>
                   </div>
 
-                  <h1 className="text-xl sm:text-2xl font-bold text-slate-900 mt-2">
+                  <h1 className="text-base sm:text-2xl font-bold text-slate-900 mt-1.5 sm:mt-2 leading-tight">
                     Complaints &amp; Grievances
                   </h1>
 
-                  <p className="text-xs sm:text-sm text-slate-500 mt-1">
+                  <p className="text-[10px] sm:text-sm text-slate-500 mt-0.5 sm:mt-1 leading-relaxed">
                     Submit, track and manage your mess-related complaints.
                   </p>
+
                 </div>
               </div>
 
               <button
                 type="button"
                 onClick={fetchComplaints}
-                className="self-start sm:self-center inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 transition"
+                className="self-stretch sm:self-center inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-3.5 sm:py-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-[10px] sm:text-xs font-semibold text-slate-700 transition"
               >
-                <RefreshCw className="w-3.5 h-3.5" />
+                <RefreshCw className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                 Refresh
               </button>
             </div>
 
             {/* STUDENT INFO */}
-            <div className="mt-5 pt-4 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="mt-3.5 sm:mt-5 pt-3 sm:pt-4 border-t border-slate-100 grid grid-cols-3 gap-2.5 sm:gap-3">
 
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              <div className="min-w-0">
+                <p className="text-[8px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-400">
                   Student
                 </p>
-                <p className="text-sm font-semibold text-slate-800 mt-0.5">
+
+                <p className="text-[11px] sm:text-sm font-semibold text-slate-800 mt-0.5 truncate">
                   {user?.name || 'Student'}
                 </p>
               </div>
 
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                  Roll Number
+              <div className="min-w-0">
+                <p className="text-[8px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  Roll No.
                 </p>
-                <p className="text-sm font-semibold text-slate-800 mt-0.5">
+
+                <p className="text-[11px] sm:text-sm font-semibold text-slate-800 mt-0.5 truncate">
                   {user?.rollNo || 'N/A'}
                 </p>
               </div>
 
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              <div className="min-w-0">
+                <p className="text-[8px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-400">
                   Residence
                 </p>
-                <p className="text-sm font-semibold text-slate-800 mt-0.5">
+
+                <p className="text-[11px] sm:text-sm font-semibold text-slate-800 mt-0.5 truncate">
                   {hostelNo}
                 </p>
               </div>
@@ -413,104 +419,123 @@ export default function StudentComplaintsPage({ user }) {
           </div>
         </section>
 
-        {/* STAT CARDS */}
-        <section className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {/* =====================================================
+            STAT CARDS
+        ====================================================== */}
 
-          <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div className="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center">
-                <ClipboardList className="w-4 h-4 text-slate-600" />
+        <section className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
+
+          {/* TOTAL */}
+          <div className="bg-white border border-slate-200 rounded-lg sm:rounded-xl p-2.5 sm:p-4 shadow-sm min-w-0">
+            <div className="flex items-center justify-between gap-1">
+
+              <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
+                <ClipboardList className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-600" />
               </div>
 
-              <span className="text-[10px] font-bold uppercase text-slate-400">
+              <span className="text-[8px] sm:text-[10px] font-bold uppercase text-slate-400">
                 Total
               </span>
+
             </div>
 
-            <p className="text-2xl font-bold text-slate-900 mt-3">
+            <p className="text-xl sm:text-2xl font-bold text-slate-900 mt-2 sm:mt-3">
               {complaints.length}
             </p>
 
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-[9px] sm:text-xs text-slate-500 mt-0.5 truncate">
               Submitted complaints
             </p>
           </div>
 
-          <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div className="w-9 h-9 rounded-lg bg-amber-50 flex items-center justify-center">
-                <Clock3 className="w-4 h-4 text-amber-600" />
+          {/* PENDING */}
+          <div className="bg-white border border-slate-200 rounded-lg sm:rounded-xl p-2.5 sm:p-4 shadow-sm min-w-0">
+            <div className="flex items-center justify-between gap-1">
+
+              <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg bg-amber-50 flex items-center justify-center shrink-0">
+                <Clock3 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-600" />
               </div>
 
-              <span className="text-[10px] font-bold uppercase text-amber-600">
+              <span className="text-[8px] sm:text-[10px] font-bold uppercase text-amber-600">
                 Pending
               </span>
+
             </div>
 
-            <p className="text-2xl font-bold text-slate-900 mt-3">
+            <p className="text-xl sm:text-2xl font-bold text-slate-900 mt-2 sm:mt-3">
               {pendingCount}
             </p>
 
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-[9px] sm:text-xs text-slate-500 mt-0.5 truncate">
               Awaiting review
             </p>
           </div>
 
-          <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center">
-                <Clock3 className="w-4 h-4 text-blue-600" />
+          {/* ACTIVE */}
+          <div className="bg-white border border-slate-200 rounded-lg sm:rounded-xl p-2.5 sm:p-4 shadow-sm min-w-0">
+            <div className="flex items-center justify-between gap-1">
+
+              <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
+                <Clock3 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600" />
               </div>
 
-              <span className="text-[10px] font-bold uppercase text-blue-600">
+              <span className="text-[8px] sm:text-[10px] font-bold uppercase text-blue-600">
                 Active
               </span>
+
             </div>
 
-            <p className="text-2xl font-bold text-slate-900 mt-3">
+            <p className="text-xl sm:text-2xl font-bold text-slate-900 mt-2 sm:mt-3">
               {inProgressCount}
             </p>
 
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-[9px] sm:text-xs text-slate-500 mt-0.5 truncate">
               Being reviewed
             </p>
           </div>
 
-          <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div className="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center">
-                <Check className="w-4 h-4 text-emerald-600" />
+          {/* RESOLVED */}
+          <div className="bg-white border border-slate-200 rounded-lg sm:rounded-xl p-2.5 sm:p-4 shadow-sm min-w-0">
+            <div className="flex items-center justify-between gap-1">
+
+              <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
+                <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600" />
               </div>
 
-              <span className="text-[10px] font-bold uppercase text-emerald-600">
+              <span className="text-[8px] sm:text-[10px] font-bold uppercase text-emerald-600">
                 Resolved
               </span>
+
             </div>
 
-            <p className="text-2xl font-bold text-slate-900 mt-3">
+            <p className="text-xl sm:text-2xl font-bold text-slate-900 mt-2 sm:mt-3">
               {resolvedCount}
             </p>
 
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-[9px] sm:text-xs text-slate-500 mt-0.5 truncate">
               Successfully resolved
             </p>
           </div>
 
         </section>
 
-        {/* ALERTS */}
+        {/* =====================================================
+            ALERTS
+        ====================================================== */}
+
         {errorMsg && (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-3.5 flex items-start gap-3">
-            <div className="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center shrink-0">
-              <AlertCircle className="w-4 h-4 text-red-600" />
+          <div className="w-full min-w-0 bg-red-50 border border-red-200 rounded-lg sm:rounded-xl p-2.5 sm:p-3.5 flex items-start gap-2 sm:gap-3">
+
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-red-100 flex items-center justify-center shrink-0">
+              <AlertCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-600" />
             </div>
 
-            <div>
-              <p className="text-xs font-bold text-red-800">
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] sm:text-xs font-bold text-red-800">
                 Unable to complete request
               </p>
 
-              <p className="text-xs text-red-700 mt-0.5">
+              <p className="text-[10px] sm:text-xs text-red-700 mt-0.5 break-words leading-relaxed">
                 {errorMsg}
               </p>
             </div>
@@ -518,25 +543,26 @@ export default function StudentComplaintsPage({ user }) {
             <button
               type="button"
               onClick={() => setErrorMsg('')}
-              className="ml-auto text-red-400 hover:text-red-600"
+              className="ml-auto shrink-0 text-red-400 hover:text-red-600 p-0.5"
             >
-              <X className="w-4 h-4" />
+              <X className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
           </div>
         )}
 
         {successMsg && (
-          <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3.5 flex items-start gap-3">
-            <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center shrink-0">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+          <div className="w-full min-w-0 bg-emerald-50 border border-emerald-200 rounded-lg sm:rounded-xl p-2.5 sm:p-3.5 flex items-start gap-2 sm:gap-3">
+
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-emerald-100 flex items-center justify-center shrink-0">
+              <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600" />
             </div>
 
-            <div>
-              <p className="text-xs font-bold text-emerald-800">
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] sm:text-xs font-bold text-emerald-800">
                 Request successful
               </p>
 
-              <p className="text-xs text-emerald-700 mt-0.5">
+              <p className="text-[10px] sm:text-xs text-emerald-700 mt-0.5 break-words leading-relaxed">
                 {successMsg}
               </p>
             </div>
@@ -544,59 +570,69 @@ export default function StudentComplaintsPage({ user }) {
             <button
               type="button"
               onClick={() => setSuccessMsg('')}
-              className="ml-auto text-emerald-400 hover:text-emerald-600"
+              className="ml-auto shrink-0 text-emerald-400 hover:text-emerald-600 p-0.5"
             >
-              <X className="w-4 h-4" />
+              <X className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
           </div>
         )}
 
-        {/* MAIN CONTENT */}
-        <section className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+        {/* =====================================================
+            MAIN CONTENT
+        ====================================================== */}
 
-          {/* FORM */}
-          <div className="lg:col-span-5 bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+        <section className="w-full min-w-0 grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-5 items-start">
 
-            <div className="px-4 sm:px-5 py-4 border-b border-slate-100 flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center">
-                <FileText className="w-4 h-4 text-blue-700" />
+          {/* ===================================================
+              FORM
+          ==================================================== */}
+
+          <div className="lg:col-span-5 w-full min-w-0 bg-white border border-slate-200 rounded-xl sm:rounded-2xl shadow-sm overflow-hidden">
+
+            <div className="px-3 py-3 sm:px-5 sm:py-4 border-b border-slate-100 flex items-center gap-2.5 sm:gap-3">
+
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
+                <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-700" />
               </div>
 
-              <div>
-                <h2 className="text-sm font-bold text-slate-900">
+              <div className="min-w-0">
+                <h2 className="text-xs sm:text-sm font-bold text-slate-900">
                   Submit a Complaint
                 </h2>
 
-                <p className="text-[11px] text-slate-500 mt-0.5">
+                <p className="text-[9px] sm:text-[11px] text-slate-500 mt-0.5">
                   Tell us about a mess-related issue.
                 </p>
               </div>
+
             </div>
 
             <form
               onSubmit={handleComplaintSubmit}
-              className="p-4 sm:p-5 space-y-4"
+              className="p-3 sm:p-5 space-y-3 sm:space-y-4"
             >
 
               {/* INFO */}
-              <div className="bg-blue-50 border border-blue-100 rounded-xl p-3.5 flex gap-3">
-                <ShieldAlert className="w-4 h-4 text-blue-700 shrink-0 mt-0.5" />
+              <div className="bg-blue-50 border border-blue-100 rounded-lg sm:rounded-xl p-2.5 sm:p-3.5 flex gap-2 sm:gap-3">
 
-                <div>
-                  <p className="text-xs font-semibold text-blue-900">
+                <ShieldAlert className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-700 shrink-0 mt-0.5" />
+
+                <div className="min-w-0">
+                  <p className="text-[10px] sm:text-xs font-semibold text-blue-900">
                     Before submitting
                   </p>
 
-                  <p className="text-[11px] leading-relaxed text-blue-800 mt-0.5">
+                  <p className="text-[9px] sm:text-[11px] leading-relaxed text-blue-800 mt-0.5">
                     Please provide clear and factual information so the
                     mess administration can review your complaint quickly.
                   </p>
                 </div>
+
               </div>
 
               {/* CATEGORY */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                <label className="block text-[10px] sm:text-xs font-semibold text-slate-700 mb-1 sm:mb-1.5">
                   Complaint Category
                   <span className="text-red-500 ml-1">*</span>
                 </label>
@@ -606,7 +642,7 @@ export default function StudentComplaintsPage({ user }) {
                   onChange={(e) =>
                     setComplaintCategory(e.target.value)
                   }
-                  className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-800 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 transition"
+                  className="w-full min-w-0 bg-white border border-slate-300 rounded-lg px-2.5 sm:px-3 py-2 sm:py-2.5 text-xs sm:text-sm text-slate-800 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 transition"
                 >
                   <option value="Food Quality">
                     Food Quality &amp; Preparation
@@ -632,7 +668,7 @@ export default function StudentComplaintsPage({ user }) {
 
               {/* SUBJECT */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                <label className="block text-[10px] sm:text-xs font-semibold text-slate-700 mb-1 sm:mb-1.5">
                   Subject
                   <span className="text-red-500 ml-1">*</span>
                 </label>
@@ -646,13 +682,13 @@ export default function StudentComplaintsPage({ user }) {
                   onChange={(e) =>
                     setComplaintSubject(e.target.value)
                   }
-                  className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 transition"
+                  className="w-full min-w-0 bg-white border border-slate-300 rounded-lg px-2.5 sm:px-3 py-2 sm:py-2.5 text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 transition"
                 />
               </div>
 
               {/* DESCRIPTION */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                <label className="block text-[10px] sm:text-xs font-semibold text-slate-700 mb-1 sm:mb-1.5">
                   Description
                   <span className="text-red-500 ml-1">*</span>
                 </label>
@@ -666,29 +702,30 @@ export default function StudentComplaintsPage({ user }) {
                   onChange={(e) =>
                     setComplaintDesc(e.target.value)
                   }
-                  className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 transition resize-none"
+                  className="w-full min-w-0 bg-white border border-slate-300 rounded-lg px-2.5 sm:px-3 py-2 sm:py-2.5 text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 transition resize-none"
                 />
 
-                <p className="text-[10px] text-slate-400 text-right mt-1">
+                <p className="text-[8px] sm:text-[10px] text-slate-400 text-right mt-1">
                   {complaintDesc.length}/1500
                 </p>
               </div>
 
               {/* PHOTO */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                <label className="block text-[10px] sm:text-xs font-semibold text-slate-700 mb-1 sm:mb-1.5">
                   Photo Evidence
                   <span className="text-slate-400 font-normal ml-1">
                     (Optional)
                   </span>
                 </label>
 
-                <div className="border border-dashed border-slate-300 rounded-xl p-3 bg-slate-50">
+                <div className="border border-dashed border-slate-300 rounded-lg sm:rounded-xl p-2.5 sm:p-3 bg-slate-50">
 
-                  <div className="flex flex-wrap items-center gap-3">
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-3">
 
-                    <label className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-xs font-semibold text-slate-700 cursor-pointer transition">
-                      <Paperclip className="w-3.5 h-3.5" />
+                    <label className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-[10px] sm:text-xs font-semibold text-slate-700 cursor-pointer transition">
+
+                      <Paperclip className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
 
                       {complaintPhoto
                         ? 'Change Photo'
@@ -700,29 +737,32 @@ export default function StudentComplaintsPage({ user }) {
                         className="hidden"
                         onChange={handlePhotoUpload}
                       />
+
                     </label>
 
                     {complaintPhoto && (
                       <>
-                        <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700">
-                          <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span className="inline-flex items-center gap-1 text-[9px] sm:text-[11px] font-semibold text-emerald-700">
+                          <CheckCircle2 className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                           Photo attached
                         </span>
 
                         <button
                           type="button"
                           onClick={() => setComplaintPhoto('')}
-                          className="text-xs font-semibold text-red-600 hover:text-red-700"
+                          className="text-[10px] sm:text-xs font-semibold text-red-600 hover:text-red-700"
                         >
                           Remove
                         </button>
                       </>
                     )}
+
                   </div>
 
-                  <p className="text-[10px] text-slate-400 mt-2">
+                  <p className="text-[8px] sm:text-[10px] text-slate-400 mt-1.5 sm:mt-2">
                     JPG, PNG or WebP • Maximum 2MB
                   </p>
+
                 </div>
               </div>
 
@@ -730,16 +770,16 @@ export default function StudentComplaintsPage({ user }) {
               <button
                 type="submit"
                 disabled={submittingComplaint}
-                className="w-full inline-flex items-center justify-center gap-2 bg-blue-900 hover:bg-blue-800 disabled:bg-blue-900/60 text-white rounded-lg px-4 py-3 text-sm font-semibold transition shadow-sm disabled:cursor-not-allowed"
+                className="w-full min-h-10 sm:min-h-0 inline-flex items-center justify-center gap-1.5 sm:gap-2 bg-blue-900 hover:bg-blue-800 disabled:bg-blue-900/60 text-white rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm font-semibold transition shadow-sm disabled:cursor-not-allowed"
               >
                 {submittingComplaint ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" />
                     Submitting Complaint...
                   </>
                 ) : (
                   <>
-                    <Send className="w-4 h-4" />
+                    <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     Submit Complaint
                   </>
                 )}
@@ -748,53 +788,60 @@ export default function StudentComplaintsPage({ user }) {
             </form>
           </div>
 
-          {/* COMPLAINT HISTORY */}
-          <div className="lg:col-span-7 bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+          {/* ===================================================
+              COMPLAINT HISTORY
+          ==================================================== */}
 
-            <div className="px-4 sm:px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-3">
+          <div className="lg:col-span-7 w-full min-w-0 bg-white border border-slate-200 rounded-xl sm:rounded-2xl shadow-sm overflow-hidden">
 
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center">
-                  <MessageSquareWarning className="w-4 h-4 text-slate-700" />
+            <div className="px-3 py-3 sm:px-5 sm:py-4 border-b border-slate-100 flex items-center justify-between gap-2">
+
+              <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+
+                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
+                  <MessageSquareWarning className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-700" />
                 </div>
 
-                <div>
-                  <h2 className="text-sm font-bold text-slate-900">
+                <div className="min-w-0">
+                  <h2 className="text-xs sm:text-sm font-bold text-slate-900">
                     My Complaints
                   </h2>
 
-                  <p className="text-[11px] text-slate-500 mt-0.5">
+                  <p className="text-[9px] sm:text-[11px] text-slate-500 mt-0.5">
                     Track your submitted complaints.
                   </p>
                 </div>
+
               </div>
 
-              <span className="px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 text-[10px] font-bold">
+              <span className="shrink-0 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full bg-slate-100 text-slate-600 text-[8px] sm:text-[10px] font-bold">
                 {complaints.length} record
                 {complaints.length === 1 ? '' : 's'}
               </span>
+
             </div>
 
-            <div className="p-4 sm:p-5">
+            <div className="p-3 sm:p-5">
 
               {complaints.length === 0 ? (
-                <div className="border border-dashed border-slate-200 rounded-xl bg-slate-50 py-14 px-5 text-center">
+                <div className="border border-dashed border-slate-200 rounded-lg sm:rounded-xl bg-slate-50 py-10 sm:py-14 px-4 sm:px-5 text-center">
 
-                  <div className="w-12 h-12 rounded-xl bg-white border border-slate-200 flex items-center justify-center mx-auto mb-3">
-                    <ShieldCheck className="w-6 h-6 text-slate-300" />
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white border border-slate-200 flex items-center justify-center mx-auto mb-2.5 sm:mb-3">
+                    <ShieldCheck className="w-5 h-5 sm:w-6 sm:h-6 text-slate-300" />
                   </div>
 
-                  <p className="text-sm font-semibold text-slate-700">
+                  <p className="text-xs sm:text-sm font-semibold text-slate-700">
                     No complaints yet
                   </p>
 
-                  <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+                  <p className="text-[10px] sm:text-xs text-slate-500 mt-1 max-w-sm mx-auto leading-relaxed">
                     Your submitted complaints will appear here along
                     with their current status and responses.
                   </p>
+
                 </div>
               ) : (
-                <div className="space-y-3 max-h-[38rem] overflow-y-auto pr-1">
+                <div className="space-y-2.5 sm:space-y-3 max-h-[38rem] overflow-y-auto pr-0.5 sm:pr-1">
 
                   {complaints.map((c) => {
                     const status = getStatusConfig(c.status);
@@ -806,39 +853,46 @@ export default function StudentComplaintsPage({ user }) {
                     return (
                       <article
                         key={c._id}
-                        className="border border-slate-200 rounded-xl p-4 bg-white hover:border-slate-300 hover:shadow-sm transition"
+                        className="w-full min-w-0 border border-slate-200 rounded-lg sm:rounded-xl p-3 sm:p-4 bg-white hover:border-slate-300 hover:shadow-sm transition"
                       >
 
                         {/* TOP */}
-                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2.5 sm:gap-3">
 
-                          <div className="min-w-0">
+                          <div className="min-w-0 flex-1">
 
-                            <div className="flex flex-wrap items-center gap-2">
+                            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
 
-                              <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-slate-100 text-slate-600 text-[10px] font-semibold">
-                                <CategoryIcon className="w-3 h-3" />
-                                {c.category}
+                              <span className="inline-flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md bg-slate-100 text-slate-600 text-[8px] sm:text-[10px] font-semibold max-w-full">
+
+                                <CategoryIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3 shrink-0" />
+
+                                <span className="truncate">
+                                  {c.category}
+                                </span>
+
                               </span>
 
-                              <span className="text-[10px] font-mono text-slate-400">
+                              <span className="text-[8px] sm:text-[10px] font-mono text-slate-400">
                                 #{String(c._id)
                                   .slice(-6)
                                   .toUpperCase()}
                               </span>
+
                             </div>
 
-                            <h3 className="text-sm font-bold text-slate-900 mt-2">
+                            <h3 className="text-xs sm:text-sm font-bold text-slate-900 mt-1.5 sm:mt-2 break-words leading-snug">
                               {c.subject}
                             </h3>
+
                           </div>
 
                           {/* STATUS */}
                           <span
-                            className={`inline-flex items-center gap-1.5 self-start px-2.5 py-1 rounded-full border text-[10px] font-bold whitespace-nowrap ${status.wrapper}`}
+                            className={`inline-flex items-center gap-1 self-start px-2 py-1 sm:px-2.5 sm:py-1 rounded-full border text-[8px] sm:text-[10px] font-bold whitespace-nowrap ${status.wrapper}`}
                           >
                             <StatusIcon
-                              className={`w-3 h-3 ${status.iconClass}`}
+                              className={`w-2.5 h-2.5 sm:w-3 sm:h-3 ${status.iconClass}`}
                             />
 
                             {status.label}
@@ -847,33 +901,37 @@ export default function StudentComplaintsPage({ user }) {
                         </div>
 
                         {/* DESCRIPTION */}
-                        <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mt-3 whitespace-pre-wrap">
+                        <p className="text-[10px] sm:text-sm text-slate-600 leading-relaxed mt-2.5 sm:mt-3 whitespace-pre-wrap break-words">
                           {c.description}
                         </p>
 
                         {/* ADMIN RESPONSE */}
                         {c.adminRemark ? (
-                          <div className="mt-4 bg-blue-50 border border-blue-100 rounded-lg p-3">
-                            <p className="text-[10px] font-bold uppercase tracking-wide text-blue-800">
+                          <div className="mt-3 sm:mt-4 bg-blue-50 border border-blue-100 rounded-lg p-2.5 sm:p-3">
+
+                            <p className="text-[8px] sm:text-[10px] font-bold uppercase tracking-wide text-blue-800">
                               Administration Response
                             </p>
 
-                            <p className="text-xs text-blue-900 leading-relaxed mt-1">
+                            <p className="text-[10px] sm:text-xs text-blue-900 leading-relaxed mt-1 break-words">
                               {c.adminRemark}
                             </p>
+
                           </div>
                         ) : (
-                          <div className="mt-4 bg-slate-50 border border-slate-100 rounded-lg px-3 py-2.5">
-                            <p className="text-[11px] text-slate-500">
+                          <div className="mt-3 sm:mt-4 bg-slate-50 border border-slate-100 rounded-lg px-2.5 sm:px-3 py-2 sm:py-2.5">
+
+                            <p className="text-[9px] sm:text-[11px] text-slate-500 leading-relaxed">
                               Your complaint is awaiting an administrative response.
                             </p>
+
                           </div>
                         )}
 
                         {/* FOOTER */}
-                        <div className="mt-4 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
+                        <div className="mt-3 sm:mt-4 pt-2.5 sm:pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 sm:gap-3">
 
-                          <div className="flex items-center gap-3 text-[10px] text-slate-400">
+                          <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-[8px] sm:text-[10px] text-slate-400">
 
                             <span>
                               Submitted:{' '}
@@ -886,14 +944,14 @@ export default function StudentComplaintsPage({ user }) {
 
                             {c.photoProof && (
                               <span className="inline-flex items-center gap-1 text-blue-600 font-semibold">
-                                <Paperclip className="w-3 h-3" />
+                                <Paperclip className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                                 Evidence attached
                               </span>
                             )}
 
                           </div>
 
-                          <div className="flex items-center gap-2">
+                          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
 
                             {c.photoProof && (
                               <button
@@ -903,9 +961,9 @@ export default function StudentComplaintsPage({ user }) {
                                     c.photoProof
                                   )
                                 }
-                                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-semibold transition"
+                                className="inline-flex items-center justify-center gap-1 sm:gap-1.5 px-2 py-1.5 sm:px-2.5 sm:py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[8px] sm:text-[10px] font-semibold transition"
                               >
-                                <Eye className="w-3 h-3" />
+                                <Eye className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                                 View Photo
                               </button>
                             )}
@@ -918,9 +976,9 @@ export default function StudentComplaintsPage({ user }) {
                                     c._id
                                   )
                                 }
-                                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-red-50 hover:bg-red-100 border border-red-100 text-red-700 text-[10px] font-semibold transition"
+                                className="inline-flex items-center justify-center gap-1 sm:gap-1.5 px-2 py-1.5 sm:px-2.5 sm:py-1.5 rounded-lg bg-red-50 hover:bg-red-100 border border-red-100 text-red-700 text-[8px] sm:text-[10px] font-semibold transition"
                               >
-                                <Trash2 className="w-3 h-3" />
+                                <Trash2 className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                                 Withdraw
                               </button>
                             )}
@@ -940,9 +998,13 @@ export default function StudentComplaintsPage({ user }) {
 
         </section>
 
-        {/* FOOTNOTE */}
-        <div className="flex items-center justify-center gap-2 text-[10px] text-slate-400">
-          <Landmark className="w-3.5 h-3.5" />
+        {/* =====================================================
+            FOOTNOTE
+        ====================================================== */}
+
+        <div className="flex items-center justify-center gap-1.5 sm:gap-2 text-[8px] sm:text-[10px] text-slate-400 px-2 text-center">
+          <Landmark className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
+
           <span>
             Student Mess Grievance &amp; Support System
           </span>
@@ -950,24 +1012,29 @@ export default function StudentComplaintsPage({ user }) {
 
       </main>
 
-      {/* IMAGE PREVIEW */}
+      {/* =====================================================
+          IMAGE PREVIEW
+      ====================================================== */}
+
       {previewModalImg && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-3 sm:p-5"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-2.5 sm:p-5 overflow-y-auto"
           onClick={() => setPreviewModalImg(null)}
         >
+
           <div
-            className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full overflow-hidden"
+            className="bg-white rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-3xl max-h-[95vh] overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
 
-            <div className="px-4 py-3 border-b border-slate-200 flex items-center justify-between">
-              <div>
-                <p className="text-sm font-bold text-slate-900">
+            <div className="px-3 py-2.5 sm:px-4 sm:py-3 border-b border-slate-200 flex items-center justify-between gap-3">
+
+              <div className="min-w-0">
+                <p className="text-xs sm:text-sm font-bold text-slate-900">
                   Complaint Evidence
                 </p>
 
-                <p className="text-[11px] text-slate-500">
+                <p className="text-[9px] sm:text-[11px] text-slate-500 truncate">
                   Attached photographic evidence
                 </p>
               </div>
@@ -975,25 +1042,31 @@ export default function StudentComplaintsPage({ user }) {
               <button
                 type="button"
                 onClick={() => setPreviewModalImg(null)}
-                className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 transition"
+                className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 transition shrink-0"
               >
-                <X className="w-4 h-4" />
+                <X className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </button>
+
             </div>
 
-            <div className="bg-slate-100 p-3 sm:p-5 max-h-[75vh] overflow-auto flex items-center justify-center">
+            <div className="bg-slate-100 p-2.5 sm:p-5 max-h-[80vh] overflow-auto flex items-center justify-center">
+
               <img
                 src={previewModalImg}
                 alt="Complaint evidence"
-                className="max-w-full max-h-[68vh] object-contain rounded-lg"
+                className="max-w-full max-h-[72vh] object-contain rounded-lg"
               />
+
             </div>
 
           </div>
         </div>
       )}
 
-      {/* CONFIRM MODAL */}
+      {/* =====================================================
+          CONFIRM MODAL
+      ====================================================== */}
+
       <ConfirmModal
         isOpen={confirmModal.isOpen}
         title={confirmModal.title}
@@ -1006,6 +1079,7 @@ export default function StudentComplaintsPage({ user }) {
           }))
         }
       />
+
     </div>
   );
 }
