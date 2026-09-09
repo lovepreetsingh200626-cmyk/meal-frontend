@@ -16,9 +16,13 @@ import {
 } from 'lucide-react';
 
 export default function StudentLogger({ user }) {
-  // Use local date instead of UTC date to avoid date shifting in India.
+  // -------------------------------------------------------
+  // LOCAL DATE
+  // -------------------------------------------------------
+
   const getLocalDate = () => {
     const date = new Date();
+
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
@@ -54,6 +58,13 @@ export default function StudentLogger({ user }) {
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
+  /*
+   * This ID is used only as the requested resource identifier.
+   *
+   * IMPORTANT:
+   * The backend must NOT trust this ID.
+   * mealRoutes.js will use req.user.id from the JWT.
+   */
   const userId = user?._id || user?.id || user?.userId;
 
   const hostelKey =
@@ -61,30 +72,45 @@ export default function StudentLogger({ user }) {
     user?.hostelId?.hostelNumber ||
     user?.hostelId;
 
-  /* -------------------------------------------------------
-     HOSTEL MEAL RATES
-  ------------------------------------------------------- */
+  // -------------------------------------------------------
+  // HOSTEL MEAL RATES
+  // -------------------------------------------------------
 
   useEffect(() => {
     if (!hostelKey) return;
 
+    let cancelled = false;
+
     API.get(`/hostels/${hostelKey}`)
       .then((res) => {
-        setHostelData(res.data);
+        if (!cancelled) {
+          setHostelData(res.data);
+        }
       })
       .catch((err) => {
         console.error('Hostel rates fetch error:', err);
+
+        if (!cancelled) {
+          setHostelData(null);
+        }
       });
+
+    return () => {
+      cancelled = true;
+    };
   }, [hostelKey]);
 
-  /* -------------------------------------------------------
-     FETCH SELECTED DATE RECORD
-  ------------------------------------------------------- */
+  // -------------------------------------------------------
+  // FETCH SELECTED DATE RECORD
+  // -------------------------------------------------------
 
   const fetchDateRecord = useCallback(
     async (date) => {
       if (!userId) {
         setLoading(false);
+        setErrorMsg(
+          'Your student session could not be verified. Please log in again.'
+        );
         return;
       }
 
@@ -94,9 +120,17 @@ export default function StudentLogger({ user }) {
       try {
         const { data } = await API.get(`/meals/user/${userId}`);
 
-        const dayRecord = Array.isArray(data)
-          ? data.find((record) => record && record.date === date)
-          : null;
+        const records = Array.isArray(data)
+          ? data
+          : Array.isArray(data?.records)
+          ? data.records
+          : Array.isArray(data?.meals)
+          ? data.meals
+          : [];
+
+        const dayRecord = records.find(
+          (record) => record && record.date === date
+        );
 
         if (dayRecord) {
           const recordMeals = dayRecord.meals || {};
@@ -129,7 +163,7 @@ export default function StudentLogger({ user }) {
 
           setMeals(recordedMeals);
 
-          // Once recorded, meal selection becomes locked.
+          // Once a meal has been recorded, it cannot be changed.
           setLockedMeals(recordedMeals);
 
           setExtras(
@@ -172,17 +206,22 @@ export default function StudentLogger({ user }) {
     fetchDateRecord(selectedDate);
   }, [selectedDate, fetchDateRecord]);
 
-  /* -------------------------------------------------------
-     MEAL RATES
-  ------------------------------------------------------- */
+  // -------------------------------------------------------
+  // MEAL RATES
+  // -------------------------------------------------------
 
-  const bRate = Number(hostelData?.mealCosts?.breakfast) || 37;
-  const lRate = Number(hostelData?.mealCosts?.lunch) || 37;
-  const dRate = Number(hostelData?.mealCosts?.dinner) || 37;
+  const bRate =
+    Number(hostelData?.mealCosts?.breakfast) || 37;
 
-  /* -------------------------------------------------------
-     NOTIFICATIONS
-  ------------------------------------------------------- */
+  const lRate =
+    Number(hostelData?.mealCosts?.lunch) || 37;
+
+  const dRate =
+    Number(hostelData?.mealCosts?.dinner) || 37;
+
+  // -------------------------------------------------------
+  // NOTIFICATIONS
+  // -------------------------------------------------------
 
   const showError = (message) => {
     setErrorMsg(message);
@@ -202,9 +241,9 @@ export default function StudentLogger({ user }) {
     }, 4500);
   };
 
-  /* -------------------------------------------------------
-     MEAL TOGGLE
-  ------------------------------------------------------- */
+  // -------------------------------------------------------
+  // MEAL TOGGLE
+  // -------------------------------------------------------
 
   const handleMealToggle = (mealType) => {
     if (lockedMeals[mealType]) {
@@ -220,9 +259,9 @@ export default function StudentLogger({ user }) {
     }));
   };
 
-  /* -------------------------------------------------------
-     EXTRAS
-  ------------------------------------------------------- */
+  // -------------------------------------------------------
+  // EXTRAS
+  // -------------------------------------------------------
 
   const addExtraItem = () => {
     const name = extraName.trim();
@@ -256,9 +295,9 @@ export default function StudentLogger({ user }) {
     );
   };
 
-  /* -------------------------------------------------------
-     CALCULATE TOTAL
-  ------------------------------------------------------- */
+  // -------------------------------------------------------
+  // CALCULATE TOTAL
+  // -------------------------------------------------------
 
   const calculateLiveTotal = () => {
     let mealCount = 0;
@@ -306,13 +345,14 @@ export default function StudentLogger({ user }) {
     };
   };
 
-  /* -------------------------------------------------------
-     SAVE ENTRY
-  ------------------------------------------------------- */
+  // -------------------------------------------------------
+  // SAVE ENTRY
+  // -------------------------------------------------------
 
   const handleSaveEntry = async () => {
     let activeExtras = [...extras];
 
+    // Add currently typed extra before saving.
     if (
       extraName.trim() &&
       Number(extraCost) > 0
@@ -354,9 +394,15 @@ export default function StudentLogger({ user }) {
     setSuccessMsg('');
 
     try {
+      /*
+       * userId is still sent for compatibility with the current
+       * API, BUT the backend MUST ignore it and use req.user.id.
+       *
+       * role is also sent for compatibility only.
+       * The backend MUST NOT trust it.
+       */
       await API.post('/meals/log', {
         userId,
-
         hostelId:
           typeof user?.hostelId === 'object'
             ? (
@@ -369,13 +415,9 @@ export default function StudentLogger({ user }) {
                 user?.hostelNo ||
                 'BH1'
               ),
-
         date: selectedDate,
-
         meals,
-
         extras: activeExtras,
-
         role: 'student'
       });
 
@@ -396,9 +438,9 @@ export default function StudentLogger({ user }) {
     }
   };
 
-  /* -------------------------------------------------------
-     DATA
-  ------------------------------------------------------- */
+  // -------------------------------------------------------
+  // DATA
+  // -------------------------------------------------------
 
   const liveCalc = calculateLiveTotal();
 
@@ -439,9 +481,9 @@ export default function StudentLogger({ user }) {
       !extraName.trim()
     );
 
-  /* -------------------------------------------------------
-     RENDER
-  ------------------------------------------------------- */
+  // -------------------------------------------------------
+  // RENDER
+  // -------------------------------------------------------
 
   return (
     <div className="min-h-screen w-full min-w-0 overflow-x-hidden bg-slate-100 text-slate-900 pb-6 sm:pb-10">
@@ -807,7 +849,6 @@ export default function StudentLogger({ user }) {
 
               </div>
 
-              {/* EXTRA LIST */}
               {extras.length > 0 ? (
                 <div className="mt-2.5 sm:mt-4 space-y-1.5 sm:space-y-2">
 
@@ -897,7 +938,10 @@ export default function StudentLogger({ user }) {
                     </span>
 
                     <span className="font-semibold text-slate-800">
-                      ₹{liveCalc.total - liveCalc.extrasCost - liveCalc.penaltyCost}
+                      ₹
+                      {liveCalc.total -
+                        liveCalc.extrasCost -
+                        liveCalc.penaltyCost}
                     </span>
                   </div>
 
@@ -1005,7 +1049,6 @@ export default function StudentLogger({ user }) {
 
       </main>
 
-      {/* FOOTER */}
       <footer className="max-w-5xl mx-auto w-full px-3 sm:px-6 text-center text-[8px] sm:text-[10px] text-slate-400">
         Hostel Mess Management System • Student Services
       </footer>
