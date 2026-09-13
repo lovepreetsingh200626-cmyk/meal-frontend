@@ -751,9 +751,10 @@ export default function AdminAuthModal({
               Administrative support:
             </span>
 
-            <span className="font-medium text-slate-700 truncate">
-              adminconnect.org@gmail.com
-            </span>
+            <span className="inline-flex items-center gap-1 font-medium text-black-900">
+                          <Mail className="h-3.5 w-3.5" />
+                          adminconnect.org@gmail.com
+                        </span>
 
           </div>
 

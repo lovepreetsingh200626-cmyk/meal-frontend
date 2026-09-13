@@ -2089,12 +2089,10 @@ export default function StudentAuthModal({
 
             Need administrative assistance?
 
-            <span className="mx-1">•</span>
-
-            <Mail className="inline-block w-3 h-3 mr-0.5 align-middle" />
-
-            adminconnect.org@gmail.com
-
+            <span className="inline-flex items-center gap-1 font-medium text-blue-700">
+              <Mail className="h-3.5 w-3.5" />
+                adminconnect.org@gmail.com
+            </span>
           </div>
 
         </div>
