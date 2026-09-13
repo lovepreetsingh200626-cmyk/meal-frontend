@@ -35,12 +35,6 @@ import {
   Loader2,
   ChevronRight,
   ArrowLeft,
-  Eye,
-  EyeOff,
-  Home,
-  Utensils,
-  CreditCard,
-  UserRound,
 } from 'lucide-react';
 
 const ROLL_NUMBERS = Array.from(
@@ -60,10 +54,6 @@ export default function StudentAuthModal({
   const [successMsg, setSuccessMsg] = useState('');
 
   const [forgotPasswordStep, setForgotPasswordStep] = useState(0);
-
-  const [showPassword, setShowPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -132,10 +122,6 @@ export default function StudentAuthModal({
     setIsRegistering(registering);
     setForgotPasswordStep(0);
     resetMessages();
-
-    setShowPassword(false);
-    setShowNewPassword(false);
-    setShowConfirmPassword(false);
 
     setFormData((prev) => ({
       ...prev,
@@ -241,12 +227,14 @@ export default function StudentAuthModal({
           if (width > MAX_DIMENSION) {
             height =
               height * (MAX_DIMENSION / width);
+
             width = MAX_DIMENSION;
           }
         } else {
           if (height > MAX_DIMENSION) {
             width =
               width * (MAX_DIMENSION / height);
+
             height = MAX_DIMENSION;
           }
         }
@@ -380,16 +368,13 @@ export default function StudentAuthModal({
     setLoading(true);
     resetMessages();
 
-    const studentId =
-      formData.studentId.trim();
-
-    if (!studentId) {
+    if (!formData.studentId.trim()) {
       setError('Student ID is required.');
       setLoading(false);
       return;
     }
 
-    if (studentId.length > 13) {
+    if (formData.studentId.trim().length > 13) {
       setError(
         'Student ID cannot exceed 13 characters.'
       );
@@ -406,71 +391,45 @@ export default function StudentAuthModal({
         setLoading(false);
         return;
       }
-    } else if (!formData.password) {
-      setError('Password is required.');
-      setLoading(false);
-      return;
     }
 
     try {
       if (isRegistering) {
         const payload = {
           name: formData.name.trim(),
-
           fatherName:
             formData.fatherName.trim(),
-
           motherName:
             formData.motherName.trim(),
-
           dob: formData.dob,
-
-          nationality:
-            formData.nationality,
-
-          email:
-            formData.email.trim(),
-
-          studentId,
-
-          rollNo:
-            formData.rollNo,
-
-          hostelNo:
-            formData.hostelNo,
-
-          gender:
-            formData.gender,
-
+          nationality: formData.nationality,
+          email: formData.email.trim(),
+          studentId:
+            formData.studentId.trim(),
+          rollNo: formData.rollNo,
+          hostelNo: formData.hostelNo,
+          gender: formData.gender,
           mobileNo:
             formData.mobileNo.trim(),
-
           university:
             formData.university.trim(),
-
           department:
             formData.department.trim(),
-
           faculty:
             formData.facultyName.trim(),
-
           facultyName:
             formData.facultyName.trim(),
-
           session:
             formData.session.trim(),
-
           domicileState:
             formData.domicileState,
-
           category:
-            formData.domicileState === 'Punjab'
+            formData.domicileState ===
+            'Punjab'
               ? formData.category
               : 'General',
-
           profilePhoto:
             formData.profilePhoto,
-
           password:
             formData.password,
         };
@@ -496,8 +455,10 @@ export default function StudentAuthModal({
         }, 1800);
       } else {
         const loginPayload = {
-          studentId,
-          password: formData.password,
+          studentId:
+            formData.studentId.trim(),
+          password:
+            formData.password,
           role: 'student',
         };
 
@@ -543,7 +504,6 @@ export default function StudentAuthModal({
       setError(
         'Please enter your Student ID.'
       );
-
       setLoading(false);
       return;
     }
@@ -588,7 +548,6 @@ export default function StudentAuthModal({
       setError(
         'Please enter the 6-digit OTP.'
       );
-
       setLoading(false);
       return;
     }
@@ -599,7 +558,6 @@ export default function StudentAuthModal({
       setError(
         'New password should contain at least 6 characters.'
       );
-
       setLoading(false);
       return;
     }
@@ -611,7 +569,6 @@ export default function StudentAuthModal({
       setError(
         'New password and confirmation password do not match.'
       );
-
       setLoading(false);
       return;
     }
@@ -648,59 +605,61 @@ export default function StudentAuthModal({
   };
 
   const isOutsidePunjab =
-    formData.domicileState !== 'Punjab';
+    formData.domicileState !==
+    'Punjab';
 
   /* =========================================================
-     COMMON STYLES
+     COMPACT DESIGN SYSTEM
   ========================================================= */
 
   const inputClass =
-    'mt-1.5 w-full min-w-0 min-h-[46px] rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 hover:border-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-50 disabled:cursor-not-allowed disabled:bg-slate-50';
+    'w-full min-w-0 h-10 sm:h-11 rounded-lg border border-slate-300 bg-white px-3 text-[13px] sm:text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-600 focus:ring-2 focus:ring-blue-100';
 
   const selectClass =
-    'mt-1.5 w-full min-w-0 min-h-[46px] rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-blue-600 focus:ring-4 focus:ring-blue-50 cursor-pointer';
+    'w-full min-w-0 h-10 sm:h-11 rounded-lg border border-slate-300 bg-white px-3 text-[13px] sm:text-sm text-slate-900 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100 cursor-pointer';
 
   const disabledSelectClass =
-    'mt-1.5 w-full min-w-0 min-h-[46px] rounded-xl border border-slate-200 bg-slate-100 px-3 py-2.5 text-sm text-slate-400 outline-none cursor-not-allowed';
+    'w-full min-w-0 h-10 sm:h-11 rounded-lg border border-slate-200 bg-slate-100 px-3 text-[13px] sm:text-sm text-slate-400 outline-none cursor-not-allowed';
 
   return (
-    <div className="min-h-screen w-full overflow-x-hidden bg-[#eef4fb] text-slate-900">
+    <div className="min-h-screen w-full overflow-x-hidden bg-slate-100 text-slate-900 font-sans flex flex-col">
 
       {/* =====================================================
-          TOP BRAND BAR
+          COMPACT TOP BAR
       ===================================================== */}
 
-      <div className="bg-[#07152d] text-slate-300">
+      <div className="bg-slate-950 text-slate-300 shrink-0">
 
-        <div className="mx-auto flex min-h-[56px] w-full max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto w-full px-3 sm:px-5 lg:px-6 py-1.5 sm:py-2">
 
-          <div className="flex min-w-0 items-center gap-2.5">
+          <div className="flex items-center justify-between gap-2">
 
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-500/10 ring-1 ring-blue-400/20">
-              <Landmark className="h-4 w-4 text-blue-300" />
-            </div>
+            <div className="flex items-center gap-1.5 min-w-0">
 
-            <div className="min-w-0">
+              <span className="relative flex w-1.5 h-1.5 sm:w-2 sm:h-2 shrink-0">
+                <span className="absolute inset-0 rounded-full bg-emerald-400 opacity-60 animate-ping" />
+                <span className="relative rounded-full bg-emerald-400 w-full h-full" />
+              </span>
 
-              <p className="truncate text-[10px] font-bold uppercase tracking-[0.12em] text-slate-200 sm:text-xs">
-                GNDU Hostel Services
-              </p>
-
-              <p className="hidden text-[9px] text-slate-500 sm:block">
-                Mess Records & Fee Payment Portal
-              </p>
+              <span className="truncate text-[8px] sm:text-[10px] font-bold uppercase tracking-wider">
+                Mess Records & Fee Portal
+              </span>
 
             </div>
 
-          </div>
+            <div className="flex items-center gap-1.5 text-[8px] sm:text-[10px] text-slate-400 shrink-0">
 
-          <div className="flex shrink-0 items-center gap-2">
+              <ShieldCheck className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-emerald-400" />
 
-            <span className="h-2 w-2 rounded-full bg-emerald-400" />
+              <span className="hidden xs:inline sm:inline">
+                Secure Student Access
+              </span>
 
-            <span className="hidden text-[9px] font-semibold uppercase tracking-wider text-slate-400 sm:inline">
-              Student Access
-            </span>
+              <span className="xs:hidden sm:hidden">
+                Secure
+              </span>
+
+            </div>
 
           </div>
 
@@ -708,67 +667,70 @@ export default function StudentAuthModal({
 
       </div>
 
+
       {/* =====================================================
-          HEADER
+          COMPACT HEADER
       ===================================================== */}
 
-      <header className="border-b border-slate-200 bg-white">
+      <header className="bg-white border-b border-slate-200 shrink-0">
 
-        <div className="mx-auto w-full max-w-7xl px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
+        <div className="max-w-6xl mx-auto w-full px-3 sm:px-5 lg:px-6 py-2.5 sm:py-3.5">
 
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center justify-between gap-2.5">
 
-            {/* Brand */}
+            {/* BRAND */}
 
-            <div className="flex min-w-0 items-center gap-3">
+            <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
 
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-700 shadow-sm sm:h-14 sm:w-14">
-                <Home className="h-5 w-5 text-white sm:h-7 sm:w-7" />
+              <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl bg-blue-700 flex items-center justify-center shrink-0 shadow-sm">
+
+                <Landmark className="w-4.5 h-4.5 sm:w-5.5 sm:h-5.5 text-white" />
+
               </div>
 
               <div className="min-w-0">
 
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex items-center gap-1.5 min-w-0">
 
-                  <h1 className="text-lg font-bold tracking-tight text-slate-950 sm:text-2xl">
-                    Hostel & Mess Services
+                  <h1 className="text-[13px] sm:text-lg lg:text-xl font-bold text-slate-950 truncate leading-tight">
+                    Hostel & Mess Management
                   </h1>
 
-                  <span className="rounded-full border border-blue-100 bg-blue-50 px-2 py-0.5 text-[8px] font-bold uppercase tracking-wide text-blue-700 sm:text-[9px]">
-                    Student Portal
+                  <span className="hidden xs:inline-flex shrink-0 rounded-md bg-blue-50 border border-blue-100 px-1.5 py-0.5 text-[7px] sm:text-[9px] font-bold uppercase text-blue-700">
+                    Student
                   </span>
 
                 </div>
 
-                <p className="mt-1 text-[10px] leading-relaxed text-slate-500 sm:text-xs">
-                  Your personal hostel, mess and fee management account
+                <p className="text-[8px] sm:text-[10px] lg:text-xs text-slate-500 mt-0.5 truncate">
+                  Student services & mess records
                 </p>
 
               </div>
 
             </div>
 
-            {/* Admin switch */}
+
+            {/* ADMIN SWITCH */}
 
             <button
               type="button"
               onClick={onSwitchToAdmin}
-              className="
-                inline-flex min-h-10 w-full items-center
-                justify-center gap-2 rounded-xl
-                border border-slate-300 bg-white
-                px-4 py-2.5 text-xs font-bold
-                text-slate-700 shadow-sm transition
-                hover:border-blue-300 hover:bg-blue-50
-                hover:text-blue-700
-                focus:outline-none focus:ring-4
-                focus:ring-blue-50
-                sm:w-auto sm:text-sm
-              "
+              className="shrink-0 inline-flex items-center justify-center gap-1 sm:gap-1.5 rounded-lg border border-slate-300 bg-white px-2 sm:px-3 py-2 sm:py-2.5 text-[9px] sm:text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:border-blue-300 hover:text-blue-700 active:bg-slate-100 transition focus:outline-none focus:ring-2 focus:ring-blue-100"
             >
-              <ShieldCheck className="h-4 w-4 shrink-0" />
-              <span>Admin / Warden Login</span>
-              <ChevronRight className="h-4 w-4 shrink-0" />
+
+              <ShieldCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+
+              <span className="hidden sm:inline">
+                Admin / Warden
+              </span>
+
+              <span className="sm:hidden">
+                Admin
+              </span>
+
+              <ChevronRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
+
             </button>
 
           </div>
@@ -777,128 +739,85 @@ export default function StudentAuthModal({
 
       </header>
 
+
       {/* =====================================================
           MAIN
       ===================================================== */}
 
-      <main className="w-full px-3 py-5 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
+      <main className="flex-1 w-full min-w-0 px-2.5 sm:px-4 lg:px-6 py-3 sm:py-5 lg:py-7">
 
-        <div className="mx-auto w-full max-w-5xl">
-
-          {/* =================================================
-              DESKTOP / MOBILE INTRO
-          ================================================= */}
-
-          <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
-
-            <InfoCard
-              icon={Home}
-              title="Hostel Services"
-              text="Manage your residential details"
-            />
-
-            <InfoCard
-              icon={Utensils}
-              title="Mess Records"
-              text="View meals and daily records"
-            />
-
-            <InfoCard
-              icon={CreditCard}
-              title="Fee Payments"
-              text="Track your mess fee status"
-            />
-
-          </div>
+        <div className="w-full max-w-3xl mx-auto min-w-0">
 
           {/* =================================================
-              AUTH CARD
+              MAIN AUTH CARD
           ================================================= */}
 
-          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_15px_45px_rgba(15,23,42,0.08)]">
+          <div className="bg-white border border-slate-200 rounded-xl sm:rounded-2xl shadow-[0_6px_25px_rgba(15,23,42,0.06)] overflow-hidden">
 
             {/* =================================================
                 CARD HEADER
             ================================================= */}
 
-            <div className="border-b border-slate-200 bg-slate-50 px-4 py-5 sm:px-7 sm:py-6">
+            <div className="px-3.5 sm:px-5 lg:px-6 py-3 sm:py-4 border-b border-slate-200 bg-slate-50">
 
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center justify-between gap-2.5">
 
-                <div className="flex min-w-0 items-start gap-3">
+                <div className="flex items-center gap-2 min-w-0">
 
                   <div
-                    className={`
-                      flex h-11 w-11 shrink-0 items-center
-                      justify-center rounded-xl
-                      ${
-                        forgotPasswordStep > 0
-                          ? 'bg-amber-100 text-amber-700'
-                          : 'bg-blue-100 text-blue-700'
-                      }
-                    `}
+                    className={`w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center shrink-0 ${
+                      forgotPasswordStep > 0
+                        ? 'bg-amber-100 text-amber-700'
+                        : 'bg-blue-100 text-blue-700'
+                    }`}
                   >
+
                     {forgotPasswordStep > 0 ? (
-                      <KeyRound className="h-5 w-5" />
+                      <KeyRound className="w-4 h-4" />
                     ) : isRegistering ? (
-                      <UserPlus className="h-5 w-5" />
+                      <UserPlus className="w-4 h-4" />
                     ) : (
-                      <LogIn className="h-5 w-5" />
+                      <LogIn className="w-4 h-4" />
                     )}
+
                   </div>
 
                   <div className="min-w-0">
 
-                    <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-blue-700 sm:text-[10px]">
-                      {forgotPasswordStep > 0
-                        ? 'Account Recovery'
-                        : isRegistering
-                        ? 'New Student Registration'
-                        : 'Student Authentication'}
-                    </p>
-
-                    <h2 className="mt-1 text-xl font-bold tracking-tight text-slate-950 sm:text-2xl">
-
+                    <h2 className="text-[13px] sm:text-base font-bold text-slate-950 leading-tight truncate">
                       {forgotPasswordStep > 0
                         ? 'Reset Password'
                         : isRegistering
                         ? 'Create Student Account'
-                        : 'Welcome Back'}
-
+                        : 'Student Sign In'}
                     </h2>
 
-                    <p className="mt-1 text-[10px] leading-relaxed text-slate-500 sm:text-xs">
-
+                    <p className="text-[9px] sm:text-[11px] text-slate-500 mt-0.5 truncate">
                       {forgotPasswordStep > 0
-                        ? 'Recover access to your student account'
+                        ? 'Recover your student account'
                         : isRegistering
-                        ? 'Register your academic and hostel information'
-                        : 'Sign in to access your hostel and mess dashboard'}
-
+                        ? 'Register your academic and hostel details'
+                        : 'Access your hostel and mess account'}
                     </p>
 
                   </div>
 
                 </div>
 
-                {/* Mode switch */}
+
+                {/* MODE SWITCH */}
 
                 {forgotPasswordStep === 0 && (
-
-                  <div className="grid w-full grid-cols-2 gap-1 rounded-xl bg-slate-200 p-1 sm:w-auto">
+                  <div className="flex shrink-0 rounded-lg bg-slate-200 p-0.5">
 
                     <button
                       type="button"
                       onClick={() => switchMode(false)}
-                      className={`
-                        min-h-10 rounded-lg px-4 py-2
-                        text-xs font-bold transition
-                        ${
-                          !isRegistering
-                            ? 'bg-white text-blue-700 shadow-sm'
-                            : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
-                        }
-                      `}
+                      className={`px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-md text-[9px] sm:text-xs font-bold transition ${
+                        !isRegistering
+                          ? 'bg-white text-blue-700 shadow-sm'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
                     >
                       Sign In
                     </button>
@@ -906,88 +825,96 @@ export default function StudentAuthModal({
                     <button
                       type="button"
                       onClick={() => switchMode(true)}
-                      className={`
-                        min-h-10 rounded-lg px-4 py-2
-                        text-xs font-bold transition
-                        ${
-                          isRegistering
-                            ? 'bg-white text-blue-700 shadow-sm'
-                            : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
-                        }
-                      `}
+                      className={`px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-md text-[9px] sm:text-xs font-bold transition ${
+                        isRegistering
+                          ? 'bg-white text-blue-700 shadow-sm'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
                     >
                       Register
                     </button>
 
                   </div>
-
                 )}
 
               </div>
 
             </div>
 
+
             {/* =================================================
-                FORM CONTENT
+                FORM AREA
             ================================================= */}
 
-            <div className="p-4 sm:p-7">
+            <div className="p-3 sm:p-5 lg:p-6 min-w-0">
 
               {/* ERROR */}
 
               {error && (
-                <MessageBox
-                  type="error"
-                  message={error}
-                />
+                <div className="mb-3 sm:mb-4 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-2.5 sm:px-3 py-2.5 text-red-800">
+
+                  <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+
+                  <div className="min-w-0">
+
+                    <p className="text-[11px] sm:text-xs font-bold">
+                      Unable to continue
+                    </p>
+
+                    <p className="text-[10px] sm:text-xs text-red-700 mt-0.5 leading-relaxed break-words">
+                      {error}
+                    </p>
+
+                  </div>
+
+                </div>
               )}
+
 
               {/* SUCCESS */}
 
               {successMsg && (
-                <MessageBox
-                  type="success"
-                  message={successMsg}
-                />
+                <div className="mb-3 sm:mb-4 flex items-start gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 sm:px-3 py-2.5 text-emerald-800">
+
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+
+                  <div className="min-w-0">
+
+                    <p className="text-[11px] sm:text-xs font-bold">
+                      Success
+                    </p>
+
+                    <p className="text-[10px] sm:text-xs text-emerald-700 mt-0.5 leading-relaxed break-words">
+                      {successMsg}
+                    </p>
+
+                  </div>
+
+                </div>
               )}
+
 
               {/* =================================================
                   FORGOT PASSWORD STEP 1
               ================================================= */}
 
               {forgotPasswordStep === 1 && (
-
                 <form
                   onSubmit={handleRequestOTP}
-                  className="mx-auto max-w-xl space-y-5"
+                  className="space-y-3 sm:space-y-4"
                 >
 
-                  <div className="rounded-xl border border-blue-100 bg-blue-50 p-4">
-
-                    <div className="flex items-start gap-3">
-
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white text-blue-700">
-                        <Mail className="h-4 w-4" />
-                      </div>
-
-                      <div>
-                        <h3 className="text-sm font-bold text-slate-900">
-                          Password recovery
-                        </h3>
-
-                        <p className="mt-1 text-xs leading-relaxed text-slate-600">
-                          Enter your Student ID. A verification OTP will be sent to your registered email address.
-                        </p>
-                      </div>
-
-                    </div>
-
-                  </div>
+                  <InfoBox
+                    icon={<Mail className="w-4 h-4" />}
+                    title="Password recovery"
+                    text="Enter your Student ID. A verification OTP will be sent to your registered email address."
+                    tone="blue"
+                  />
 
                   <div>
 
                     <FieldLabel
-                      icon={<IdCard className="h-4 w-4" />}
+                      icon={<IdCard className="w-3.5 h-3.5" />}
                       label="Student ID"
                       required
                     />
@@ -996,13 +923,13 @@ export default function StudentAuthModal({
                       required
                       type="text"
                       maxLength={13}
-                      autoComplete="username"
                       placeholder="Enter your Student ID"
                       value={resetData.studentId}
                       onChange={(e) =>
                         setResetData({
                           ...resetData,
-                          studentId: e.target.value,
+                          studentId:
+                            e.target.value,
                         })
                       }
                       className={`${inputClass} uppercase`}
@@ -1010,7 +937,7 @@ export default function StudentAuthModal({
 
                   </div>
 
-                  <div className="flex flex-col-reverse gap-3 sm:flex-row">
+                  <div className="grid grid-cols-2 gap-2.5 pt-1">
 
                     <button
                       type="button"
@@ -1018,73 +945,57 @@ export default function StudentAuthModal({
                         setForgotPasswordStep(0);
                         resetMessages();
                       }}
-                      className="min-h-11 flex-1 inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50"
+                      className="h-10 sm:h-11 inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 text-xs sm:text-sm font-semibold text-slate-700 hover:bg-slate-50 transition"
                     >
-                      <ArrowLeft className="h-4 w-4" />
+                      <ArrowLeft className="w-3.5 h-3.5" />
                       Back
                     </button>
 
                     <button
                       type="submit"
                       disabled={loading}
-                      className="min-h-11 flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60"
+                      className="h-10 sm:h-11 inline-flex items-center justify-center gap-1.5 rounded-lg bg-blue-700 px-3 text-xs sm:text-sm font-semibold text-white hover:bg-blue-800 transition disabled:opacity-60"
                     >
-
                       {loading ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <Loader2 className="w-4 h-4 animate-spin" />
                       ) : (
-                        <Mail className="h-4 w-4" />
+                        <Mail className="w-4 h-4" />
                       )}
 
-                      {loading
-                        ? 'Sending OTP...'
-                        : 'Send OTP'}
-
+                      <span>
+                        {loading
+                          ? 'Sending...'
+                          : 'Send OTP'}
+                      </span>
                     </button>
 
                   </div>
 
                 </form>
-
               )}
+
 
               {/* =================================================
                   FORGOT PASSWORD STEP 2
               ================================================= */}
 
               {forgotPasswordStep === 2 && (
-
                 <form
                   onSubmit={handleResetPassword}
-                  className="mx-auto max-w-xl space-y-5"
+                  className="space-y-3 sm:space-y-4"
                 >
 
-                  <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
-
-                    <div className="flex items-start gap-3">
-
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white text-amber-700">
-                        <KeyRound className="h-4 w-4" />
-                      </div>
-
-                      <div>
-                        <h3 className="text-sm font-bold text-slate-900">
-                          Verify and create a new password
-                        </h3>
-
-                        <p className="mt-1 text-xs leading-relaxed text-slate-600">
-                          Enter the OTP received on your registered email address.
-                        </p>
-                      </div>
-
-                    </div>
-
-                  </div>
+                  <InfoBox
+                    icon={<KeyRound className="w-4 h-4" />}
+                    title="Verify and create a new password"
+                    text="Enter the OTP received on your registered email address."
+                    tone="amber"
+                  />
 
                   <div>
 
                     <FieldLabel
-                      icon={<Key className="h-4 w-4" />}
+                      icon={<Key className="w-3.5 h-3.5" />}
                       label="Verification OTP"
                       required
                     />
@@ -1104,58 +1015,82 @@ export default function StudentAuthModal({
                             .slice(0, 6),
                         })
                       }
-                      className={`${inputClass} text-center font-bold tracking-[0.4em]`}
+                      className={`${inputClass} text-center tracking-[0.4em] font-bold`}
                     />
 
                   </div>
 
-                  <PasswordInput
-                    label="New Password"
-                    icon={<Lock className="h-4 w-4" />}
-                    value={resetData.newPassword}
-                    onChange={(value) =>
-                      setResetData({
-                        ...resetData,
-                        newPassword: value,
-                      })
-                    }
-                    placeholder="Enter new password"
-                    show={showNewPassword}
-                    setShow={setShowNewPassword}
-                    inputClass={inputClass}
-                  />
+                  <div>
 
-                  <PasswordInput
-                    label="Confirm Password"
-                    icon={<ShieldCheck className="h-4 w-4" />}
-                    value={resetData.confirmPassword}
-                    onChange={(value) =>
-                      setResetData({
-                        ...resetData,
-                        confirmPassword: value,
-                      })
-                    }
-                    placeholder="Re-enter new password"
-                    show={showConfirmPassword}
-                    setShow={setShowConfirmPassword}
-                    inputClass={inputClass}
-                  />
+                    <FieldLabel
+                      icon={<Lock className="w-3.5 h-3.5" />}
+                      label="New Password"
+                      required
+                    />
+
+                    <input
+                      required
+                      type="password"
+                      placeholder="Enter new password"
+                      value={
+                        resetData.newPassword
+                      }
+                      onChange={(e) =>
+                        setResetData({
+                          ...resetData,
+                          newPassword:
+                            e.target.value,
+                        })
+                      }
+                      className={inputClass}
+                    />
+
+                  </div>
+
+                  <div>
+
+                    <FieldLabel
+                      icon={<ShieldCheck className="w-3.5 h-3.5" />}
+                      label="Confirm Password"
+                      required
+                    />
+
+                    <input
+                      required
+                      type="password"
+                      placeholder="Re-enter new password"
+                      value={
+                        resetData.confirmPassword
+                      }
+                      onChange={(e) =>
+                        setResetData({
+                          ...resetData,
+                          confirmPassword:
+                            e.target.value,
+                        })
+                      }
+                      className={inputClass}
+                    />
+
+                  </div>
 
                   <button
                     type="submit"
                     disabled={loading}
-                    className="min-h-12 w-full inline-flex items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 py-3 text-sm font-bold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="w-full h-10 sm:h-11 inline-flex items-center justify-center gap-2 rounded-lg bg-blue-700 px-4 text-xs sm:text-sm font-semibold text-white hover:bg-blue-800 transition disabled:opacity-60"
                   >
 
                     {loading ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <Loader2 className="w-4 h-4 animate-spin" />
                     ) : (
-                      <CheckCircle2 className="h-4 w-4" />
+                      <CheckCircle2 className="w-4 h-4" />
                     )}
 
-                    {loading
-                      ? 'Updating Password...'
-                      : 'Reset Password'}
+                    <span>
+                      {loading
+                        ? 'Updating Password...'
+                        : 'Reset Password'}
+                    </span>
 
                   </button>
 
@@ -1165,28 +1100,27 @@ export default function StudentAuthModal({
                       setForgotPasswordStep(1);
                       resetMessages();
                     }}
-                    className="w-full text-xs font-bold text-blue-700 hover:text-blue-800"
+                    className="w-full text-[10px] sm:text-xs font-semibold text-blue-700 hover:text-blue-800"
                   >
                     Use a different Student ID
                   </button>
 
                 </form>
-
               )}
+
 
               {/* =================================================
                   LOGIN / REGISTER
               ================================================= */}
 
               {forgotPasswordStep === 0 && (
-
                 <form
                   onSubmit={handleSubmit}
-                  className="space-y-5"
+                  className="space-y-3 sm:space-y-4"
                 >
 
                   {/* =================================================
-                      REGISTRATION SECTION
+                      REGISTRATION
                   ================================================= */}
 
                   {isRegistering && (
@@ -1194,44 +1128,46 @@ export default function StudentAuthModal({
 
                       {/* PROFILE PHOTO */}
 
-                      <div className="rounded-xl border border-blue-100 bg-blue-50/60 p-4">
+                      <div className="rounded-lg border border-slate-200 bg-slate-50 p-2.5 sm:p-3">
 
-                        <div className="flex flex-col items-center gap-4 sm:flex-row">
+                        <div className="flex items-center gap-3">
 
-                          <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-slate-300 bg-white shadow-sm">
+                          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-lg bg-slate-200 border border-slate-300 overflow-hidden flex items-center justify-center shrink-0">
 
                             {formData.profilePhoto ? (
                               <img
-                                src={formData.profilePhoto}
+                                src={
+                                  formData.profilePhoto
+                                }
                                 alt="Profile preview"
-                                className="h-full w-full object-cover"
+                                className="w-full h-full object-cover"
                               />
                             ) : (
-                              <UserRound className="h-10 w-10 text-slate-300" />
+                              <User className="w-7 h-7 text-slate-400" />
                             )}
 
                           </div>
 
-                          <div className="min-w-0 flex-1 text-center sm:text-left">
+                          <div className="min-w-0 flex-1">
 
-                            <p className="text-sm font-bold text-slate-900">
+                            <p className="text-xs sm:text-sm font-bold text-slate-800">
                               Profile Photograph
-                              <span className="ml-1 text-red-500">
+                              <span className="text-red-500 ml-1">
                                 *
                               </span>
                             </p>
 
-                            <p className="mt-1 text-xs leading-relaxed text-slate-500">
-                              Upload a clear photograph for your student profile.
+                            <p className="text-[9px] sm:text-[10px] text-slate-500 mt-0.5 leading-relaxed">
+                              Clear photograph for your student profile.
                             </p>
 
-                            <label className="mt-3 inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-blue-800">
+                            <label className="mt-1.5 inline-flex items-center gap-1.5 rounded-md bg-blue-700 px-2.5 py-1.5 text-[10px] sm:text-xs font-semibold text-white hover:bg-blue-800 cursor-pointer transition">
 
-                              <ImagePlus className="h-4 w-4" />
+                              <ImagePlus className="w-3.5 h-3.5" />
 
                               {formData.profilePhoto
-                                ? 'Replace Photo'
-                                : 'Upload Photo'}
+                                ? 'Replace'
+                                : 'Upload'}
 
                               <input
                                 type="file"
@@ -1240,14 +1176,12 @@ export default function StudentAuthModal({
                                   !formData.profilePhoto
                                 }
                                 className="hidden"
-                                onChange={handlePhotoUpload}
+                                onChange={
+                                  handlePhotoUpload
+                                }
                               />
 
                             </label>
-
-                            <p className="mt-2 text-[10px] text-slate-400">
-                              Image is automatically resized before upload.
-                            </p>
 
                           </div>
 
@@ -1255,44 +1189,45 @@ export default function StudentAuthModal({
 
                       </div>
 
+
                       {/* PERSONAL */}
 
                       <FormSection
-                        icon={<User className="h-4 w-4" />}
+                        icon={
+                          <User className="w-3.5 h-3.5" />
+                        }
                         title="Personal Information"
-                        description="Enter your basic personal details."
+                        description="Basic personal details"
                       >
 
-                        <div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 
-                          <FieldLabel
-                            icon={<User className="h-4 w-4" />}
-                            label="Full Name"
-                            required
-                          />
-
-                          <input
-                            required
-                            type="text"
-                            placeholder="Enter your full name"
-                            value={formData.name}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                name: e.target.value,
-                              })
-                            }
-                            className={inputClass}
-                          />
-
-                        </div>
-
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-
-                          <div>
-
+                          <FieldBlock>
                             <FieldLabel
-                              icon={<User className="h-4 w-4" />}
+                              icon={<User className="w-3.5 h-3.5" />}
+                              label="Full Name"
+                              required
+                            />
+
+                            <input
+                              required
+                              type="text"
+                              placeholder="Enter full name"
+                              value={formData.name}
+                              onChange={(e) =>
+                                setFormData({
+                                  ...formData,
+                                  name: e.target.value,
+                                })
+                              }
+                              className={inputClass}
+                            />
+                          </FieldBlock>
+
+
+                          <FieldBlock>
+                            <FieldLabel
+                              icon={<User className="w-3.5 h-3.5" />}
                               label="Father's Name"
                               required
                             />
@@ -1301,22 +1236,24 @@ export default function StudentAuthModal({
                               required
                               type="text"
                               placeholder="Father's name"
-                              value={formData.fatherName}
+                              value={
+                                formData.fatherName
+                              }
                               onChange={(e) =>
                                 setFormData({
                                   ...formData,
-                                  fatherName: e.target.value,
+                                  fatherName:
+                                    e.target.value,
                                 })
                               }
                               className={inputClass}
                             />
+                          </FieldBlock>
 
-                          </div>
 
-                          <div>
-
+                          <FieldBlock>
                             <FieldLabel
-                              icon={<Users className="h-4 w-4" />}
+                              icon={<Users className="w-3.5 h-3.5" />}
                               label="Mother's Name"
                               required
                             />
@@ -1325,26 +1262,24 @@ export default function StudentAuthModal({
                               required
                               type="text"
                               placeholder="Mother's name"
-                              value={formData.motherName}
+                              value={
+                                formData.motherName
+                              }
                               onChange={(e) =>
                                 setFormData({
                                   ...formData,
-                                  motherName: e.target.value,
+                                  motherName:
+                                    e.target.value,
                                 })
                               }
                               className={inputClass}
                             />
+                          </FieldBlock>
 
-                          </div>
 
-                        </div>
-
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-
-                          <div>
-
+                          <FieldBlock>
                             <FieldLabel
-                              icon={<Calendar className="h-4 w-4" />}
+                              icon={<Calendar className="w-3.5 h-3.5" />}
                               label="Date of Birth"
                               required
                             />
@@ -1362,24 +1297,26 @@ export default function StudentAuthModal({
                               }
                               className={inputClass}
                             />
+                          </FieldBlock>
 
-                          </div>
 
-                          <div>
-
+                          <FieldBlock>
                             <FieldLabel
-                              icon={<Globe className="h-4 w-4" />}
+                              icon={<Globe className="w-3.5 h-3.5" />}
                               label="Nationality"
                               required
                             />
 
                             <select
                               required
-                              value={formData.nationality}
+                              value={
+                                formData.nationality
+                              }
                               onChange={(e) =>
                                 setFormData({
                                   ...formData,
-                                  nationality: e.target.value,
+                                  nationality:
+                                    e.target.value,
                                 })
                               }
                               className={selectClass}
@@ -1398,280 +1335,302 @@ export default function StudentAuthModal({
 
                             </select>
 
-                          </div>
+                          </FieldBlock>
 
-                        </div>
 
-                        <div>
+                          <FieldBlock>
+                            <FieldLabel
+                              icon={<Mail className="w-3.5 h-3.5" />}
+                              label="Email Address"
+                              required
+                            />
 
-                          <FieldLabel
-                            icon={<Mail className="h-4 w-4" />}
-                            label="Email Address"
-                            required
-                          />
+                            <input
+                              required
+                              type="email"
+                              placeholder="yourname@example.com"
+                              value={formData.email}
+                              onChange={(e) =>
+                                setFormData({
+                                  ...formData,
+                                  email: e.target.value,
+                                })
+                              }
+                              className={inputClass}
+                            />
 
-                          <input
-                            required
-                            type="email"
-                            placeholder="yourname@example.com"
-                            value={formData.email}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                email: e.target.value,
-                              })
-                            }
-                            className={inputClass}
-                          />
-
-                          <p className="mt-1.5 flex items-start gap-1.5 text-[10px] leading-relaxed text-slate-500">
-                            <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-blue-500" />
-                            Your registered email is used for password recovery.
-                          </p>
+                          </FieldBlock>
 
                         </div>
 
                       </FormSection>
+
 
                       {/* STUDENT ID */}
 
-                      <FormSection
-                        icon={<IdCard className="h-4 w-4" />}
-                        title="Student Identity"
-                        description="Your Student ID will be used to sign in."
-                      >
+                      <div>
 
-                        <div>
+                        <FieldLabel
+                          icon={<IdCard className="w-3.5 h-3.5" />}
+                          label="Student ID"
+                          required
+                        />
 
-                          <FieldLabel
-                            icon={<IdCard className="h-4 w-4" />}
-                            label="Student ID"
-                            required
-                          />
+                        <input
+                          required
+                          type="text"
+                          maxLength={13}
+                          placeholder="e.g. 2024ECE102"
+                          value={formData.studentId}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              studentId:
+                                e.target.value,
+                            })
+                          }
+                          className={`${inputClass} uppercase`}
+                        />
 
-                          <input
-                            required
-                            type="text"
-                            maxLength={13}
-                            placeholder="e.g. 2024ECE102"
-                            value={formData.studentId}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                studentId: e.target.value,
-                              })
-                            }
-                            className={`${inputClass} uppercase`}
-                          />
+                        <p className="text-[9px] sm:text-[10px] text-slate-500 mt-1">
+                          This ID will be used to sign in.
+                        </p>
 
-                        </div>
+                      </div>
 
-                      </FormSection>
 
                       {/* ACADEMIC */}
 
                       <FormSection
-                        icon={<GraduationCap className="h-4 w-4" />}
+                        icon={
+                          <GraduationCap className="w-3.5 h-3.5" />
+                        }
                         title="Academic Information"
-                        description="Select your faculty, department, programme and session."
+                        description="Faculty, department, programme and session"
                       >
 
-                        <div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 
-                          <FieldLabel
-                            icon={<Compass className="h-4 w-4" />}
-                            label="Faculty"
-                            required
-                          />
+                          <FieldBlock>
+                            <FieldLabel
+                              icon={<Compass className="w-3.5 h-3.5" />}
+                              label="Faculty"
+                              required
+                            />
 
-                          <select
-                            required
-                            value={formData.facultyId}
-                            onChange={(e) =>
-                              handleFacultyChange(
-                                e.target.value
-                              )
-                            }
-                            className={selectClass}
-                          >
+                            <select
+                              required
+                              value={
+                                formData.facultyId
+                              }
+                              onChange={(e) =>
+                                handleFacultyChange(
+                                  e.target.value
+                                )
+                              }
+                              className={selectClass}
+                            >
 
-                            <option value="">
-                              Select faculty
-                            </option>
+                              <option value="">
+                                Select faculty
+                              </option>
 
-                            {UNIVERSITY_FACULTIES_HIERARCHY.map(
-                              (faculty) => (
-                                <option
-                                  key={faculty.id}
-                                  value={faculty.id}
-                                >
-                                  {faculty.name}
-                                </option>
-                              )
-                            )}
+                              {UNIVERSITY_FACULTIES_HIERARCHY.map(
+                                (faculty) => (
+                                  <option
+                                    key={faculty.id}
+                                    value={faculty.id}
+                                  >
+                                    {faculty.name}
+                                  </option>
+                                )
+                              )}
 
-                          </select>
+                            </select>
 
-                        </div>
+                          </FieldBlock>
 
-                        <div>
 
-                          <FieldLabel
-                            icon={<BookOpen className="h-4 w-4" />}
-                            label="Department"
-                            required
-                          />
+                          <FieldBlock>
+                            <FieldLabel
+                              icon={<BookOpen className="w-3.5 h-3.5" />}
+                              label="Department"
+                              required
+                            />
 
-                          <select
-                            required
-                            disabled={!formData.facultyId}
-                            value={formData.department}
-                            onChange={(e) =>
-                              handleDepartmentChange(
-                                e.target.value
-                              )
-                            }
-                            className={
-                              !formData.facultyId
-                                ? disabledSelectClass
-                                : selectClass
-                            }
-                          >
+                            <select
+                              required
+                              disabled={
+                                !formData.facultyId
+                              }
+                              value={
+                                formData.department
+                              }
+                              onChange={(e) =>
+                                handleDepartmentChange(
+                                  e.target.value
+                                )
+                              }
+                              className={
+                                !formData.facultyId
+                                  ? disabledSelectClass
+                                  : selectClass
+                              }
+                            >
 
-                            <option value="">
-                              {formData.facultyId
-                                ? 'Select department'
-                                : 'Select faculty first'}
-                            </option>
+                              <option value="">
+                                {formData.facultyId
+                                  ? 'Select department'
+                                  : 'Select faculty first'}
+                              </option>
 
-                            {availableDepartments.map(
-                              (department, index) => (
-                                <option
-                                  key={`${department.name}-${index}`}
-                                  value={department.name}
-                                >
-                                  {department.name}
-                                </option>
-                              )
-                            )}
+                              {availableDepartments.map(
+                                (
+                                  department,
+                                  index
+                                ) => (
+                                  <option
+                                    key={`${department.name}-${index}`}
+                                    value={
+                                      department.name
+                                    }
+                                  >
+                                    {department.name}
+                                  </option>
+                                )
+                              )}
 
-                          </select>
+                            </select>
 
-                        </div>
+                          </FieldBlock>
 
-                        <div>
 
-                          <FieldLabel
-                            icon={<GraduationCap className="h-4 w-4" />}
-                            label="Degree / Programme"
-                            required
-                          />
+                          <FieldBlock>
+                            <FieldLabel
+                              icon={<GraduationCap className="w-3.5 h-3.5" />}
+                              label="Degree / Programme"
+                              required
+                            />
 
-                          <select
-                            required
-                            disabled={!formData.department}
-                            value={formData.university}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                university:
-                                  e.target.value,
-                              })
-                            }
-                            className={
-                              !formData.department
-                                ? disabledSelectClass
-                                : selectClass
-                            }
-                          >
+                            <select
+                              required
+                              disabled={
+                                !formData.department
+                              }
+                              value={
+                                formData.university
+                              }
+                              onChange={(e) =>
+                                setFormData({
+                                  ...formData,
+                                  university:
+                                    e.target.value,
+                                })
+                              }
+                              className={
+                                !formData.department
+                                  ? disabledSelectClass
+                                  : selectClass
+                              }
+                            >
 
-                            <option value="">
-                              {formData.department
-                                ? 'Select degree programme'
-                                : 'Select department first'}
-                            </option>
+                              <option value="">
+                                {formData.department
+                                  ? 'Select degree programme'
+                                  : 'Select department first'}
+                              </option>
 
-                            {availableProgrammes.map(
-                              (course) => (
-                                <option
-                                  key={course.id}
-                                  value={course.name}
-                                >
-                                  [{course.id}] {course.name}
-                                </option>
-                              )
-                            )}
+                              {availableProgrammes.map(
+                                (course) => (
+                                  <option
+                                    key={course.id}
+                                    value={course.name}
+                                  >
+                                    [{course.id}] {course.name}
+                                  </option>
+                                )
+                              )}
 
-                          </select>
+                            </select>
 
-                        </div>
+                          </FieldBlock>
 
-                        <div>
 
-                          <FieldLabel
-                            icon={<Layers className="h-4 w-4" />}
-                            label="Academic Session"
-                            required
-                          />
+                          <FieldBlock>
+                            <FieldLabel
+                              icon={<Layers className="w-3.5 h-3.5" />}
+                              label="Academic Session"
+                              required
+                            />
 
-                          <select
-                            required
-                            value={formData.session}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                session: e.target.value,
-                              })
-                            }
-                            className={selectClass}
-                          >
+                            <select
+                              required
+                              value={
+                                formData.session
+                              }
+                              onChange={(e) =>
+                                setFormData({
+                                  ...formData,
+                                  session:
+                                    e.target.value,
+                                })
+                              }
+                              className={selectClass}
+                            >
 
-                            <option value="">
-                              Select academic session
-                            </option>
+                              <option value="">
+                                Select academic session
+                              </option>
 
-                            {ACADEMIC_SESSIONS.map(
-                              (session) => (
-                                <option
-                                  key={session.id}
-                                  value={session.id}
-                                >
-                                  {session.name}
-                                </option>
-                              )
-                            )}
+                              {ACADEMIC_SESSIONS.map(
+                                (session) => (
+                                  <option
+                                    key={session.id}
+                                    value={session.id}
+                                  >
+                                    {session.name}
+                                  </option>
+                                )
+                              )}
 
-                          </select>
+                            </select>
+
+                          </FieldBlock>
 
                         </div>
 
                       </FormSection>
 
+
                       {/* RESIDENTIAL */}
 
                       <FormSection
-                        icon={<Building2 className="h-4 w-4" />}
+                        icon={
+                          <Building2 className="w-3.5 h-3.5" />
+                        }
                         title="Residential Information"
-                        description="Enter your hostel and campus details."
+                        description="Hostel, roll number and student details"
                       >
 
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 
-                          <div>
-
+                          <FieldBlock>
                             <FieldLabel
-                              icon={<Hash className="h-4 w-4" />}
+                              icon={<Hash className="w-3.5 h-3.5" />}
                               label="Roll Number"
                               required
                             />
 
                             <select
                               required
-                              value={formData.rollNo}
+                              value={
+                                formData.rollNo
+                              }
                               onChange={(e) =>
                                 setFormData({
                                   ...formData,
-                                  rollNo: e.target.value,
+                                  rollNo:
+                                    e.target.value,
                                 })
                               }
                               className={selectClass}
@@ -1694,43 +1653,54 @@ export default function StudentAuthModal({
 
                             </select>
 
-                          </div>
+                          </FieldBlock>
 
-                          <div>
 
+                          <FieldBlock>
                             <FieldLabel
-                              icon={<Building2 className="h-4 w-4" />}
+                              icon={<Building2 className="w-3.5 h-3.5" />}
                               label="Hostel"
                               required
                             />
 
                             <select
                               required
-                              value={formData.hostelNo}
+                              value={
+                                formData.hostelNo
+                              }
                               onChange={(e) =>
                                 setFormData({
                                   ...formData,
-                                  hostelNo: e.target.value,
+                                  hostelNo:
+                                    e.target.value,
                                 })
                               }
                               className={selectClass}
                             >
 
                               {hostels.length > 0 ? (
-                                hostels.map((hostel) => (
-                                  <option
-                                    key={hostel._id}
-                                    value={hostel.hostelNumber}
-                                  >
-                                    {hostel.hostelNumber}
+                                hostels.map(
+                                  (hostel) => (
+                                    <option
+                                      key={
+                                        hostel._id
+                                      }
+                                      value={
+                                        hostel.hostelNumber
+                                      }
+                                    >
+                                      {
+                                        hostel.hostelNumber
+                                      }
 
-                                    {hostel.type
-                                      ? ` (${String(
-                                          hostel.type
-                                        ).toUpperCase()})`
-                                      : ''}
-                                  </option>
-                                ))
+                                      {hostel.type
+                                        ? ` (${String(
+                                            hostel.type
+                                          ).toUpperCase()})`
+                                        : ''}
+                                    </option>
+                                  )
+                                )
                               ) : (
                                 <>
                                   <option value="BH1">
@@ -1745,27 +1715,25 @@ export default function StudentAuthModal({
 
                             </select>
 
-                          </div>
+                          </FieldBlock>
 
-                        </div>
 
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-
-                          <div>
-
+                          <FieldBlock>
                             <FieldLabel
-                              icon={<User className="h-4 w-4" />}
+                              icon={<User className="w-3.5 h-3.5" />}
                               label="Gender"
                               required
                             />
 
                             <select
-                              required
-                              value={formData.gender}
+                              value={
+                                formData.gender
+                              }
                               onChange={(e) =>
                                 setFormData({
                                   ...formData,
-                                  gender: e.target.value,
+                                  gender:
+                                    e.target.value,
                                 })
                               }
                               className={selectClass}
@@ -1785,12 +1753,12 @@ export default function StudentAuthModal({
 
                             </select>
 
-                          </div>
+                          </FieldBlock>
 
-                          <div>
 
+                          <FieldBlock>
                             <FieldLabel
-                              icon={<Phone className="h-4 w-4" />}
+                              icon={<Phone className="w-3.5 h-3.5" />}
                               label="Mobile Number"
                               required
                             />
@@ -1801,36 +1769,42 @@ export default function StudentAuthModal({
                               inputMode="numeric"
                               maxLength={10}
                               placeholder="10-digit number"
-                              value={formData.mobileNo}
+                              value={
+                                formData.mobileNo
+                              }
                               onChange={(e) =>
                                 setFormData({
                                   ...formData,
                                   mobileNo:
                                     e.target.value
-                                      .replace(/\D/g, '')
-                                      .slice(0, 10),
+                                      .replace(
+                                        /\D/g,
+                                        ''
+                                      )
+                                      .slice(
+                                        0,
+                                        10
+                                      ),
                                 })
                               }
                               className={inputClass}
                             />
 
-                          </div>
+                          </FieldBlock>
 
-                        </div>
 
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-
-                          <div>
-
+                          <FieldBlock>
                             <FieldLabel
-                              icon={<MapPin className="h-4 w-4" />}
+                              icon={<MapPin className="w-3.5 h-3.5" />}
                               label="Domicile State"
                               required
                             />
 
                             <select
                               required
-                              value={formData.domicileState}
+                              value={
+                                formData.domicileState
+                              }
                               onChange={(e) =>
                                 handleStateChange(
                                   e.target.value
@@ -1852,20 +1826,23 @@ export default function StudentAuthModal({
 
                             </select>
 
-                          </div>
+                          </FieldBlock>
 
-                          <div>
 
+                          <FieldBlock>
                             <FieldLabel
-                              icon={<ShieldCheck className="h-4 w-4" />}
+                              icon={<ShieldCheck className="w-3.5 h-3.5" />}
                               label="Category"
                               required
                             />
 
                             <select
-                              required
-                              disabled={isOutsidePunjab}
-                              value={formData.category}
+                              value={
+                                formData.category
+                              }
+                              disabled={
+                                isOutsidePunjab
+                              }
                               onChange={(e) =>
                                 setFormData({
                                   ...formData,
@@ -1902,13 +1879,13 @@ export default function StudentAuthModal({
 
                             </select>
 
-                            <p className="mt-1.5 text-[10px] leading-relaxed text-slate-500">
+                            <p className="text-[9px] sm:text-[10px] text-slate-500 mt-1 leading-relaxed">
                               {isOutsidePunjab
-                                ? 'Category is set to General for out-of-state domicile.'
-                                : 'Select the applicable category.'}
+                                ? 'General for out-of-state domicile.'
+                                : 'Select applicable category.'}
                             </p>
 
-                          </div>
+                          </FieldBlock>
 
                         </div>
 
@@ -1917,16 +1894,16 @@ export default function StudentAuthModal({
                     </>
                   )}
 
+
                   {/* =================================================
                       LOGIN STUDENT ID
                   ================================================= */}
 
                   {!isRegistering && (
-
-                    <div className="mx-auto w-full max-w-xl">
+                    <div>
 
                       <FieldLabel
-                        icon={<IdCard className="h-4 w-4" />}
+                        icon={<IdCard className="w-3.5 h-3.5" />}
                         label="Student ID"
                         required
                       />
@@ -1935,9 +1912,10 @@ export default function StudentAuthModal({
                         required
                         type="text"
                         maxLength={13}
-                        autoComplete="username"
                         placeholder="Enter your Student ID"
-                        value={formData.studentId}
+                        value={
+                          formData.studentId
+                        }
                         onChange={(e) =>
                           setFormData({
                             ...formData,
@@ -1945,172 +1923,156 @@ export default function StudentAuthModal({
                               e.target.value,
                           })
                         }
-                        disabled={loading}
                         className={`${inputClass} uppercase`}
                       />
 
-                      <p className="mt-1.5 text-[10px] leading-relaxed text-slate-500">
-                        Enter the Student ID you used during registration.
+                      <p className="text-[9px] sm:text-[10px] text-slate-500 mt-1">
+                        Enter the Student ID used during registration.
                       </p>
 
                     </div>
-
                   )}
+
 
                   {/* =================================================
                       PASSWORD
                   ================================================= */}
 
-                  <div className="mx-auto w-full max-w-xl">
+                  <div>
 
-                    <PasswordInput
+                    <FieldLabel
+                      icon={<Lock className="w-3.5 h-3.5" />}
                       label="Password"
-                      icon={<Lock className="h-4 w-4" />}
-                      value={formData.password}
-                      onChange={(value) =>
-                        setFormData({
-                          ...formData,
-                          password: value,
-                        })
-                      }
+                      required
+                    />
+
+                    <input
+                      required
+                      type="password"
                       placeholder={
                         isRegistering
                           ? 'Create your password'
                           : 'Enter your password'
                       }
-                      show={showPassword}
-                      setShow={setShowPassword}
-                      inputClass={inputClass}
+                      value={
+                        formData.password
+                      }
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          password:
+                            e.target.value,
+                        })
+                      }
+                      className={inputClass}
                     />
 
                     {isRegistering && (
-                      <p className="mt-1.5 text-[10px] text-slate-500">
-                        Password should contain at least 6 characters.
+                      <p className="text-[9px] sm:text-[10px] text-slate-500 mt-1">
+                        Minimum 6 characters.
                       </p>
                     )}
 
                   </div>
 
-                  {/* =================================================
-                      FORGOT PASSWORD
-                  ================================================= */}
+
+                  {/* FORGOT PASSWORD */}
 
                   {!isRegistering && (
-
-                    <div className="mx-auto flex w-full max-w-xl justify-end">
+                    <div className="flex justify-end -mt-1">
 
                       <button
                         type="button"
                         onClick={() => {
-                          setForgotPasswordStep(1);
+                          setForgotPasswordStep(
+                            1
+                          );
                           resetMessages();
                         }}
-                        className="inline-flex min-h-10 items-center gap-1.5 rounded-lg px-2 text-xs font-bold text-blue-700 transition hover:bg-blue-50 hover:text-blue-800"
+                        className="inline-flex items-center gap-1 text-[10px] sm:text-xs font-semibold text-blue-700 hover:text-blue-800"
                       >
-                        <HelpCircle className="h-3.5 w-3.5" />
+
+                        <HelpCircle className="w-3.5 h-3.5" />
+
                         Forgot password?
+
                       </button>
 
                     </div>
-
                   )}
+
 
                   {/* =================================================
                       SUBMIT
                   ================================================= */}
 
-                  <div className="mx-auto w-full max-w-xl pt-1">
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full h-10 sm:h-11 inline-flex items-center justify-center gap-2 rounded-lg bg-blue-700 hover:bg-blue-800 active:bg-blue-900 text-white px-4 text-xs sm:text-sm font-bold transition disabled:opacity-60 disabled:cursor-not-allowed shadow-sm"
+                  >
 
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="
-                        group flex min-h-[51px] w-full
-                        items-center justify-center gap-2
-                        rounded-xl bg-blue-700 px-4 py-3
-                        text-sm font-bold text-white
-                        shadow-sm transition-all
-                        hover:bg-blue-800 hover:shadow-md
-                        focus:outline-none
-                        focus:ring-4 focus:ring-blue-100
-                        disabled:cursor-not-allowed
-                        disabled:opacity-60
-                      "
-                    >
+                    {loading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin shrink-0" />
 
-                      {loading ? (
-                        <>
-                          <Loader2 className="h-4 w-4 animate-spin" />
+                        <span>
+                          {isRegistering
+                            ? 'Creating account...'
+                            : 'Signing in...'}
+                        </span>
+                      </>
+                    ) : isRegistering ? (
+                      <>
+                        <UserPlus className="w-4 h-4 shrink-0" />
 
-                          <span>
-                            {isRegistering
-                              ? 'Creating account...'
-                              : 'Signing in...'}
-                          </span>
-                        </>
-                      ) : isRegistering ? (
-                        <>
-                          <UserPlus className="h-4 w-4" />
+                        <span>
+                          Create Student Account
+                        </span>
 
-                          <span>
-                            Create Student Account
-                          </span>
+                        <ChevronRight className="hidden sm:block w-4 h-4 opacity-70" />
+                      </>
+                    ) : (
+                      <>
+                        <LogIn className="w-4 h-4 shrink-0" />
 
-                          <ChevronRight className="hidden h-4 w-4 opacity-60 sm:block" />
-                        </>
-                      ) : (
-                        <>
-                          <LogIn className="h-4 w-4" />
+                        <span>
+                          Sign In
+                        </span>
 
-                          <span>
-                            Sign In to Student Portal
-                          </span>
+                        <ChevronRight className="hidden sm:block w-4 h-4 opacity-70" />
+                      </>
+                    )}
 
-                          <ChevronRight className="hidden h-4 w-4 opacity-60 sm:block" />
-                        </>
-                      )}
-
-                    </button>
-
-                  </div>
+                  </button>
 
                 </form>
-
               )}
 
             </div>
+
 
             {/* =================================================
                 CARD FOOTER
             ================================================= */}
 
-            <div className="border-t border-slate-200 bg-slate-50 px-4 py-4 sm:px-7">
+            <div className="border-t border-slate-200 bg-slate-50 px-3 sm:px-5 py-2.5 sm:py-3">
 
-              <div className="flex flex-col items-center justify-between gap-3 sm:flex-row">
+              <div className="flex items-center justify-between gap-2 text-[8px] sm:text-[10px] text-slate-500">
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 min-w-0">
 
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50">
-                    <ShieldCheck className="h-4 w-4 text-emerald-600" />
-                  </div>
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
 
-                  <div>
-
-                    <p className="text-[10px] font-bold text-slate-700">
-                      Secure student account
-                    </p>
-
-                    <p className="text-[9px] text-slate-400">
-                      Your account is protected
-                    </p>
-
-                  </div>
+                  <span className="truncate">
+                    Secure student account
+                  </span>
 
                 </div>
 
-                <div className="text-center text-[9px] text-slate-400 sm:text-right">
-                  Hostel • Mess • Payments • Complaints
-                </div>
+                <span className="hidden sm:block truncate text-right">
+                  Mess records & payment portal
+                </span>
 
               </div>
 
@@ -2118,24 +2080,20 @@ export default function StudentAuthModal({
 
           </div>
 
+
           {/* =================================================
               HELP
           ================================================= */}
 
-          <div className="mt-4 text-center text-[10px] leading-relaxed text-slate-500 sm:mt-5 sm:text-xs">
+          <div className="text-center mt-2.5 sm:mt-3 px-2 text-[9px] sm:text-[10px] text-slate-500 leading-relaxed">
 
             Need administrative assistance?
 
-            <span className="mx-1 font-semibold text-slate-700">
-              Contact Hostel Administration
-            </span>
+            <span className="mx-1">•</span>
 
-            <span className="mx-1 hidden sm:inline">•</span>
+            <Mail className="inline-block w-3 h-3 mr-0.5 align-middle" />
 
-            <span className="inline-flex items-center gap-1 font-medium text-blue-700">
-              <Mail className="h-3.5 w-3.5" />
-              adminconnect.org@gmail.com
-            </span>
+            adminconnect.org@gmail.com
 
           </div>
 
@@ -2143,21 +2101,16 @@ export default function StudentAuthModal({
 
       </main>
 
+
       {/* =====================================================
           FOOTER
       ===================================================== */}
 
-      <footer className="border-t border-slate-200 bg-white">
+      <footer className="border-t border-slate-200 bg-white shrink-0">
 
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-3 sm:flex-row sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto px-3 sm:px-5 py-2 sm:py-2.5 text-center text-[8px] sm:text-[9px] text-slate-400">
 
-          <p className="text-[8px] uppercase tracking-[0.12em] text-slate-400 sm:text-[9px]">
-            GNDU Hostel Services
-          </p>
-
-          <p className="text-[8px] text-slate-400 sm:text-[9px]">
-            2026 © ALL RIGHTS RESERVED.
-          </p>
+          2026 @ALL RIGHTS RESERVED.
 
         </div>
 
@@ -2167,9 +2120,10 @@ export default function StudentAuthModal({
   );
 }
 
-/* =============================================================
+
+/* =========================================================
    FIELD LABEL
-============================================================= */
+========================================================= */
 
 function FieldLabel({
   icon,
@@ -2177,9 +2131,9 @@ function FieldLabel({
   required = false,
 }) {
   return (
-    <label className="flex min-w-0 items-center gap-2 text-xs font-bold text-slate-700">
+    <label className="flex items-center gap-1.5 mb-1 text-[10px] sm:text-xs font-bold text-slate-700 min-w-0">
 
-      <span className="shrink-0 text-blue-600">
+      <span className="text-blue-600 shrink-0">
         {icon}
       </span>
 
@@ -2188,7 +2142,7 @@ function FieldLabel({
       </span>
 
       {required && (
-        <span className="shrink-0 text-red-500">
+        <span className="text-red-500 shrink-0">
           *
         </span>
       )}
@@ -2197,9 +2151,23 @@ function FieldLabel({
   );
 }
 
-/* =============================================================
+
+/* =========================================================
+   FIELD BLOCK
+========================================================= */
+
+function FieldBlock({ children }) {
+  return (
+    <div className="min-w-0">
+      {children}
+    </div>
+  );
+}
+
+
+/* =========================================================
    FORM SECTION
-============================================================= */
+========================================================= */
 
 function FormSection({
   icon,
@@ -2208,24 +2176,24 @@ function FormSection({
   children,
 }) {
   return (
-    <section className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+    <section className="rounded-lg sm:rounded-xl border border-slate-200 bg-white overflow-hidden min-w-0">
 
-      <div className="border-b border-slate-200 bg-slate-50 px-4 py-3.5">
+      <div className="bg-slate-50 border-b border-slate-200 px-3 py-2 sm:px-3.5 sm:py-2.5">
 
-        <div className="flex items-start gap-3">
+        <div className="flex items-center gap-2 min-w-0">
 
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-700">
+          <div className="w-7 h-7 rounded-md bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
             {icon}
           </div>
 
           <div className="min-w-0">
 
-            <h3 className="text-sm font-bold text-slate-900">
+            <h3 className="text-[11px] sm:text-xs font-bold text-slate-900 truncate">
               {title}
             </h3>
 
             {description && (
-              <p className="mt-0.5 text-[10px] leading-relaxed text-slate-500 sm:text-xs">
+              <p className="text-[8px] sm:text-[9px] text-slate-500 mt-0.5 truncate">
                 {description}
               </p>
             )}
@@ -2236,7 +2204,7 @@ function FormSection({
 
       </div>
 
-      <div className="space-y-4 p-4">
+      <div className="p-3 sm:p-3.5 space-y-3 min-w-0">
         {children}
       </div>
 
@@ -2244,182 +2212,56 @@ function FormSection({
   );
 }
 
-/* =============================================================
-   PASSWORD INPUT
-============================================================= */
 
-function PasswordInput({
-  label,
+/* =========================================================
+   INFORMATION BOX
+========================================================= */
+
+function InfoBox({
   icon,
-  value,
-  onChange,
-  placeholder,
-  show,
-  setShow,
-  inputClass,
+  title,
+  text,
+  tone = 'blue',
 }) {
-  return (
-    <div>
-
-      <FieldLabel
-        icon={icon}
-        label={label}
-        required
-      />
-
-      <div className="relative">
-
-        <input
-          required
-          type={show ? 'text' : 'password'}
-          autoComplete="new-password"
-          placeholder={placeholder}
-          value={value}
-          onChange={(e) =>
-            onChange(e.target.value)
-          }
-          className={`${inputClass} pr-12`}
-        />
-
-        <button
-          type="button"
-          onClick={() =>
-            setShow((prev) => !prev)
-          }
-          className="
-            absolute right-1.5 top-1/2
-            flex h-9 w-9 -translate-y-1/2
-            items-center justify-center
-            rounded-lg text-slate-400
-            transition hover:bg-slate-100
-            hover:text-slate-700
-            focus:outline-none
-            focus:ring-2 focus:ring-blue-200
-          "
-          aria-label={
-            show
-              ? `Hide ${label}`
-              : `Show ${label}`
-          }
-        >
-          {show ? (
-            <EyeOff className="h-4 w-4" />
-          ) : (
-            <Eye className="h-4 w-4" />
-          )}
-        </button>
-
-      </div>
-
-    </div>
-  );
-}
-
-/* =============================================================
-   MESSAGE BOX
-============================================================= */
-
-function MessageBox({
-  type,
-  message,
-}) {
-  const isError = type === 'error';
+  const styles =
+    tone === 'amber'
+      ? {
+          wrapper:
+            'border-amber-200 bg-amber-50',
+          icon:
+            'bg-white text-amber-700',
+        }
+      : {
+          wrapper:
+            'border-blue-100 bg-blue-50',
+          icon:
+            'bg-white text-blue-700',
+        };
 
   return (
     <div
-      className={`
-        mb-5 flex items-start gap-3 rounded-xl
-        border p-3.5
-        ${
-          isError
-            ? 'border-red-200 bg-red-50'
-            : 'border-emerald-200 bg-emerald-50'
-        }
-      `}
+      className={`rounded-lg border p-2.5 sm:p-3 ${styles.wrapper}`}
     >
 
-      <div
-        className={`
-          flex h-8 w-8 shrink-0 items-center
-          justify-center rounded-lg
-          ${
-            isError
-              ? 'bg-red-100'
-              : 'bg-emerald-100'
-          }
-        `}
-      >
+      <div className="flex items-center gap-2.5">
 
-        {isError ? (
-          <AlertCircle className="h-4 w-4 text-red-600" />
-        ) : (
-          <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-        )}
-
-      </div>
-
-      <div className="min-w-0">
-
-        <p
-          className={`
-            text-xs font-bold
-            ${
-              isError
-                ? 'text-red-800'
-                : 'text-emerald-800'
-            }
-          `}
+        <div
+          className={`w-8 h-8 rounded-md flex items-center justify-center shrink-0 ${styles.icon}`}
         >
-          {isError
-            ? 'Unable to continue'
-            : 'Success'}
-        </p>
+          {icon}
+        </div>
 
-        <p
-          className={`
-            mt-1 break-words
-            text-xs leading-relaxed
-            ${
-              isError
-                ? 'text-red-700'
-                : 'text-emerald-700'
-            }
-          `}
-        >
-          {message}
-        </p>
+        <div className="min-w-0">
 
-      </div>
+          <h3 className="text-[11px] sm:text-xs font-bold text-slate-900">
+            {title}
+          </h3>
 
-    </div>
-  );
-}
+          <p className="text-[9px] sm:text-[10px] text-slate-600 leading-relaxed mt-0.5">
+            {text}
+          </p>
 
-/* =============================================================
-   INFO CARD
-============================================================= */
-
-function InfoCard({
-  icon: Icon,
-  title,
-  text,
-}) {
-  return (
-    <div className="flex min-w-0 items-center gap-3 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
-
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50">
-        <Icon className="h-4 w-4 text-blue-700" />
-      </div>
-
-      <div className="min-w-0">
-
-        <p className="truncate text-xs font-bold text-slate-800">
-          {title}
-        </p>
-
-        <p className="mt-0.5 truncate text-[9px] text-slate-400">
-          {text}
-        </p>
+        </div>
 
       </div>
 
