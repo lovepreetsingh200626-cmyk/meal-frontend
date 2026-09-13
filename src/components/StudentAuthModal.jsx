@@ -35,6 +35,12 @@ import {
   Loader2,
   ChevronRight,
   ArrowLeft,
+  Eye,
+  EyeOff,
+  Home,
+  Utensils,
+  CreditCard,
+  UserRound,
 } from 'lucide-react';
 
 const ROLL_NUMBERS = Array.from(
@@ -54,6 +60,10 @@ export default function StudentAuthModal({
   const [successMsg, setSuccessMsg] = useState('');
 
   const [forgotPasswordStep, setForgotPasswordStep] = useState(0);
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -88,9 +98,9 @@ export default function StudentAuthModal({
     confirmPassword: '',
   });
 
-  /* ---------------------------------------------------------
+  /* =========================================================
      LOAD HOSTELS
-  --------------------------------------------------------- */
+  ========================================================= */
 
   useEffect(() => {
     API.get('/hostels')
@@ -109,9 +119,9 @@ export default function StudentAuthModal({
       });
   }, []);
 
-  /* ---------------------------------------------------------
+  /* =========================================================
      HELPERS
-  --------------------------------------------------------- */
+  ========================================================= */
 
   const resetMessages = () => {
     setError('');
@@ -123,15 +133,19 @@ export default function StudentAuthModal({
     setForgotPasswordStep(0);
     resetMessages();
 
+    setShowPassword(false);
+    setShowNewPassword(false);
+    setShowConfirmPassword(false);
+
     setFormData((prev) => ({
       ...prev,
       password: '',
     }));
   };
 
-  /* ---------------------------------------------------------
+  /* =========================================================
      FACULTY
-  --------------------------------------------------------- */
+  ========================================================= */
 
   const handleFacultyChange = (facultyId) => {
     const selectedFaculty =
@@ -154,9 +168,9 @@ export default function StudentAuthModal({
     }));
   };
 
-  /* ---------------------------------------------------------
+  /* =========================================================
      DEPARTMENT
-  --------------------------------------------------------- */
+  ========================================================= */
 
   const handleDepartmentChange = (departmentName) => {
     const matchedDepartment =
@@ -177,9 +191,9 @@ export default function StudentAuthModal({
     }));
   };
 
-  /* ---------------------------------------------------------
+  /* =========================================================
      STATE
-  --------------------------------------------------------- */
+  ========================================================= */
 
   const handleStateChange = (selectedState) => {
     setFormData((prev) => ({
@@ -192,9 +206,9 @@ export default function StudentAuthModal({
     }));
   };
 
-  /* ---------------------------------------------------------
+  /* =========================================================
      PHOTO UPLOAD
-  --------------------------------------------------------- */
+  ========================================================= */
 
   const handlePhotoUpload = (event) => {
     const file = event.target.files?.[0];
@@ -273,9 +287,9 @@ export default function StudentAuthModal({
     reader.readAsDataURL(file);
   };
 
-  /* ---------------------------------------------------------
+  /* =========================================================
      REGISTRATION VALIDATION
-  --------------------------------------------------------- */
+  ========================================================= */
 
   const validateRegistration = () => {
     const studentId =
@@ -356,9 +370,9 @@ export default function StudentAuthModal({
     return '';
   };
 
-  /* ---------------------------------------------------------
+  /* =========================================================
      LOGIN / REGISTER
-  --------------------------------------------------------- */
+  ========================================================= */
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -366,13 +380,16 @@ export default function StudentAuthModal({
     setLoading(true);
     resetMessages();
 
-    if (!formData.studentId.trim()) {
+    const studentId =
+      formData.studentId.trim();
+
+    if (!studentId) {
       setError('Student ID is required.');
       setLoading(false);
       return;
     }
 
-    if (formData.studentId.trim().length > 13) {
+    if (studentId.length > 13) {
       setError(
         'Student ID cannot exceed 13 characters.'
       );
@@ -389,45 +406,71 @@ export default function StudentAuthModal({
         setLoading(false);
         return;
       }
+    } else if (!formData.password) {
+      setError('Password is required.');
+      setLoading(false);
+      return;
     }
 
     try {
       if (isRegistering) {
         const payload = {
           name: formData.name.trim(),
+
           fatherName:
             formData.fatherName.trim(),
+
           motherName:
             formData.motherName.trim(),
+
           dob: formData.dob,
-          nationality: formData.nationality,
-          email: formData.email.trim(),
-          studentId:
-            formData.studentId.trim(),
-          rollNo: formData.rollNo,
-          hostelNo: formData.hostelNo,
-          gender: formData.gender,
+
+          nationality:
+            formData.nationality,
+
+          email:
+            formData.email.trim(),
+
+          studentId,
+
+          rollNo:
+            formData.rollNo,
+
+          hostelNo:
+            formData.hostelNo,
+
+          gender:
+            formData.gender,
+
           mobileNo:
             formData.mobileNo.trim(),
+
           university:
             formData.university.trim(),
+
           department:
             formData.department.trim(),
+
           faculty:
             formData.facultyName.trim(),
+
           facultyName:
             formData.facultyName.trim(),
+
           session:
             formData.session.trim(),
+
           domicileState:
             formData.domicileState,
+
           category:
-            formData.domicileState ===
-            'Punjab'
+            formData.domicileState === 'Punjab'
               ? formData.category
               : 'General',
+
           profilePhoto:
             formData.profilePhoto,
+
           password:
             formData.password,
         };
@@ -453,10 +496,8 @@ export default function StudentAuthModal({
         }, 1800);
       } else {
         const loginPayload = {
-          studentId:
-            formData.studentId.trim(),
-          password:
-            formData.password,
+          studentId,
+          password: formData.password,
           role: 'student',
         };
 
@@ -488,9 +529,9 @@ export default function StudentAuthModal({
     }
   };
 
-  /* ---------------------------------------------------------
+  /* =========================================================
      FORGOT PASSWORD - REQUEST OTP
-  --------------------------------------------------------- */
+  ========================================================= */
 
   const handleRequestOTP = async (event) => {
     event.preventDefault();
@@ -502,6 +543,7 @@ export default function StudentAuthModal({
       setError(
         'Please enter your Student ID.'
       );
+
       setLoading(false);
       return;
     }
@@ -532,9 +574,9 @@ export default function StudentAuthModal({
     }
   };
 
-  /* ---------------------------------------------------------
+  /* =========================================================
      RESET PASSWORD
-  --------------------------------------------------------- */
+  ========================================================= */
 
   const handleResetPassword = async (event) => {
     event.preventDefault();
@@ -546,6 +588,7 @@ export default function StudentAuthModal({
       setError(
         'Please enter the 6-digit OTP.'
       );
+
       setLoading(false);
       return;
     }
@@ -556,6 +599,7 @@ export default function StudentAuthModal({
       setError(
         'New password should contain at least 6 characters.'
       );
+
       setLoading(false);
       return;
     }
@@ -567,6 +611,7 @@ export default function StudentAuthModal({
       setError(
         'New password and confirmation password do not match.'
       );
+
       setLoading(false);
       return;
     }
@@ -603,49 +648,58 @@ export default function StudentAuthModal({
   };
 
   const isOutsidePunjab =
-    formData.domicileState !==
-    'Punjab';
+    formData.domicileState !== 'Punjab';
 
-  /* ---------------------------------------------------------
-     STYLES
-  --------------------------------------------------------- */
+  /* =========================================================
+     COMMON STYLES
+  ========================================================= */
 
   const inputClass =
-    'w-full min-w-0 mt-1.5 rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-600 focus:ring-2 focus:ring-blue-100';
+    'mt-1.5 w-full min-w-0 min-h-[46px] rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 hover:border-slate-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-50 disabled:cursor-not-allowed disabled:bg-slate-50';
 
   const selectClass =
-    'w-full min-w-0 mt-1.5 rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100 cursor-pointer';
+    'mt-1.5 w-full min-w-0 min-h-[46px] rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-blue-600 focus:ring-4 focus:ring-blue-50 cursor-pointer';
 
   const disabledSelectClass =
-    'w-full min-w-0 mt-1.5 rounded-lg border border-slate-200 bg-slate-100 px-3 py-2.5 text-sm text-slate-400 outline-none cursor-not-allowed';
+    'mt-1.5 w-full min-w-0 min-h-[46px] rounded-xl border border-slate-200 bg-slate-100 px-3 py-2.5 text-sm text-slate-400 outline-none cursor-not-allowed';
 
   return (
-    <div className="min-h-screen w-full min-w-0 overflow-x-hidden bg-slate-100 text-slate-900 font-sans flex flex-col">
+    <div className="min-h-screen w-full overflow-x-hidden bg-[#eef4fb] text-slate-900">
 
       {/* =====================================================
-          TOP INFORMATION BAR
+          TOP BRAND BAR
       ===================================================== */}
 
-      <div className="bg-slate-900 text-slate-300 px-3 sm:px-6 lg:px-8 py-2">
+      <div className="bg-[#07152d] text-slate-300">
 
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-3 text-[10px] sm:text-[11px]">
+        <div className="mx-auto flex min-h-[56px] w-full max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
 
-          <div className="flex items-center gap-2 min-w-0">
+          <div className="flex min-w-0 items-center gap-2.5">
 
-            <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-500/10 ring-1 ring-blue-400/20">
+              <Landmark className="h-4 w-4 text-blue-300" />
+            </div>
 
-            <span className="truncate">
-              MESS RECORDS AND FEE PAYMENT PORTAL
-            </span>
+            <div className="min-w-0">
+
+              <p className="truncate text-[10px] font-bold uppercase tracking-[0.12em] text-slate-200 sm:text-xs">
+                GNDU Hostel Services
+              </p>
+
+              <p className="hidden text-[9px] text-slate-500 sm:block">
+                Mess Records & Fee Payment Portal
+              </p>
+
+            </div>
 
           </div>
 
-          <div className="hidden sm:flex items-center gap-2 text-slate-400 shrink-0">
+          <div className="flex shrink-0 items-center gap-2">
 
-            <ShieldCheck className="w-3.5 h-3.5" />
+            <span className="h-2 w-2 rounded-full bg-emerald-400" />
 
-            <span>
-              Secure Student Access
+            <span className="hidden text-[9px] font-semibold uppercase tracking-wider text-slate-400 sm:inline">
+              Student Access
             </span>
 
           </div>
@@ -658,56 +712,63 @@ export default function StudentAuthModal({
           HEADER
       ===================================================== */}
 
-      <header className="bg-white border-b border-slate-200">
+      <header className="border-b border-slate-200 bg-white">
 
-        <div className="max-w-7xl mx-auto w-full px-3 sm:px-6 lg:px-8 py-4 sm:py-5">
+        <div className="mx-auto w-full max-w-7xl px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
 
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 sm:gap-5">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 
-            <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+            {/* Brand */}
 
-              <div className="w-11 h-11 sm:w-16 sm:h-16 rounded-xl bg-blue-700 flex items-center justify-center shadow-sm shrink-0">
+            <div className="flex min-w-0 items-center gap-3">
 
-                <Landmark className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
-
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-700 shadow-sm sm:h-14 sm:w-14">
+                <Home className="h-5 w-5 text-white sm:h-7 sm:w-7" />
               </div>
 
               <div className="min-w-0">
 
-                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                <div className="flex flex-wrap items-center gap-2">
 
-                  <h1 className="text-base sm:text-xl md:text-2xl font-bold text-slate-900 leading-tight">
-                    Hostel & Mess Management
+                  <h1 className="text-lg font-bold tracking-tight text-slate-950 sm:text-2xl">
+                    Hostel & Mess Services
                   </h1>
 
-                  <span className="inline-flex items-center rounded-full bg-blue-50 border border-blue-100 px-2 py-0.5 sm:px-2.5 sm:py-1 text-[9px] sm:text-[10px] font-semibold text-blue-700">
+                  <span className="rounded-full border border-blue-100 bg-blue-50 px-2 py-0.5 text-[8px] font-bold uppercase tracking-wide text-blue-700 sm:text-[9px]">
                     Student Portal
                   </span>
 
                 </div>
 
-                <p className="text-[11px] sm:text-sm text-slate-500 mt-1">
-                  Students portal
+                <p className="mt-1 text-[10px] leading-relaxed text-slate-500 sm:text-xs">
+                  Your personal hostel, mess and fee management account
                 </p>
 
               </div>
 
             </div>
 
+            {/* Admin switch */}
+
             <button
               type="button"
               onClick={onSwitchToAdmin}
-              className="w-full md:w-auto min-h-10 inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:border-blue-300 hover:text-blue-700 transition"
+              className="
+                inline-flex min-h-10 w-full items-center
+                justify-center gap-2 rounded-xl
+                border border-slate-300 bg-white
+                px-4 py-2.5 text-xs font-bold
+                text-slate-700 shadow-sm transition
+                hover:border-blue-300 hover:bg-blue-50
+                hover:text-blue-700
+                focus:outline-none focus:ring-4
+                focus:ring-blue-50
+                sm:w-auto sm:text-sm
+              "
             >
-
-              <ShieldCheck className="w-4 h-4 shrink-0" />
-
-              <span className="truncate">
-                Admin / Warden Login
-              </span>
-
-              <ChevronRight className="w-4 h-4 shrink-0" />
-
+              <ShieldCheck className="h-4 w-4 shrink-0" />
+              <span>Admin / Warden Login</span>
+              <ChevronRight className="h-4 w-4 shrink-0" />
             </button>
 
           </div>
@@ -720,104 +781,140 @@ export default function StudentAuthModal({
           MAIN
       ===================================================== */}
 
-      <main className="flex-1 w-full min-w-0 px-3 sm:px-6 lg:px-8 py-5 sm:py-8 lg:py-10">
+      <main className="w-full px-3 py-5 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
 
-        <div className="w-full max-w-2xl mx-auto min-w-0">
+        <div className="mx-auto w-full max-w-5xl">
 
-          {/* MAIN CARD */}
+          {/* =================================================
+              DESKTOP / MOBILE INTRO
+          ================================================= */}
 
-          <div className="bg-white border border-slate-200 rounded-xl sm:rounded-2xl shadow-sm overflow-hidden">
+          <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
+
+            <InfoCard
+              icon={Home}
+              title="Hostel Services"
+              text="Manage your residential details"
+            />
+
+            <InfoCard
+              icon={Utensils}
+              title="Mess Records"
+              text="View meals and daily records"
+            />
+
+            <InfoCard
+              icon={CreditCard}
+              title="Fee Payments"
+              text="Track your mess fee status"
+            />
+
+          </div>
+
+          {/* =================================================
+              AUTH CARD
+          ================================================= */}
+
+          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_15px_45px_rgba(15,23,42,0.08)]">
 
             {/* =================================================
                 CARD HEADER
             ================================================= */}
 
-            <div className="px-4 sm:px-7 py-4 sm:py-5 border-b border-slate-200 bg-slate-50">
+            <div className="border-b border-slate-200 bg-slate-50 px-4 py-5 sm:px-7 sm:py-6">
 
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 
-                <div className="min-w-0">
+                <div className="flex min-w-0 items-start gap-3">
 
-                  <div className="flex items-center gap-2 min-w-0">
-
+                  <div
+                    className={`
+                      flex h-11 w-11 shrink-0 items-center
+                      justify-center rounded-xl
+                      ${
+                        forgotPasswordStep > 0
+                          ? 'bg-amber-100 text-amber-700'
+                          : 'bg-blue-100 text-blue-700'
+                      }
+                    `}
+                  >
                     {forgotPasswordStep > 0 ? (
-
-                      <div className="w-9 h-9 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
-
-                        <KeyRound className="w-4 h-4" />
-
-                      </div>
-
+                      <KeyRound className="h-5 w-5" />
+                    ) : isRegistering ? (
+                      <UserPlus className="h-5 w-5" />
                     ) : (
-
-                      <div className="w-9 h-9 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
-
-                        {isRegistering ? (
-                          <UserPlus className="w-4 h-4" />
-                        ) : (
-                          <LogIn className="w-4 h-4" />
-                        )}
-
-                      </div>
-
+                      <LogIn className="h-5 w-5" />
                     )}
+                  </div>
 
-                    <div className="min-w-0">
+                  <div className="min-w-0">
 
-                      <h2 className="text-sm sm:text-lg font-bold text-slate-900 leading-tight">
+                    <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-blue-700 sm:text-[10px]">
+                      {forgotPasswordStep > 0
+                        ? 'Account Recovery'
+                        : isRegistering
+                        ? 'New Student Registration'
+                        : 'Student Authentication'}
+                    </p>
 
-                        {forgotPasswordStep > 0
-                          ? 'Reset Password'
-                          : isRegistering
-                          ? 'Create Student Account'
-                          : 'Student Sign In'}
+                    <h2 className="mt-1 text-xl font-bold tracking-tight text-slate-950 sm:text-2xl">
 
-                      </h2>
+                      {forgotPasswordStep > 0
+                        ? 'Reset Password'
+                        : isRegistering
+                        ? 'Create Student Account'
+                        : 'Welcome Back'}
 
-                      <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5 leading-relaxed">
+                    </h2>
 
-                        {forgotPasswordStep > 0
-                          ? 'Recover access to your student account'
-                          : isRegistering
-                          ? 'Register your hostel and academic details'
-                          : 'Access your hostel and mess account'}
+                    <p className="mt-1 text-[10px] leading-relaxed text-slate-500 sm:text-xs">
 
-                      </p>
+                      {forgotPasswordStep > 0
+                        ? 'Recover access to your student account'
+                        : isRegistering
+                        ? 'Register your academic and hostel information'
+                        : 'Sign in to access your hostel and mess dashboard'}
 
-                    </div>
+                    </p>
 
                   </div>
 
                 </div>
 
+                {/* Mode switch */}
+
                 {forgotPasswordStep === 0 && (
 
-                  <div className="flex w-full sm:w-auto rounded-lg bg-slate-200 p-1 shrink-0">
+                  <div className="grid w-full grid-cols-2 gap-1 rounded-xl bg-slate-200 p-1 sm:w-auto">
 
                     <button
                       type="button"
-                      onClick={() =>
-                        switchMode(false)
-                      }
-                      className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-semibold transition ${
-                        !isRegistering
-                          ? 'bg-white text-blue-700 shadow-sm'
-                          : 'text-slate-600 hover:text-slate-900'
-                      }`}
+                      onClick={() => switchMode(false)}
+                      className={`
+                        min-h-10 rounded-lg px-4 py-2
+                        text-xs font-bold transition
+                        ${
+                          !isRegistering
+                            ? 'bg-white text-blue-700 shadow-sm'
+                            : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
+                        }
+                      `}
                     >
                       Sign In
                     </button>
 
                     <button
                       type="button"
-                      onClick={() =>
-                        switchMode(true)
-                      }
-                      className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-semibold transition ${
-                        isRegistering
-                          ? 'bg-white text-blue-700 shadow-sm'
-                          : 'text-slate-600 hover:text-slate-900'
-                      }`}
+                      onClick={() => switchMode(true)}
+                      className={`
+                        min-h-10 rounded-lg px-4 py-2
+                        text-xs font-bold transition
+                        ${
+                          isRegistering
+                            ? 'bg-white text-blue-700 shadow-sm'
+                            : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
+                        }
+                      `}
                     >
                       Register
                     </button>
@@ -834,62 +931,24 @@ export default function StudentAuthModal({
                 FORM CONTENT
             ================================================= */}
 
-            <div className="p-4 sm:p-7 min-w-0">
+            <div className="p-4 sm:p-7">
 
               {/* ERROR */}
 
               {error && (
-
-                <div className="mb-4 sm:mb-5 flex items-start gap-2.5 sm:gap-3 rounded-xl border border-red-200 bg-red-50 px-3 sm:px-4 py-3 text-red-800 min-w-0">
-
-                  <div className="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center shrink-0">
-
-                    <AlertCircle className="w-4 h-4 text-red-600" />
-
-                  </div>
-
-                  <div className="min-w-0">
-
-                    <p className="text-sm font-semibold">
-                      Unable to continue
-                    </p>
-
-                    <p className="text-xs leading-relaxed mt-0.5 text-red-700 break-words">
-                      {error}
-                    </p>
-
-                  </div>
-
-                </div>
-
+                <MessageBox
+                  type="error"
+                  message={error}
+                />
               )}
 
               {/* SUCCESS */}
 
               {successMsg && (
-
-                <div className="mb-4 sm:mb-5 flex items-start gap-2.5 sm:gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 sm:px-4 py-3 text-emerald-800 min-w-0">
-
-                  <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center shrink-0">
-
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-
-                  </div>
-
-                  <div className="min-w-0">
-
-                    <p className="text-sm font-semibold">
-                      Success
-                    </p>
-
-                    <p className="text-xs leading-relaxed mt-0.5 text-emerald-700 break-words">
-                      {successMsg}
-                    </p>
-
-                  </div>
-
-                </div>
-
+                <MessageBox
+                  type="success"
+                  message={successMsg}
+                />
               )}
 
               {/* =================================================
@@ -900,29 +959,25 @@ export default function StudentAuthModal({
 
                 <form
                   onSubmit={handleRequestOTP}
-                  className="space-y-4 sm:space-y-5"
+                  className="mx-auto max-w-xl space-y-5"
                 >
 
-                  <div className="rounded-xl border border-blue-100 bg-blue-50 p-3 sm:p-4">
+                  <div className="rounded-xl border border-blue-100 bg-blue-50 p-4">
 
-                    <div className="flex gap-3">
+                    <div className="flex items-start gap-3">
 
-                      <div className="w-9 h-9 rounded-lg bg-white text-blue-700 flex items-center justify-center shrink-0">
-
-                        <Mail className="w-4 h-4" />
-
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white text-blue-700">
+                        <Mail className="h-4 w-4" />
                       </div>
 
-                      <div className="min-w-0">
-
-                        <h3 className="text-sm font-semibold text-slate-900">
+                      <div>
+                        <h3 className="text-sm font-bold text-slate-900">
                           Password recovery
                         </h3>
 
-                        <p className="text-xs text-slate-600 leading-relaxed mt-1">
+                        <p className="mt-1 text-xs leading-relaxed text-slate-600">
                           Enter your Student ID. A verification OTP will be sent to your registered email address.
                         </p>
-
                       </div>
 
                     </div>
@@ -932,7 +987,7 @@ export default function StudentAuthModal({
                   <div>
 
                     <FieldLabel
-                      icon={<IdCard className="w-4 h-4" />}
+                      icon={<IdCard className="h-4 w-4" />}
                       label="Student ID"
                       required
                     />
@@ -941,13 +996,13 @@ export default function StudentAuthModal({
                       required
                       type="text"
                       maxLength={13}
+                      autoComplete="username"
                       placeholder="Enter your Student ID"
                       value={resetData.studentId}
                       onChange={(e) =>
                         setResetData({
                           ...resetData,
-                          studentId:
-                            e.target.value,
+                          studentId: e.target.value,
                         })
                       }
                       className={`${inputClass} uppercase`}
@@ -955,7 +1010,7 @@ export default function StudentAuthModal({
 
                   </div>
 
-                  <div className="flex flex-col-reverse sm:flex-row gap-3 pt-1 sm:pt-2">
+                  <div className="flex flex-col-reverse gap-3 sm:flex-row">
 
                     <button
                       type="button"
@@ -963,32 +1018,27 @@ export default function StudentAuthModal({
                         setForgotPasswordStep(0);
                         resetMessages();
                       }}
-                      className="flex-1 min-h-10 inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition"
+                      className="min-h-11 flex-1 inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50"
                     >
-
-                      <ArrowLeft className="w-4 h-4" />
-
+                      <ArrowLeft className="h-4 w-4" />
                       Back
-
                     </button>
 
                     <button
                       type="submit"
                       disabled={loading}
-                      className="flex-1 min-h-10 inline-flex items-center justify-center gap-2 rounded-lg bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-800 transition disabled:opacity-60"
+                      className="min-h-11 flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60"
                     >
 
                       {loading ? (
-                        <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+                        <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
-                        <Mail className="w-4 h-4 shrink-0" />
+                        <Mail className="h-4 w-4" />
                       )}
 
-                      <span className="truncate">
-                        {loading
-                          ? 'Sending OTP...'
-                          : 'Send OTP'}
-                      </span>
+                      {loading
+                        ? 'Sending OTP...'
+                        : 'Send OTP'}
 
                     </button>
 
@@ -1006,29 +1056,25 @@ export default function StudentAuthModal({
 
                 <form
                   onSubmit={handleResetPassword}
-                  className="space-y-4 sm:space-y-5"
+                  className="mx-auto max-w-xl space-y-5"
                 >
 
-                  <div className="rounded-xl border border-amber-100 bg-amber-50 p-3 sm:p-4">
+                  <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
 
-                    <div className="flex gap-3">
+                    <div className="flex items-start gap-3">
 
-                      <div className="w-9 h-9 rounded-lg bg-white text-amber-700 flex items-center justify-center shrink-0">
-
-                        <KeyRound className="w-4 h-4" />
-
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white text-amber-700">
+                        <KeyRound className="h-4 w-4" />
                       </div>
 
-                      <div className="min-w-0">
-
-                        <h3 className="text-sm font-semibold text-slate-900">
+                      <div>
+                        <h3 className="text-sm font-bold text-slate-900">
                           Verify and create a new password
                         </h3>
 
-                        <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                        <p className="mt-1 text-xs leading-relaxed text-slate-600">
                           Enter the OTP received on your registered email address.
                         </p>
-
                       </div>
 
                     </div>
@@ -1038,7 +1084,7 @@ export default function StudentAuthModal({
                   <div>
 
                     <FieldLabel
-                      icon={<Key className="w-4 h-4" />}
+                      icon={<Key className="h-4 w-4" />}
                       label="Verification OTP"
                       required
                     />
@@ -1058,84 +1104,58 @@ export default function StudentAuthModal({
                             .slice(0, 6),
                         })
                       }
-                      className={`${inputClass} text-center tracking-[0.4em] font-bold`}
+                      className={`${inputClass} text-center font-bold tracking-[0.4em]`}
                     />
 
                   </div>
 
-                  <div>
+                  <PasswordInput
+                    label="New Password"
+                    icon={<Lock className="h-4 w-4" />}
+                    value={resetData.newPassword}
+                    onChange={(value) =>
+                      setResetData({
+                        ...resetData,
+                        newPassword: value,
+                      })
+                    }
+                    placeholder="Enter new password"
+                    show={showNewPassword}
+                    setShow={setShowNewPassword}
+                    inputClass={inputClass}
+                  />
 
-                    <FieldLabel
-                      icon={<Lock className="w-4 h-4" />}
-                      label="New Password"
-                      required
-                    />
-
-                    <input
-                      required
-                      type="password"
-                      placeholder="Enter new password"
-                      value={
-                        resetData.newPassword
-                      }
-                      onChange={(e) =>
-                        setResetData({
-                          ...resetData,
-                          newPassword:
-                            e.target.value,
-                        })
-                      }
-                      className={inputClass}
-                    />
-
-                  </div>
-
-                  <div>
-
-                    <FieldLabel
-                      icon={
-                        <ShieldCheck className="w-4 h-4" />
-                      }
-                      label="Confirm Password"
-                      required
-                    />
-
-                    <input
-                      required
-                      type="password"
-                      placeholder="Re-enter new password"
-                      value={
-                        resetData.confirmPassword
-                      }
-                      onChange={(e) =>
-                        setResetData({
-                          ...resetData,
-                          confirmPassword:
-                            e.target.value,
-                        })
-                      }
-                      className={inputClass}
-                    />
-
-                  </div>
+                  <PasswordInput
+                    label="Confirm Password"
+                    icon={<ShieldCheck className="h-4 w-4" />}
+                    value={resetData.confirmPassword}
+                    onChange={(value) =>
+                      setResetData({
+                        ...resetData,
+                        confirmPassword: value,
+                      })
+                    }
+                    placeholder="Re-enter new password"
+                    show={showConfirmPassword}
+                    setShow={setShowConfirmPassword}
+                    inputClass={inputClass}
+                  />
 
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full min-h-11 inline-flex items-center justify-center gap-2 rounded-lg bg-blue-700 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-800 transition disabled:opacity-60"
+                    className="min-h-12 w-full inline-flex items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 py-3 text-sm font-bold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60"
                   >
 
                     {loading ? (
-                      <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+                      <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
-                      <CheckCircle2 className="w-4 h-4 shrink-0" />
+                      <CheckCircle2 className="h-4 w-4" />
                     )}
 
-                    <span className="truncate">
-                      {loading
-                        ? 'Updating Password...'
-                        : 'Reset Password'}
-                    </span>
+                    {loading
+                      ? 'Updating Password...'
+                      : 'Reset Password'}
 
                   </button>
 
@@ -1145,7 +1165,7 @@ export default function StudentAuthModal({
                       setForgotPasswordStep(1);
                       resetMessages();
                     }}
-                    className="w-full text-xs sm:text-sm font-medium text-blue-700 hover:text-blue-800 break-words"
+                    className="w-full text-xs font-bold text-blue-700 hover:text-blue-800"
                   >
                     Use a different Student ID
                   </button>
@@ -1162,62 +1182,52 @@ export default function StudentAuthModal({
 
                 <form
                   onSubmit={handleSubmit}
-                  className="space-y-4 sm:space-y-5"
+                  className="space-y-5"
                 >
 
                   {/* =================================================
-                      REGISTER ONLY
+                      REGISTRATION SECTION
                   ================================================= */}
 
                   {isRegistering && (
-
                     <>
 
                       {/* PROFILE PHOTO */}
 
-                      <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 sm:p-4">
+                      <div className="rounded-xl border border-blue-100 bg-blue-50/60 p-4">
 
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                        <div className="flex flex-col items-center gap-4 sm:flex-row">
 
-                          <div className="w-20 h-20 rounded-xl bg-slate-200 border border-slate-300 overflow-hidden flex items-center justify-center shrink-0 mx-auto sm:mx-0">
+                          <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-slate-300 bg-white shadow-sm">
 
                             {formData.profilePhoto ? (
-
                               <img
-                                src={
-                                  formData.profilePhoto
-                                }
+                                src={formData.profilePhoto}
                                 alt="Profile preview"
-                                className="w-full h-full object-cover"
+                                className="h-full w-full object-cover"
                               />
-
                             ) : (
-
-                              <User className="w-9 h-9 text-slate-400" />
-
+                              <UserRound className="h-10 w-10 text-slate-300" />
                             )}
 
                           </div>
 
-                          <div className="flex-1 min-w-0 text-center sm:text-left">
+                          <div className="min-w-0 flex-1 text-center sm:text-left">
 
-                            <label className="block text-sm font-semibold text-slate-800">
-
+                            <p className="text-sm font-bold text-slate-900">
                               Profile Photograph
-
-                              <span className="text-red-500 ml-1">
+                              <span className="ml-1 text-red-500">
                                 *
                               </span>
+                            </p>
 
-                            </label>
-
-                            <p className="text-xs text-slate-500 mt-1 mb-3 leading-relaxed">
+                            <p className="mt-1 text-xs leading-relaxed text-slate-500">
                               Upload a clear photograph for your student profile.
                             </p>
 
-                            <label className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-700 px-3.5 py-2 text-xs font-semibold text-white hover:bg-blue-800 cursor-pointer transition">
+                            <label className="mt-3 inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-blue-800">
 
-                              <ImagePlus className="w-4 h-4" />
+                              <ImagePlus className="h-4 w-4" />
 
                               {formData.profilePhoto
                                 ? 'Replace Photo'
@@ -1230,14 +1240,12 @@ export default function StudentAuthModal({
                                   !formData.profilePhoto
                                 }
                                 className="hidden"
-                                onChange={
-                                  handlePhotoUpload
-                                }
+                                onChange={handlePhotoUpload}
                               />
 
                             </label>
 
-                            <p className="text-[11px] text-slate-400 mt-2 leading-relaxed">
+                            <p className="mt-2 text-[10px] text-slate-400">
                               Image is automatically resized before upload.
                             </p>
 
@@ -1247,12 +1255,10 @@ export default function StudentAuthModal({
 
                       </div>
 
-                      {/* PERSONAL INFORMATION */}
+                      {/* PERSONAL */}
 
                       <FormSection
-                        icon={
-                          <User className="w-4 h-4" />
-                        }
+                        icon={<User className="h-4 w-4" />}
                         title="Personal Information"
                         description="Enter your basic personal details."
                       >
@@ -1260,9 +1266,7 @@ export default function StudentAuthModal({
                         <div>
 
                           <FieldLabel
-                            icon={
-                              <User className="w-4 h-4" />
-                            }
+                            icon={<User className="h-4 w-4" />}
                             label="Full Name"
                             required
                           />
@@ -1283,14 +1287,12 @@ export default function StudentAuthModal({
 
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 
                           <div>
 
                             <FieldLabel
-                              icon={
-                                <User className="w-4 h-4" />
-                              }
+                              icon={<User className="h-4 w-4" />}
                               label="Father's Name"
                               required
                             />
@@ -1299,14 +1301,11 @@ export default function StudentAuthModal({
                               required
                               type="text"
                               placeholder="Father's name"
-                              value={
-                                formData.fatherName
-                              }
+                              value={formData.fatherName}
                               onChange={(e) =>
                                 setFormData({
                                   ...formData,
-                                  fatherName:
-                                    e.target.value,
+                                  fatherName: e.target.value,
                                 })
                               }
                               className={inputClass}
@@ -1317,9 +1316,7 @@ export default function StudentAuthModal({
                           <div>
 
                             <FieldLabel
-                              icon={
-                                <Users className="w-4 h-4" />
-                              }
+                              icon={<Users className="h-4 w-4" />}
                               label="Mother's Name"
                               required
                             />
@@ -1328,14 +1325,11 @@ export default function StudentAuthModal({
                               required
                               type="text"
                               placeholder="Mother's name"
-                              value={
-                                formData.motherName
-                              }
+                              value={formData.motherName}
                               onChange={(e) =>
                                 setFormData({
                                   ...formData,
-                                  motherName:
-                                    e.target.value,
+                                  motherName: e.target.value,
                                 })
                               }
                               className={inputClass}
@@ -1345,14 +1339,12 @@ export default function StudentAuthModal({
 
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 
                           <div>
 
                             <FieldLabel
-                              icon={
-                                <Calendar className="w-4 h-4" />
-                              }
+                              icon={<Calendar className="h-4 w-4" />}
                               label="Date of Birth"
                               required
                             />
@@ -1376,23 +1368,18 @@ export default function StudentAuthModal({
                           <div>
 
                             <FieldLabel
-                              icon={
-                                <Globe className="w-4 h-4" />
-                              }
+                              icon={<Globe className="h-4 w-4" />}
                               label="Nationality"
                               required
                             />
 
                             <select
                               required
-                              value={
-                                formData.nationality
-                              }
+                              value={formData.nationality}
                               onChange={(e) =>
                                 setFormData({
                                   ...formData,
-                                  nationality:
-                                    e.target.value,
+                                  nationality: e.target.value,
                                 })
                               }
                               className={selectClass}
@@ -1400,14 +1387,12 @@ export default function StudentAuthModal({
 
                               {WORLD_COUNTRIES.map(
                                 (country) => (
-
                                   <option
                                     key={country}
                                     value={country}
                                   >
                                     {country}
                                   </option>
-
                                 )
                               )}
 
@@ -1420,9 +1405,7 @@ export default function StudentAuthModal({
                         <div>
 
                           <FieldLabel
-                            icon={
-                              <Mail className="w-4 h-4" />
-                            }
+                            icon={<Mail className="h-4 w-4" />}
                             label="Email Address"
                             required
                           />
@@ -1441,81 +1424,69 @@ export default function StudentAuthModal({
                             className={inputClass}
                           />
 
-                          <div className="flex items-start gap-1.5 mt-2 text-xs text-slate-500 min-w-0">
-
-                            <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5 text-blue-500" />
-
-                            <span className="break-words">
-                              Your registered email is used for password recovery.
-                            </span>
-
-                          </div>
+                          <p className="mt-1.5 flex items-start gap-1.5 text-[10px] leading-relaxed text-slate-500">
+                            <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-blue-500" />
+                            Your registered email is used for password recovery.
+                          </p>
 
                         </div>
 
                       </FormSection>
 
-                      {/* STUDENT ID - REGISTER */}
-
-                      <div>
-
-                        <FieldLabel
-                          icon={
-                            <IdCard className="w-4 h-4" />
-                          }
-                          label="Student ID"
-                          required
-                        />
-
-                        <input
-                          required
-                          type="text"
-                          maxLength={13}
-                          placeholder="e.g. 2024ECE102"
-                          value={formData.studentId}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              studentId:
-                                e.target.value,
-                            })
-                          }
-                          className={`${inputClass} uppercase`}
-                        />
-
-                        <p className="text-[11px] text-slate-500 mt-1.5 leading-relaxed">
-                          This ID will be used to sign in to your student account.
-                        </p>
-
-                      </div>
-
-                      {/* ACADEMIC INFORMATION */}
+                      {/* STUDENT ID */}
 
                       <FormSection
-                        icon={
-                          <GraduationCap className="w-4 h-4" />
-                        }
-                        title="Academic Information"
-                        description="Select your faculty, department and programme."
+                        icon={<IdCard className="h-4 w-4" />}
+                        title="Student Identity"
+                        description="Your Student ID will be used to sign in."
                       >
-
-                        {/* FACULTY */}
 
                         <div>
 
                           <FieldLabel
-                            icon={
-                              <Compass className="w-4 h-4" />
+                            icon={<IdCard className="h-4 w-4" />}
+                            label="Student ID"
+                            required
+                          />
+
+                          <input
+                            required
+                            type="text"
+                            maxLength={13}
+                            placeholder="e.g. 2024ECE102"
+                            value={formData.studentId}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                studentId: e.target.value,
+                              })
                             }
+                            className={`${inputClass} uppercase`}
+                          />
+
+                        </div>
+
+                      </FormSection>
+
+                      {/* ACADEMIC */}
+
+                      <FormSection
+                        icon={<GraduationCap className="h-4 w-4" />}
+                        title="Academic Information"
+                        description="Select your faculty, department, programme and session."
+                      >
+
+                        <div>
+
+                          <FieldLabel
+                            icon={<Compass className="h-4 w-4" />}
                             label="Faculty"
                             required
                           />
 
                           <select
                             required
-                            value={
-                              formData.facultyId
-                            }
+                            value={formData.facultyId}
                             onChange={(e) =>
                               handleFacultyChange(
                                 e.target.value
@@ -1530,14 +1501,12 @@ export default function StudentAuthModal({
 
                             {UNIVERSITY_FACULTIES_HIERARCHY.map(
                               (faculty) => (
-
                                 <option
                                   key={faculty.id}
                                   value={faculty.id}
                                 >
                                   {faculty.name}
                                 </option>
-
                               )
                             )}
 
@@ -1545,26 +1514,18 @@ export default function StudentAuthModal({
 
                         </div>
 
-                        {/* DEPARTMENT */}
-
                         <div>
 
                           <FieldLabel
-                            icon={
-                              <BookOpen className="w-4 h-4" />
-                            }
+                            icon={<BookOpen className="h-4 w-4" />}
                             label="Department"
                             required
                           />
 
                           <select
                             required
-                            disabled={
-                              !formData.facultyId
-                            }
-                            value={
-                              formData.department
-                            }
+                            disabled={!formData.facultyId}
+                            value={formData.department}
                             onChange={(e) =>
                               handleDepartmentChange(
                                 e.target.value
@@ -1584,20 +1545,13 @@ export default function StudentAuthModal({
                             </option>
 
                             {availableDepartments.map(
-                              (
-                                department,
-                                index
-                              ) => (
-
+                              (department, index) => (
                                 <option
                                   key={`${department.name}-${index}`}
-                                  value={
-                                    department.name
-                                  }
+                                  value={department.name}
                                 >
                                   {department.name}
                                 </option>
-
                               )
                             )}
 
@@ -1605,26 +1559,18 @@ export default function StudentAuthModal({
 
                         </div>
 
-                        {/* PROGRAMME */}
-
                         <div>
 
                           <FieldLabel
-                            icon={
-                              <GraduationCap className="w-4 h-4" />
-                            }
+                            icon={<GraduationCap className="h-4 w-4" />}
                             label="Degree / Programme"
                             required
                           />
 
                           <select
                             required
-                            disabled={
-                              !formData.department
-                            }
-                            value={
-                              formData.university
-                            }
+                            disabled={!formData.department}
+                            value={formData.university}
                             onChange={(e) =>
                               setFormData({
                                 ...formData,
@@ -1647,14 +1593,12 @@ export default function StudentAuthModal({
 
                             {availableProgrammes.map(
                               (course) => (
-
                                 <option
                                   key={course.id}
                                   value={course.name}
                                 >
                                   [{course.id}] {course.name}
                                 </option>
-
                               )
                             )}
 
@@ -1662,28 +1606,21 @@ export default function StudentAuthModal({
 
                         </div>
 
-                        {/* SESSION */}
-
                         <div>
 
                           <FieldLabel
-                            icon={
-                              <Layers className="w-4 h-4" />
-                            }
+                            icon={<Layers className="h-4 w-4" />}
                             label="Academic Session"
                             required
                           />
 
                           <select
                             required
-                            value={
-                              formData.session
-                            }
+                            value={formData.session}
                             onChange={(e) =>
                               setFormData({
                                 ...formData,
-                                session:
-                                  e.target.value,
+                                session: e.target.value,
                               })
                             }
                             className={selectClass}
@@ -1695,14 +1632,12 @@ export default function StudentAuthModal({
 
                             {ACADEMIC_SESSIONS.map(
                               (session) => (
-
                                 <option
                                   key={session.id}
                                   value={session.id}
                                 >
                                   {session.name}
                                 </option>
-
                               )
                             )}
 
@@ -1712,40 +1647,31 @@ export default function StudentAuthModal({
 
                       </FormSection>
 
-                      {/* RESIDENTIAL INFORMATION */}
+                      {/* RESIDENTIAL */}
 
                       <FormSection
-                        icon={
-                          <Building2 className="w-4 h-4" />
-                        }
+                        icon={<Building2 className="h-4 w-4" />}
                         title="Residential Information"
                         description="Enter your hostel and campus details."
                       >
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-
-                          {/* ROLL NUMBER */}
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 
                           <div>
 
                             <FieldLabel
-                              icon={
-                                <Hash className="w-4 h-4" />
-                              }
+                              icon={<Hash className="h-4 w-4" />}
                               label="Roll Number"
                               required
                             />
 
                             <select
                               required
-                              value={
-                                formData.rollNo
-                              }
+                              value={formData.rollNo}
                               onChange={(e) =>
                                 setFormData({
                                   ...formData,
-                                  rollNo:
-                                    e.target.value,
+                                  rollNo: e.target.value,
                                 })
                               }
                               className={selectClass}
@@ -1757,14 +1683,12 @@ export default function StudentAuthModal({
 
                               {ROLL_NUMBERS.map(
                                 (number) => (
-
                                   <option
                                     key={number}
                                     value={number}
                                   >
                                     {number}
                                   </option>
-
                                 )
                               )}
 
@@ -1772,66 +1696,43 @@ export default function StudentAuthModal({
 
                           </div>
 
-                          {/* HOSTEL */}
-
                           <div>
 
                             <FieldLabel
-                              icon={
-                                <Building2 className="w-4 h-4" />
-                              }
+                              icon={<Building2 className="h-4 w-4" />}
                               label="Hostel"
                               required
                             />
 
                             <select
                               required
-                              value={
-                                formData.hostelNo
-                              }
+                              value={formData.hostelNo}
                               onChange={(e) =>
                                 setFormData({
                                   ...formData,
-                                  hostelNo:
-                                    e.target.value,
+                                  hostelNo: e.target.value,
                                 })
                               }
                               className={selectClass}
                             >
 
                               {hostels.length > 0 ? (
+                                hostels.map((hostel) => (
+                                  <option
+                                    key={hostel._id}
+                                    value={hostel.hostelNumber}
+                                  >
+                                    {hostel.hostelNumber}
 
-                                hostels.map(
-                                  (hostel) => (
-
-                                    <option
-                                      key={
-                                        hostel._id
-                                      }
-                                      value={
-                                        hostel.hostelNumber
-                                      }
-                                    >
-
-                                      {
-                                        hostel.hostelNumber
-                                      }
-
-                                      {hostel.type
-                                        ? ` (${String(
-                                            hostel.type
-                                          ).toUpperCase()})`
-                                        : ''}
-
-                                    </option>
-
-                                  )
-                                )
-
+                                    {hostel.type
+                                      ? ` (${String(
+                                          hostel.type
+                                        ).toUpperCase()})`
+                                      : ''}
+                                  </option>
+                                ))
                               ) : (
-
                                 <>
-
                                   <option value="BH1">
                                     BH1 (BOYS 1)
                                   </option>
@@ -1839,9 +1740,7 @@ export default function StudentAuthModal({
                                   <option value="GH1">
                                     GH1 (GIRLS 1)
                                   </option>
-
                                 </>
-
                               )}
 
                             </select>
@@ -1850,29 +1749,23 @@ export default function StudentAuthModal({
 
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-
-                          {/* GENDER */}
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 
                           <div>
 
                             <FieldLabel
-                              icon={
-                                <User className="w-4 h-4" />
-                              }
+                              icon={<User className="h-4 w-4" />}
                               label="Gender"
                               required
                             />
 
                             <select
-                              value={
-                                formData.gender
-                              }
+                              required
+                              value={formData.gender}
                               onChange={(e) =>
                                 setFormData({
                                   ...formData,
-                                  gender:
-                                    e.target.value,
+                                  gender: e.target.value,
                                 })
                               }
                               className={selectClass}
@@ -1894,14 +1787,10 @@ export default function StudentAuthModal({
 
                           </div>
 
-                          {/* MOBILE */}
-
                           <div>
 
                             <FieldLabel
-                              icon={
-                                <Phone className="w-4 h-4" />
-                              }
+                              icon={<Phone className="h-4 w-4" />}
                               label="Mobile Number"
                               required
                             />
@@ -1912,22 +1801,14 @@ export default function StudentAuthModal({
                               inputMode="numeric"
                               maxLength={10}
                               placeholder="10-digit number"
-                              value={
-                                formData.mobileNo
-                              }
+                              value={formData.mobileNo}
                               onChange={(e) =>
                                 setFormData({
                                   ...formData,
                                   mobileNo:
                                     e.target.value
-                                      .replace(
-                                        /\D/g,
-                                        ''
-                                      )
-                                      .slice(
-                                        0,
-                                        10
-                                      ),
+                                      .replace(/\D/g, '')
+                                      .slice(0, 10),
                                 })
                               }
                               className={inputClass}
@@ -1937,27 +1818,19 @@ export default function StudentAuthModal({
 
                         </div>
 
-                        {/* DOMICILE + CATEGORY */}
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-
-                          {/* DOMICILE */}
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 
                           <div>
 
                             <FieldLabel
-                              icon={
-                                <MapPin className="w-4 h-4" />
-                              }
+                              icon={<MapPin className="h-4 w-4" />}
                               label="Domicile State"
                               required
                             />
 
                             <select
                               required
-                              value={
-                                formData.domicileState
-                              }
+                              value={formData.domicileState}
                               onChange={(e) =>
                                 handleStateChange(
                                   e.target.value
@@ -1968,14 +1841,12 @@ export default function StudentAuthModal({
 
                               {INDIAN_STATES.map(
                                 (state) => (
-
                                   <option
                                     key={state}
                                     value={state}
                                   >
                                     {state}
                                   </option>
-
                                 )
                               )}
 
@@ -1983,25 +1854,18 @@ export default function StudentAuthModal({
 
                           </div>
 
-                          {/* CATEGORY */}
-
                           <div>
 
                             <FieldLabel
-                              icon={
-                                <ShieldCheck className="w-4 h-4" />
-                              }
+                              icon={<ShieldCheck className="h-4 w-4" />}
                               label="Category"
                               required
                             />
 
                             <select
-                              value={
-                                formData.category
-                              }
-                              disabled={
-                                isOutsidePunjab
-                              }
+                              required
+                              disabled={isOutsidePunjab}
+                              value={formData.category}
                               onChange={(e) =>
                                 setFormData({
                                   ...formData,
@@ -2038,12 +1902,10 @@ export default function StudentAuthModal({
 
                             </select>
 
-                            <p className="text-[11px] text-slate-500 mt-1.5 leading-relaxed">
-
+                            <p className="mt-1.5 text-[10px] leading-relaxed text-slate-500">
                               {isOutsidePunjab
                                 ? 'Category is set to General for out-of-state domicile.'
                                 : 'Select the applicable category.'}
-
                             </p>
 
                           </div>
@@ -2053,21 +1915,18 @@ export default function StudentAuthModal({
                       </FormSection>
 
                     </>
-
                   )}
 
                   {/* =================================================
-                      STUDENT ID - LOGIN ONLY
+                      LOGIN STUDENT ID
                   ================================================= */}
 
                   {!isRegistering && (
 
-                    <div>
+                    <div className="mx-auto w-full max-w-xl">
 
                       <FieldLabel
-                        icon={
-                          <IdCard className="w-4 h-4" />
-                        }
+                        icon={<IdCard className="h-4 w-4" />}
                         label="Student ID"
                         required
                       />
@@ -2076,10 +1935,9 @@ export default function StudentAuthModal({
                         required
                         type="text"
                         maxLength={13}
+                        autoComplete="username"
                         placeholder="Enter your Student ID"
-                        value={
-                          formData.studentId
-                        }
+                        value={formData.studentId}
                         onChange={(e) =>
                           setFormData({
                             ...formData,
@@ -2087,10 +1945,11 @@ export default function StudentAuthModal({
                               e.target.value,
                           })
                         }
+                        disabled={loading}
                         className={`${inputClass} uppercase`}
                       />
 
-                      <p className="text-[11px] text-slate-500 mt-1.5 leading-relaxed">
+                      <p className="mt-1.5 text-[10px] leading-relaxed text-slate-500">
                         Enter the Student ID you used during registration.
                       </p>
 
@@ -2102,32 +1961,33 @@ export default function StudentAuthModal({
                       PASSWORD
                   ================================================= */}
 
-                  <div>
+                  <div className="mx-auto w-full max-w-xl">
 
-                    <FieldLabel
-                      icon={
-                        <Lock className="w-4 h-4" />
-                      }
+                    <PasswordInput
                       label="Password"
-                      required
-                    />
-
-                    <input
-                      required
-                      type="password"
-                      placeholder="Enter your Password"
-                      value={
-                        formData.password
-                      }
-                      onChange={(e) =>
+                      icon={<Lock className="h-4 w-4" />}
+                      value={formData.password}
+                      onChange={(value) =>
                         setFormData({
                           ...formData,
-                          password:
-                            e.target.value,
+                          password: value,
                         })
                       }
-                      className={inputClass}
+                      placeholder={
+                        isRegistering
+                          ? 'Create your password'
+                          : 'Enter your password'
+                      }
+                      show={showPassword}
+                      setShow={setShowPassword}
+                      inputClass={inputClass}
                     />
+
+                    {isRegistering && (
+                      <p className="mt-1.5 text-[10px] text-slate-500">
+                        Password should contain at least 6 characters.
+                      </p>
+                    )}
 
                   </div>
 
@@ -2137,23 +1997,18 @@ export default function StudentAuthModal({
 
                   {!isRegistering && (
 
-                    <div className="flex justify-end">
+                    <div className="mx-auto flex w-full max-w-xl justify-end">
 
                       <button
                         type="button"
                         onClick={() => {
-                          setForgotPasswordStep(
-                            1
-                          );
+                          setForgotPasswordStep(1);
                           resetMessages();
                         }}
-                        className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-medium text-blue-700 hover:text-blue-800 transition"
+                        className="inline-flex min-h-10 items-center gap-1.5 rounded-lg px-2 text-xs font-bold text-blue-700 transition hover:bg-blue-50 hover:text-blue-800"
                       >
-
-                        <HelpCircle className="w-3.5 h-3.5 shrink-0" />
-
+                        <HelpCircle className="h-3.5 w-3.5" />
                         Forgot password?
-
                       </button>
 
                     </div>
@@ -2164,47 +2019,60 @@ export default function StudentAuthModal({
                       SUBMIT
                   ================================================= */}
 
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full min-h-11 inline-flex items-center justify-center gap-2 rounded-lg bg-blue-700 hover:bg-blue-800 text-white px-4 py-3 text-sm font-semibold transition disabled:opacity-60 disabled:cursor-not-allowed shadow-sm"
-                  >
+                  <div className="mx-auto w-full max-w-xl pt-1">
 
-                    {loading ? (
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="
+                        group flex min-h-[51px] w-full
+                        items-center justify-center gap-2
+                        rounded-xl bg-blue-700 px-4 py-3
+                        text-sm font-bold text-white
+                        shadow-sm transition-all
+                        hover:bg-blue-800 hover:shadow-md
+                        focus:outline-none
+                        focus:ring-4 focus:ring-blue-100
+                        disabled:cursor-not-allowed
+                        disabled:opacity-60
+                      "
+                    >
 
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+                      {loading ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
 
-                        <span className="truncate">
-                          {isRegistering
-                            ? 'Creating account...'
-                            : 'Signing in...'}
-                        </span>
-                      </>
+                          <span>
+                            {isRegistering
+                              ? 'Creating account...'
+                              : 'Signing in...'}
+                          </span>
+                        </>
+                      ) : isRegistering ? (
+                        <>
+                          <UserPlus className="h-4 w-4" />
 
-                    ) : isRegistering ? (
+                          <span>
+                            Create Student Account
+                          </span>
 
-                      <>
-                        <UserPlus className="w-4 h-4 shrink-0" />
+                          <ChevronRight className="hidden h-4 w-4 opacity-60 sm:block" />
+                        </>
+                      ) : (
+                        <>
+                          <LogIn className="h-4 w-4" />
 
-                        <span className="truncate">
-                          Create Student Account
-                        </span>
-                      </>
+                          <span>
+                            Sign In to Student Portal
+                          </span>
 
-                    ) : (
+                          <ChevronRight className="hidden h-4 w-4 opacity-60 sm:block" />
+                        </>
+                      )}
 
-                      <>
-                        <LogIn className="w-4 h-4 shrink-0" />
+                    </button>
 
-                        <span>
-                          Sign In
-                        </span>
-                      </>
-
-                    )}
-
-                  </button>
+                  </div>
 
                 </form>
 
@@ -2216,23 +2084,33 @@ export default function StudentAuthModal({
                 CARD FOOTER
             ================================================= */}
 
-            <div className="border-t border-slate-200 bg-slate-50 px-4 sm:px-7 py-3.5">
+            <div className="border-t border-slate-200 bg-slate-50 px-4 py-4 sm:px-7">
 
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-[10px] sm:text-[11px] text-slate-500 text-center sm:text-left">
+              <div className="flex flex-col items-center justify-between gap-3 sm:flex-row">
 
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-2">
 
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50">
+                    <ShieldCheck className="h-4 w-4 text-emerald-600" />
+                  </div>
 
-                  <span>
-                    Secure student account
-                  </span>
+                  <div>
+
+                    <p className="text-[10px] font-bold text-slate-700">
+                      Secure student account
+                    </p>
+
+                    <p className="text-[9px] text-slate-400">
+                      Your account is protected
+                    </p>
+
+                  </div>
 
                 </div>
 
-                <span className="break-words">
-                  Mess records & payment portal (student dashboard)
-                </span>
+                <div className="text-center text-[9px] text-slate-400 sm:text-right">
+                  Hostel • Mess • Payments • Complaints
+                </div>
 
               </div>
 
@@ -2241,16 +2119,23 @@ export default function StudentAuthModal({
           </div>
 
           {/* =================================================
-              BOTTOM HELP
+              HELP
           ================================================= */}
 
-          <div className="text-center mt-4 sm:mt-5 px-2 text-[11px] sm:text-xs text-slate-500 break-words leading-relaxed">
+          <div className="mt-4 text-center text-[10px] leading-relaxed text-slate-500 sm:mt-5 sm:text-xs">
 
-            Need administrative assistance? Contact:{' '}
+            Need administrative assistance?
 
-            <Mail className="inline-block w-3.5 h-3.5 mr-1 align-middle" />
+            <span className="mx-1 font-semibold text-slate-700">
+              Contact Hostel Administration
+            </span>
 
-            adminconnect.org@gmail.com
+            <span className="mx-1 hidden sm:inline">•</span>
+
+            <span className="inline-flex items-center gap-1 font-medium text-blue-700">
+              <Mail className="h-3.5 w-3.5" />
+              adminconnect.org@gmail.com
+            </span>
 
           </div>
 
@@ -2264,9 +2149,15 @@ export default function StudentAuthModal({
 
       <footer className="border-t border-slate-200 bg-white">
 
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4 text-center text-[10px] sm:text-xs text-slate-500">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-3 sm:flex-row sm:px-6 lg:px-8">
 
-          2026 @ALL RIGHTS RESERVED.
+          <p className="text-[8px] uppercase tracking-[0.12em] text-slate-400 sm:text-[9px]">
+            GNDU Hostel Services
+          </p>
+
+          <p className="text-[8px] text-slate-400 sm:text-[9px]">
+            2026 © ALL RIGHTS RESERVED.
+          </p>
 
         </div>
 
@@ -2276,9 +2167,9 @@ export default function StudentAuthModal({
   );
 }
 
-/* =========================================================
-   REUSABLE FIELD LABEL
-========================================================= */
+/* =============================================================
+   FIELD LABEL
+============================================================= */
 
 function FieldLabel({
   icon,
@@ -2286,9 +2177,9 @@ function FieldLabel({
   required = false,
 }) {
   return (
-    <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 min-w-0">
+    <label className="flex min-w-0 items-center gap-2 text-xs font-bold text-slate-700">
 
-      <span className="text-blue-600 shrink-0">
+      <span className="shrink-0 text-blue-600">
         {icon}
       </span>
 
@@ -2297,7 +2188,7 @@ function FieldLabel({
       </span>
 
       {required && (
-        <span className="text-red-500 shrink-0">
+        <span className="shrink-0 text-red-500">
           *
         </span>
       )}
@@ -2306,9 +2197,9 @@ function FieldLabel({
   );
 }
 
-/* =========================================================
-   REUSABLE FORM SECTION
-========================================================= */
+/* =============================================================
+   FORM SECTION
+============================================================= */
 
 function FormSection({
   icon,
@@ -2317,16 +2208,14 @@ function FormSection({
   children,
 }) {
   return (
-    <section className="rounded-xl border border-slate-200 bg-white overflow-hidden min-w-0">
+    <section className="overflow-hidden rounded-xl border border-slate-200 bg-white">
 
-      <div className="bg-slate-50 border-b border-slate-200 px-3 sm:px-4 py-3.5">
+      <div className="border-b border-slate-200 bg-slate-50 px-4 py-3.5">
 
-        <div className="flex items-start gap-3 min-w-0">
+        <div className="flex items-start gap-3">
 
-          <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
-
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-700">
             {icon}
-
           </div>
 
           <div className="min-w-0">
@@ -2336,11 +2225,9 @@ function FormSection({
             </h3>
 
             {description && (
-
-              <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5 leading-relaxed">
+              <p className="mt-0.5 text-[10px] leading-relaxed text-slate-500 sm:text-xs">
                 {description}
               </p>
-
             )}
 
           </div>
@@ -2349,10 +2236,193 @@ function FormSection({
 
       </div>
 
-      <div className="p-3 sm:p-4 space-y-4 min-w-0">
+      <div className="space-y-4 p-4">
         {children}
       </div>
 
     </section>
+  );
+}
+
+/* =============================================================
+   PASSWORD INPUT
+============================================================= */
+
+function PasswordInput({
+  label,
+  icon,
+  value,
+  onChange,
+  placeholder,
+  show,
+  setShow,
+  inputClass,
+}) {
+  return (
+    <div>
+
+      <FieldLabel
+        icon={icon}
+        label={label}
+        required
+      />
+
+      <div className="relative">
+
+        <input
+          required
+          type={show ? 'text' : 'password'}
+          autoComplete="new-password"
+          placeholder={placeholder}
+          value={value}
+          onChange={(e) =>
+            onChange(e.target.value)
+          }
+          className={`${inputClass} pr-12`}
+        />
+
+        <button
+          type="button"
+          onClick={() =>
+            setShow((prev) => !prev)
+          }
+          className="
+            absolute right-1.5 top-1/2
+            flex h-9 w-9 -translate-y-1/2
+            items-center justify-center
+            rounded-lg text-slate-400
+            transition hover:bg-slate-100
+            hover:text-slate-700
+            focus:outline-none
+            focus:ring-2 focus:ring-blue-200
+          "
+          aria-label={
+            show
+              ? `Hide ${label}`
+              : `Show ${label}`
+          }
+        >
+          {show ? (
+            <EyeOff className="h-4 w-4" />
+          ) : (
+            <Eye className="h-4 w-4" />
+          )}
+        </button>
+
+      </div>
+
+    </div>
+  );
+}
+
+/* =============================================================
+   MESSAGE BOX
+============================================================= */
+
+function MessageBox({
+  type,
+  message,
+}) {
+  const isError = type === 'error';
+
+  return (
+    <div
+      className={`
+        mb-5 flex items-start gap-3 rounded-xl
+        border p-3.5
+        ${
+          isError
+            ? 'border-red-200 bg-red-50'
+            : 'border-emerald-200 bg-emerald-50'
+        }
+      `}
+    >
+
+      <div
+        className={`
+          flex h-8 w-8 shrink-0 items-center
+          justify-center rounded-lg
+          ${
+            isError
+              ? 'bg-red-100'
+              : 'bg-emerald-100'
+          }
+        `}
+      >
+
+        {isError ? (
+          <AlertCircle className="h-4 w-4 text-red-600" />
+        ) : (
+          <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+        )}
+
+      </div>
+
+      <div className="min-w-0">
+
+        <p
+          className={`
+            text-xs font-bold
+            ${
+              isError
+                ? 'text-red-800'
+                : 'text-emerald-800'
+            }
+          `}
+        >
+          {isError
+            ? 'Unable to continue'
+            : 'Success'}
+        </p>
+
+        <p
+          className={`
+            mt-1 break-words
+            text-xs leading-relaxed
+            ${
+              isError
+                ? 'text-red-700'
+                : 'text-emerald-700'
+            }
+          `}
+        >
+          {message}
+        </p>
+
+      </div>
+
+    </div>
+  );
+}
+
+/* =============================================================
+   INFO CARD
+============================================================= */
+
+function InfoCard({
+  icon: Icon,
+  title,
+  text,
+}) {
+  return (
+    <div className="flex min-w-0 items-center gap-3 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50">
+        <Icon className="h-4 w-4 text-blue-700" />
+      </div>
+
+      <div className="min-w-0">
+
+        <p className="truncate text-xs font-bold text-slate-800">
+          {title}
+        </p>
+
+        <p className="mt-0.5 truncate text-[9px] text-slate-400">
+          {text}
+        </p>
+
+      </div>
+
+    </div>
   );
 }

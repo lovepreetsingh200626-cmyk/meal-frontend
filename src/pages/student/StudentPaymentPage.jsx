@@ -11,6 +11,12 @@ import {
   ReceiptText,
   CheckCircle2,
   AlertCircle,
+  ShieldCheck,
+  WalletCards,
+  X,
+  QrCode,
+  Landmark,
+  Clock3,
 } from 'lucide-react';
 
 import jsPDF from 'jspdf';
@@ -85,8 +91,8 @@ const isMealTaken = (record, meal) => {
   for (const value of possibleValues) {
     if (value === true) return true;
 
-    if (typeof value === 'number') {
-      if (value > 0) return true;
+    if (typeof value === 'number' && value > 0) {
+      return true;
     }
 
     if (typeof value === 'string') {
@@ -152,6 +158,7 @@ const getDailyTotal = (record) => {
   const possibleValues = [
     record.totalCost,
     record.dailyTotal,
+    record.dailyTotalCost,
     record.total,
     record.amount,
   ];
@@ -204,7 +211,183 @@ const getMealCount = (record) => {
 };
 
 /* =========================================================
-   COMPONENT
+   ONLINE PAYMENT PROTOTYPE
+========================================================= */
+
+const OnlinePaymentPrototype = ({ amount, monthName, onClose }) => {
+  const paymentMethods = [
+    {
+      icon: QrCode,
+      title: 'UPI',
+      description: 'Google Pay, PhonePe, Paytm & other UPI apps',
+    },
+    {
+      icon: CreditCard,
+      title: 'Debit / Credit Card',
+      description: 'Visa, Mastercard, RuPay & other supported cards',
+    },
+    {
+      icon: Landmark,
+      title: 'Net Banking',
+      description: 'Secure bank account payment',
+    },
+  ];
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/60 p-3 backdrop-blur-sm sm:p-5">
+      <div className="max-h-[92vh] w-full max-w-md overflow-y-auto rounded-2xl bg-white shadow-2xl">
+        
+        {/* HEADER */}
+        <div className="relative overflow-hidden bg-blue-950 px-5 py-5 text-white sm:px-6 sm:py-6">
+          <button
+            type="button"
+            onClick={onClose}
+            className="absolute right-4 top-4 rounded-lg p-1.5 text-blue-100 transition hover:bg-white/10 hover:text-white"
+            aria-label="Close payment options"
+          >
+            <X size={20} />
+          </button>
+
+          <div className="flex items-center gap-3 pr-8">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/10">
+              <WalletCards size={22} />
+            </div>
+
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-blue-200">
+                Student Accounts
+              </p>
+
+              <h2 className="mt-0.5 text-lg font-bold sm:text-xl">
+                Online Payment
+              </h2>
+            </div>
+          </div>
+
+          <p className="mt-4 text-xs leading-5 text-blue-100">
+            Online payment facilities are being prepared for student mess
+            accounts.
+          </p>
+        </div>
+
+        {/* AMOUNT */}
+        <div className="border-b border-slate-200 bg-slate-50 px-5 py-4 sm:px-6">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                Amount Payable
+              </p>
+
+              <p className="mt-1 text-2xl font-bold text-slate-900">
+                {formatCurrency(amount)}
+              </p>
+
+              <p className="mt-0.5 text-[10px] text-slate-500">
+                {monthName} mess payment
+              </p>
+            </div>
+
+            <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1.5 text-[10px] font-bold text-amber-700">
+              <Clock3 size={12} />
+              Coming Soon
+            </span>
+          </div>
+        </div>
+
+        {/* PAYMENT METHODS */}
+        <div className="space-y-3 p-5 sm:p-6">
+          <div>
+            <p className="text-xs font-bold text-slate-900">
+              Available payment methods
+            </p>
+
+            <p className="mt-0.5 text-[10px] text-slate-500">
+              These options will become available after gateway activation.
+            </p>
+          </div>
+
+          <div className="space-y-2.5">
+            {paymentMethods.map((method) => {
+              const Icon = method.icon;
+
+              return (
+                <div
+                  key={method.title}
+                  className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-3"
+                >
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-700">
+                    <Icon size={19} />
+                  </div>
+
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-bold text-slate-900">
+                      {method.title}
+                    </p>
+
+                    <p className="mt-0.5 text-[10px] leading-4 text-slate-500">
+                      {method.description}
+                    </p>
+                  </div>
+
+                  <span className="shrink-0 rounded-full bg-slate-100 px-2 py-1 text-[8px] font-bold uppercase tracking-wide text-slate-500">
+                    Soon
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* STATUS NOTICE */}
+          <div className="rounded-xl border border-amber-200 bg-amber-50 p-3.5">
+            <div className="flex items-start gap-2.5">
+              <Clock3
+                size={17}
+                className="mt-0.5 shrink-0 text-amber-700"
+              />
+
+              <div>
+                <p className="text-xs font-bold text-amber-900">
+                  Payment Gateway Integration in Progress
+                </p>
+
+                <p className="mt-1 text-[10px] leading-4 text-amber-800">
+                  Online payments are currently unavailable. The payment
+                  gateway will be activated after the required institutional
+                  verification and configuration are completed.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* SECURITY */}
+          <div className="flex items-start gap-2 rounded-lg bg-slate-50 p-3">
+            <ShieldCheck
+              size={15}
+              className="mt-0.5 shrink-0 text-emerald-600"
+            />
+
+            <p className="text-[9px] leading-4 text-slate-500">
+              When activated, payments will be processed through a secure
+              authorized payment gateway. No card or UPI information is stored
+              by this portal.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            className="min-h-11 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 transition hover:bg-slate-50"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* =========================================================
+   MAIN COMPONENT
 ========================================================= */
 
 export default function StudentPaymentPage({ user }) {
@@ -216,6 +399,8 @@ export default function StudentPaymentPage({ user }) {
 
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+
+  const [showOnlinePayment, setShowOnlinePayment] = useState(false);
 
   /* =======================================================
      FETCH MEAL RECORDS
@@ -275,7 +460,7 @@ export default function StudentPaymentPage({ user }) {
   });
 
   /* =======================================================
-     FILTER CURRENT MONTH RECORDS
+     CURRENT MONTH RECORDS
   ======================================================= */
 
   const monthlyRecords = useMemo(() => {
@@ -344,6 +529,16 @@ export default function StudentPaymentPage({ user }) {
   }, [monthlyRecords, user]);
 
   /* =======================================================
+     OPEN ONLINE PAYMENT PROTOTYPE
+  ======================================================= */
+
+  const handleOpenOnlinePayment = () => {
+    setErrorMsg('');
+    setSuccessMsg('');
+    setShowOnlinePayment(true);
+  };
+
+  /* =======================================================
      PDF GENERATION
   ======================================================= */
 
@@ -363,12 +558,9 @@ export default function StudentPaymentPage({ user }) {
       const pageHeight = doc.internal.pageSize.getHeight();
 
       const margin = 14;
-
       let y = 14;
 
-      /* ===================================================
-         HEADER
-      =================================================== */
+      /* HEADER */
 
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(17);
@@ -395,6 +587,7 @@ export default function StudentPaymentPage({ user }) {
       y += 8;
 
       doc.setDrawColor(210, 214, 220);
+
       doc.line(
         margin,
         y,
@@ -404,9 +597,7 @@ export default function StudentPaymentPage({ user }) {
 
       y += 8;
 
-      /* ===================================================
-         STATEMENT INFO
-      =================================================== */
+      /* STATEMENT INFO */
 
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(9);
@@ -429,7 +620,10 @@ export default function StudentPaymentPage({ user }) {
       y += 6;
 
       doc.text(
-        `Invoice: INV-${currentMonthPrefix.replace('-', '')}-${String(
+        `Invoice: INV-${currentMonthPrefix.replace(
+          '-',
+          ''
+        )}-${String(
           user?.rollNo ||
             user?.studentId ||
             'STUDENT'
@@ -440,13 +634,10 @@ export default function StudentPaymentPage({ user }) {
 
       y += 8;
 
-      /* ===================================================
-         STUDENT INFORMATION
-      =================================================== */
+      /* STUDENT INFORMATION */
 
       autoTable(doc, {
         startY: y,
-
         theme: 'grid',
 
         margin: {
@@ -475,13 +666,16 @@ export default function StudentPaymentPage({ user }) {
             cellWidth: 28,
             fontStyle: 'bold',
           },
+
           1: {
             cellWidth: 58,
           },
+
           2: {
             cellWidth: 28,
             fontStyle: 'bold',
           },
+
           3: {
             cellWidth: 'auto',
           },
@@ -494,6 +688,7 @@ export default function StudentPaymentPage({ user }) {
             'Student ID',
             user?.studentId || '—',
           ],
+
           [
             'Roll No.',
             user?.rollNo || '—',
@@ -502,6 +697,7 @@ export default function StudentPaymentPage({ user }) {
               user?.hostelId?.hostelNumber ||
               '—',
           ],
+
           [
             'Department',
             user?.department || '—',
@@ -513,9 +709,7 @@ export default function StudentPaymentPage({ user }) {
 
       y = doc.lastAutoTable.finalY + 7;
 
-      /* ===================================================
-         MONTHLY PAYMENT SUMMARY
-      =================================================== */
+      /* MONTHLY SUMMARY */
 
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(10);
@@ -530,7 +724,6 @@ export default function StudentPaymentPage({ user }) {
 
       autoTable(doc, {
         startY: y,
-
         theme: 'grid',
 
         margin: {
@@ -558,6 +751,7 @@ export default function StudentPaymentPage({ user }) {
           0: {
             cellWidth: 120,
           },
+
           1: {
             cellWidth: 'auto',
             halign: 'right',
@@ -573,16 +767,19 @@ export default function StudentPaymentPage({ user }) {
             'Base Maintenance Fee',
             formatPdfCurrency(summary.baseFee),
           ],
+
           [
             'Additional Diet Charges',
             formatPdfCurrency(
               summary.additionalDietCharges
             ),
           ],
+
           [
             'Extra Items',
             formatPdfCurrency(summary.extrasCost),
           ],
+
           [
             'TOTAL PAYABLE',
             formatPdfCurrency(summary.totalPayable),
@@ -601,9 +798,7 @@ export default function StudentPaymentPage({ user }) {
 
       y = doc.lastAutoTable.finalY + 7;
 
-      /* ===================================================
-         MESS USAGE
-      =================================================== */
+      /* MESS USAGE */
 
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(10);
@@ -618,7 +813,6 @@ export default function StudentPaymentPage({ user }) {
 
       autoTable(doc, {
         startY: y,
-
         theme: 'grid',
 
         margin: {
@@ -639,6 +833,7 @@ export default function StudentPaymentPage({ user }) {
           0: {
             cellWidth: 90,
           },
+
           1: {
             cellWidth: 'auto',
             halign: 'right',
@@ -650,14 +845,17 @@ export default function StudentPaymentPage({ user }) {
             'Days Recorded',
             String(summary.daysRecorded),
           ],
+
           [
             'Meals Recorded',
             String(summary.mealsRecorded),
           ],
+
           [
             'Diet Cost',
             formatPdfCurrency(summary.dietCost),
           ],
+
           [
             'Extra Items Cost',
             formatPdfCurrency(summary.extrasCost),
@@ -667,9 +865,7 @@ export default function StudentPaymentPage({ user }) {
 
       y = doc.lastAutoTable.finalY + 8;
 
-      /* ===================================================
-         FINAL TOTAL BOX
-      =================================================== */
+      /* FINAL TOTAL */
 
       const totalBoxHeight = 21;
 
@@ -683,8 +879,17 @@ export default function StudentPaymentPage({ user }) {
           totalBoxHeight;
       }
 
-      doc.setFillColor(239, 246, 255);
-      doc.setDrawColor(147, 197, 253);
+      doc.setFillColor(
+        239,
+        246,
+        255
+      );
+
+      doc.setDrawColor(
+        147,
+        197,
+        253
+      );
 
       doc.roundedRect(
         margin,
@@ -708,19 +913,23 @@ export default function StudentPaymentPage({ user }) {
       doc.setFontSize(15);
 
       doc.text(
-        formatPdfCurrency(summary.totalPayable),
+        formatPdfCurrency(
+          summary.totalPayable
+        ),
         pageWidth - margin - 6,
         y + 11,
         { align: 'right' }
       );
 
-      /* ===================================================
-         FOOTER
-      =================================================== */
+      /* FOOTER */
 
       const footerY = pageHeight - 15;
 
-      doc.setDrawColor(220, 224, 230);
+      doc.setDrawColor(
+        220,
+        224,
+        230
+      );
 
       doc.line(
         margin,
@@ -729,10 +938,18 @@ export default function StudentPaymentPage({ user }) {
         footerY - 5
       );
 
-      doc.setFont('helvetica', 'normal');
+      doc.setFont(
+        'helvetica',
+        'normal'
+      );
+
       doc.setFontSize(7.5);
 
-      doc.setTextColor(90, 98, 108);
+      doc.setTextColor(
+        90,
+        98,
+        108
+      );
 
       doc.text(
         `Generated on ${formatDate(new Date())}`,
@@ -754,11 +971,13 @@ export default function StudentPaymentPage({ user }) {
         { align: 'right' }
       );
 
-      doc.setTextColor(35, 42, 52);
+      doc.setTextColor(
+        35,
+        42,
+        52
+      );
 
-      /* ===================================================
-         FILE NAME
-      =================================================== */
+      /* FILE NAME */
 
       const safeRollNo = String(
         user?.rollNo ||
@@ -781,7 +1000,6 @@ export default function StudentPaymentPage({ user }) {
       setTimeout(() => {
         setSuccessMsg('');
       }, 3500);
-
     } catch (error) {
       console.error(
         'PDF generation failed:',
@@ -809,7 +1027,7 @@ export default function StudentPaymentPage({ user }) {
             className="animate-spin text-blue-600"
           />
 
-          <p className="text-xs sm:text-sm font-medium">
+          <p className="text-xs font-medium sm:text-sm">
             Loading payment statement...
           </p>
         </div>
@@ -829,7 +1047,6 @@ export default function StudentPaymentPage({ user }) {
       =================================================== */}
 
       <section className="w-full min-w-0 rounded-xl border border-slate-200 bg-white p-3 shadow-sm sm:rounded-2xl sm:p-6">
-
         <div className="flex min-w-0 flex-col gap-3 sm:gap-5 lg:flex-row lg:items-center lg:justify-between">
 
           <div className="flex min-w-0 items-start gap-2.5 sm:gap-4">
@@ -847,7 +1064,6 @@ export default function StudentPaymentPage({ user }) {
             </div>
 
             <div className="min-w-0">
-
               <p className="text-[9px] font-bold uppercase tracking-wider text-blue-700 sm:text-xs">
                 Student Finance
               </p>
@@ -860,9 +1076,7 @@ export default function StudentPaymentPage({ user }) {
                 View your current monthly mess charges and
                 generate an official payment statement.
               </p>
-
             </div>
-
           </div>
 
           <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto">
@@ -871,7 +1085,7 @@ export default function StudentPaymentPage({ user }) {
               type="button"
               onClick={fetchRecords}
               disabled={loading || generating}
-              className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-[11px] font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 sm:min-h-0 sm:gap-2 sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm"
+              className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-[11px] font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 sm:gap-2 sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm"
             >
               <RefreshCw
                 size={14}
@@ -890,7 +1104,7 @@ export default function StudentPaymentPage({ user }) {
               type="button"
               onClick={generatePDF}
               disabled={generating}
-              className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-lg bg-blue-700 px-2.5 py-2 text-[11px] font-semibold text-white shadow-sm transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60 sm:min-h-0 sm:gap-2 sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm"
+              className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-lg bg-blue-700 px-2.5 py-2 text-[11px] font-semibold text-white shadow-sm transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60 sm:gap-2 sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm"
             >
               {generating ? (
                 <>
@@ -928,11 +1142,8 @@ export default function StudentPaymentPage({ user }) {
                 </>
               )}
             </button>
-
           </div>
-
         </div>
-
       </section>
 
       {/* ===================================================
@@ -941,58 +1152,123 @@ export default function StudentPaymentPage({ user }) {
 
       {errorMsg && (
         <div className="flex min-w-0 items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-2.5 text-[11px] leading-4 text-red-700 sm:gap-3 sm:rounded-xl sm:p-4 sm:text-sm sm:leading-5">
-
           <AlertCircle
             size={16}
-            className="mt-0.5 shrink-0 sm:hidden"
-          />
-
-          <AlertCircle
-            size={19}
-            className="mt-0.5 hidden shrink-0 sm:block"
+            className="mt-0.5 shrink-0"
           />
 
           <p className="min-w-0 break-words">
             {errorMsg}
           </p>
-
         </div>
       )}
 
       {successMsg && (
         <div className="flex min-w-0 items-start gap-2 rounded-lg border border-emerald-200 bg-emerald-50 p-2.5 text-[11px] leading-4 text-emerald-700 sm:gap-3 sm:rounded-xl sm:p-4 sm:text-sm sm:leading-5">
-
           <CheckCircle2
             size={16}
-            className="mt-0.5 shrink-0 sm:hidden"
-          />
-
-          <CheckCircle2
-            size={19}
-            className="mt-0.5 hidden shrink-0 sm:block"
+            className="mt-0.5 shrink-0"
           />
 
           <p className="min-w-0 break-words">
             {successMsg}
           </p>
-
         </div>
       )}
+
+      {/* ===================================================
+          ONLINE PAYMENT
+      =================================================== */}
+
+      <section className="w-full min-w-0 overflow-hidden rounded-xl border border-blue-200 bg-white shadow-sm sm:rounded-2xl">
+
+        <div className="border-b border-blue-100 bg-blue-50/60 px-3 py-3 sm:px-6 sm:py-4">
+          <div className="flex items-start justify-between gap-3">
+
+            <div className="flex min-w-0 items-start gap-2.5 sm:gap-3">
+
+              <div className="shrink-0 rounded-lg bg-blue-100 p-1.5 text-blue-700 sm:rounded-xl sm:p-2.5">
+                <WalletCards
+                  size={17}
+                  className="sm:hidden"
+                />
+
+                <WalletCards
+                  size={20}
+                  className="hidden sm:block"
+                />
+              </div>
+
+              <div className="min-w-0">
+                <h2 className="text-sm font-bold text-slate-900 sm:text-base">
+                  Pay Your Mess Charges Online
+                </h2>
+
+                <p className="mt-0.5 text-[9px] leading-4 text-slate-500 sm:text-xs sm:leading-5">
+                  UPI and debit/credit card payment facility is
+                  coming soon.
+                </p>
+              </div>
+            </div>
+
+            <div className="hidden shrink-0 items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-1 text-[9px] font-semibold text-amber-700 sm:flex">
+              <Clock3 size={12} />
+              Coming Soon
+            </div>
+          </div>
+        </div>
+
+        <div className="p-3 sm:p-5">
+
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+
+            <div>
+              <p className="text-[9px] font-semibold uppercase tracking-wide text-slate-500 sm:text-xs">
+                Amount Due
+              </p>
+
+              <p className="mt-1 text-2xl font-bold text-slate-900 sm:text-3xl">
+                {formatCurrency(summary.totalPayable)}
+              </p>
+
+              <p className="mt-1 text-[9px] text-slate-500 sm:text-xs">
+                {currentMonthName} mess payment
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleOpenOnlinePayment}
+              disabled={summary.totalPayable <= 0}
+              className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-blue-800 active:bg-blue-900 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:min-w-[210px]"
+            >
+              <CreditCard size={18} />
+
+              Pay Online
+            </button>
+          </div>
+
+          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-slate-100 pt-3 text-[9px] text-slate-500 sm:text-xs">
+            <span>✓ UPI</span>
+            <span>✓ Debit Card</span>
+            <span>✓ Credit Card</span>
+            <span>✓ Net Banking</span>
+          </div>
+        </div>
+      </section>
 
       {/* ===================================================
           MONTH / TOTAL
       =================================================== */}
 
-      <section className="grid grid-cols-2 gap-2.5 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
+      <section className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-4">
 
-        {/* Billing Period */}
+        {/* BILLING PERIOD */}
 
         <div className="min-w-0 rounded-xl border border-slate-200 bg-white p-3 shadow-sm sm:rounded-2xl sm:p-5">
-
           <div className="flex min-w-0 items-center justify-between gap-2">
 
             <div className="min-w-0">
-
               <p className="text-[9px] font-semibold uppercase tracking-wide text-slate-500 sm:text-xs">
                 Billing Period
               </p>
@@ -1000,33 +1276,20 @@ export default function StudentPaymentPage({ user }) {
               <p className="mt-1 truncate text-xs font-bold text-slate-900 sm:mt-2 sm:text-lg">
                 {currentMonthName}
               </p>
-
             </div>
 
             <div className="shrink-0 rounded-lg bg-blue-50 p-1.5 text-blue-700 sm:rounded-xl sm:p-2.5">
-              <CalendarDays
-                size={15}
-                className="sm:hidden"
-              />
-
-              <CalendarDays
-                size={20}
-                className="hidden sm:block"
-              />
+              <CalendarDays size={15} />
             </div>
-
           </div>
-
         </div>
 
-        {/* Days */}
+        {/* DAYS */}
 
         <div className="min-w-0 rounded-xl border border-slate-200 bg-white p-3 shadow-sm sm:rounded-2xl sm:p-5">
-
           <div className="flex min-w-0 items-center justify-between gap-2">
 
             <div>
-
               <p className="text-[9px] font-semibold uppercase tracking-wide text-slate-500 sm:text-xs">
                 Days Recorded
               </p>
@@ -1034,33 +1297,20 @@ export default function StudentPaymentPage({ user }) {
               <p className="mt-1 text-xl font-bold text-slate-900 sm:mt-2 sm:text-2xl">
                 {summary.daysRecorded}
               </p>
-
             </div>
 
             <div className="shrink-0 rounded-lg bg-slate-100 p-1.5 text-slate-700 sm:rounded-xl sm:p-2.5">
-              <FileText
-                size={15}
-                className="sm:hidden"
-              />
-
-              <FileText
-                size={20}
-                className="hidden sm:block"
-              />
+              <FileText size={15} />
             </div>
-
           </div>
-
         </div>
 
-        {/* Meals */}
+        {/* MEALS */}
 
         <div className="min-w-0 rounded-xl border border-slate-200 bg-white p-3 shadow-sm sm:rounded-2xl sm:p-5">
-
           <div className="flex min-w-0 items-center justify-between gap-2">
 
             <div>
-
               <p className="text-[9px] font-semibold uppercase tracking-wide text-slate-500 sm:text-xs">
                 Meals Recorded
               </p>
@@ -1068,33 +1318,20 @@ export default function StudentPaymentPage({ user }) {
               <p className="mt-1 text-xl font-bold text-slate-900 sm:mt-2 sm:text-2xl">
                 {summary.mealsRecorded}
               </p>
-
             </div>
 
             <div className="shrink-0 rounded-lg bg-emerald-50 p-1.5 text-emerald-700 sm:rounded-xl sm:p-2.5">
-              <Utensils
-                size={15}
-                className="sm:hidden"
-              />
-
-              <Utensils
-                size={20}
-                className="hidden sm:block"
-              />
+              <Utensils size={15} />
             </div>
-
           </div>
-
         </div>
 
-        {/* Total */}
+        {/* TOTAL */}
 
         <div className="min-w-0 rounded-xl border border-blue-200 bg-blue-50 p-3 shadow-sm sm:rounded-2xl sm:p-5">
-
           <div className="flex min-w-0 items-center justify-between gap-2">
 
             <div className="min-w-0">
-
               <p className="text-[9px] font-semibold uppercase tracking-wide text-blue-700 sm:text-xs">
                 Total Payable
               </p>
@@ -1102,25 +1339,13 @@ export default function StudentPaymentPage({ user }) {
               <p className="mt-1 truncate text-xl font-bold text-blue-900 sm:mt-2 sm:text-2xl">
                 {formatCurrency(summary.totalPayable)}
               </p>
-
             </div>
 
             <div className="shrink-0 rounded-lg bg-white p-1.5 text-blue-700 shadow-sm sm:rounded-xl sm:p-2.5">
-              <IndianRupee
-                size={15}
-                className="sm:hidden"
-              />
-
-              <IndianRupee
-                size={20}
-                className="hidden sm:block"
-              />
+              <IndianRupee size={15} />
             </div>
-
           </div>
-
         </div>
-
       </section>
 
       {/* ===================================================
@@ -1130,23 +1355,13 @@ export default function StudentPaymentPage({ user }) {
       <section className="w-full min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm sm:rounded-2xl">
 
         <div className="border-b border-slate-200 px-3 py-3 sm:px-6 sm:py-4">
-
           <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
 
             <div className="shrink-0 rounded-lg bg-slate-100 p-1.5 text-slate-700 sm:p-2">
-              <ReceiptText
-                size={16}
-                className="sm:hidden"
-              />
-
-              <ReceiptText
-                size={19}
-                className="hidden sm:block"
-              />
+              <ReceiptText size={16} />
             </div>
 
             <div className="min-w-0">
-
               <h2 className="text-sm font-bold text-slate-900 sm:text-base">
                 Monthly Payment Summary
               </h2>
@@ -1154,19 +1369,14 @@ export default function StudentPaymentPage({ user }) {
               <p className="mt-0.5 truncate text-[9px] text-slate-500 sm:text-xs">
                 Charges calculated from your current mess records.
               </p>
-
             </div>
-
           </div>
-
         </div>
 
         <div className="divide-y divide-slate-100">
 
           <div className="flex min-w-0 items-center justify-between gap-3 px-3 py-3 sm:px-6 sm:py-4">
-
             <div className="min-w-0">
-
               <p className="text-xs font-medium text-slate-800 sm:text-sm">
                 Base Maintenance Fee
               </p>
@@ -1174,19 +1384,15 @@ export default function StudentPaymentPage({ user }) {
               <p className="mt-0.5 hidden text-xs text-slate-500 sm:block">
                 Monthly hostel mess maintenance
               </p>
-
             </div>
 
             <p className="shrink-0 text-xs font-bold text-slate-900 sm:text-sm">
               {formatCurrency(summary.baseFee)}
             </p>
-
           </div>
 
           <div className="flex min-w-0 items-center justify-between gap-3 px-3 py-3 sm:px-6 sm:py-4">
-
             <div className="min-w-0">
-
               <p className="text-xs font-medium text-slate-800 sm:text-sm">
                 Additional Diet Charges
               </p>
@@ -1194,7 +1400,6 @@ export default function StudentPaymentPage({ user }) {
               <p className="mt-0.5 hidden text-xs text-slate-500 sm:block">
                 Charges from recorded meals
               </p>
-
             </div>
 
             <p className="shrink-0 text-xs font-bold text-slate-900 sm:text-sm">
@@ -1202,13 +1407,10 @@ export default function StudentPaymentPage({ user }) {
                 summary.additionalDietCharges
               )}
             </p>
-
           </div>
 
           <div className="flex min-w-0 items-center justify-between gap-3 px-3 py-3 sm:px-6 sm:py-4">
-
             <div className="min-w-0">
-
               <p className="text-xs font-medium text-slate-800 sm:text-sm">
                 Extra Items
               </p>
@@ -1216,19 +1418,15 @@ export default function StudentPaymentPage({ user }) {
               <p className="mt-0.5 hidden text-xs text-slate-500 sm:block">
                 Additional items recorded
               </p>
-
             </div>
 
             <p className="shrink-0 text-xs font-bold text-slate-900 sm:text-sm">
               {formatCurrency(summary.extrasCost)}
             </p>
-
           </div>
 
           <div className="flex min-w-0 items-center justify-between gap-3 bg-blue-50 px-3 py-3.5 sm:px-6 sm:py-5">
-
             <div className="min-w-0">
-
               <p className="text-xs font-bold text-blue-900 sm:text-sm">
                 Total Payable
               </p>
@@ -1236,17 +1434,13 @@ export default function StudentPaymentPage({ user }) {
               <p className="mt-0.5 hidden text-xs text-blue-700 sm:block">
                 Current monthly statement amount
               </p>
-
             </div>
 
             <p className="shrink-0 text-base font-bold text-blue-900 sm:text-xl">
               {formatCurrency(summary.totalPayable)}
             </p>
-
           </div>
-
         </div>
-
       </section>
 
       {/* ===================================================
@@ -1258,19 +1452,10 @@ export default function StudentPaymentPage({ user }) {
         <div className="mb-3 flex items-center gap-2.5 sm:mb-5 sm:gap-3">
 
           <div className="shrink-0 rounded-lg bg-emerald-50 p-1.5 text-emerald-700 sm:p-2">
-            <Utensils
-              size={16}
-              className="sm:hidden"
-            />
-
-            <Utensils
-              size={19}
-              className="hidden sm:block"
-            />
+            <Utensils size={16} />
           </div>
 
           <div className="min-w-0">
-
             <h2 className="text-sm font-bold text-slate-900 sm:text-base">
               Mess Usage
             </h2>
@@ -1278,12 +1463,10 @@ export default function StudentPaymentPage({ user }) {
             <p className="text-[9px] text-slate-500 sm:text-xs">
               Activity recorded for {currentMonthName}.
             </p>
-
           </div>
-
         </div>
 
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
 
           <div className="min-w-0 rounded-lg border border-slate-200 bg-slate-50 p-2.5 sm:rounded-xl sm:p-4">
             <p className="text-[9px] font-semibold text-slate-500 sm:text-xs">
@@ -1324,9 +1507,7 @@ export default function StudentPaymentPage({ user }) {
               {formatCurrency(summary.extrasCost)}
             </p>
           </div>
-
         </div>
-
       </section>
 
       {/* ===================================================
@@ -1338,19 +1519,10 @@ export default function StudentPaymentPage({ user }) {
         <div className="mb-3 flex items-center gap-2.5 sm:mb-5 sm:gap-3">
 
           <div className="shrink-0 rounded-lg bg-blue-50 p-1.5 text-blue-700 sm:p-2">
-            <FileText
-              size={16}
-              className="sm:hidden"
-            />
-
-            <FileText
-              size={19}
-              className="hidden sm:block"
-            />
+            <FileText size={16} />
           </div>
 
           <div className="min-w-0">
-
             <h2 className="text-sm font-bold text-slate-900 sm:text-base">
               Student Information
             </h2>
@@ -1358,9 +1530,7 @@ export default function StudentPaymentPage({ user }) {
             <p className="text-[9px] text-slate-500 sm:text-xs">
               Information used on your payment statement.
             </p>
-
           </div>
-
         </div>
 
         <div className="grid grid-cols-2 gap-x-3 gap-y-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
@@ -1429,22 +1599,30 @@ export default function StudentPaymentPage({ user }) {
               {user?.session || '—'}
             </p>
           </div>
-
         </div>
-
       </section>
 
       {/* ===================================================
-          INFO NOTE
+          CASH / INFO NOTE
       =================================================== */}
 
       <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-[9px] leading-4 text-slate-600 sm:rounded-xl sm:px-4 sm:py-3 sm:text-xs sm:leading-5">
-        The downloadable statement is generated from the mess
-        records currently available in the system. If any meal
-        or charge appears incorrect, please contact the hostel
-        mess administration.
+        Online payments are currently under development. For
+        immediate cash payment, please visit the Accounts
+        Department / authorized hostel mess office.
       </div>
 
+      {/* ===================================================
+          ONLINE PAYMENT MODAL
+      =================================================== */}
+
+      {showOnlinePayment && (
+        <OnlinePaymentPrototype
+          amount={summary.totalPayable}
+          monthName={currentMonthName}
+          onClose={() => setShowOnlinePayment(false)}
+        />
+      )}
     </div>
   );
 }

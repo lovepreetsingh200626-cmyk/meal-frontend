@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import API from '../services/api';
+
 import {
   User,
   Lock,
@@ -14,21 +15,32 @@ import {
   ArrowLeft,
   Building2,
   ChevronRight,
+  Eye,
+  EyeOff,
+  Server,
+  Database,
+  FileCheck2,
+  Activity,
+  Menu,
+  X,
 } from 'lucide-react';
 
 export default function AdminAuthModal({
   onLoginSuccess,
-  onSwitchToStudent
+  onSwitchToStudent,
 }) {
   const [isRegistering, setIsRegistering] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showAdminSecret, setShowAdminSecret] = useState(false);
+  const [showMobileInfo, setShowMobileInfo] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
     password: '',
-    adminSecret: ''
+    adminSecret: '',
   });
 
   const resetMessages = () => {
@@ -37,20 +49,22 @@ export default function AdminAuthModal({
   };
 
   const updateField = (field, value) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
   const switchMode = (registering) => {
     setIsRegistering(registering);
     resetMessages();
+    setShowPassword(false);
+    setShowAdminSecret(false);
 
     setFormData({
       name: '',
       password: '',
-      adminSecret: ''
+      adminSecret: '',
     });
   };
 
@@ -87,7 +101,7 @@ export default function AdminAuthModal({
         await API.post('/auth/register-admin', {
           name,
           password,
-          adminSecret
+          adminSecret,
         });
 
         setSuccessMsg(
@@ -97,18 +111,20 @@ export default function AdminAuthModal({
         setFormData({
           name,
           password: '',
-          adminSecret: ''
+          adminSecret: '',
         });
 
         setTimeout(() => {
           setIsRegistering(false);
           resetMessages();
+          setShowPassword(false);
+          setShowAdminSecret(false);
         }, 1600);
       } else {
         const { data } = await API.post('/auth/login', {
           name,
           password,
-          role: 'admin'
+          role: 'admin',
         });
 
         localStorage.setItem('token', data.token);
@@ -119,7 +135,7 @@ export default function AdminAuthModal({
     } catch (err) {
       setError(
         err.response?.data?.message ||
-        'Unable to authenticate. Please check your credentials and try again.'
+          'Unable to authenticate. Please check your credentials and try again.'
       );
     } finally {
       setLoading(false);
@@ -127,702 +143,356 @@ export default function AdminAuthModal({
   };
 
   return (
-    <div className="
-      min-h-screen
-      w-full
-      min-w-0
-      overflow-x-hidden
-      bg-slate-100
-      text-slate-900
-      flex
-      flex-col
-    ">
+    <div className="min-h-screen w-full overflow-x-hidden bg-[#07111f] text-slate-100">
 
       {/* =========================================================
-          TOP INSTITUTIONAL BAR
+          BACKGROUND
       ========================================================= */}
-      <div className="bg-slate-950 border-b border-slate-800 text-slate-300 shrink-0">
+      <div className="pointer-events-none fixed inset-0 overflow-hidden">
+        <div className="absolute -left-32 -top-32 h-72 w-72 rounded-full bg-blue-900/20 blur-3xl" />
+        <div className="absolute -bottom-32 -right-32 h-80 w-80 rounded-full bg-amber-600/10 blur-3xl" />
 
-        <div className="
-          max-w-7xl
-          mx-auto
-          w-full
-          px-3 sm:px-6 lg:px-8
-          py-2 sm:py-2.5
-        ">
-
-          <div className="
-            flex
-            items-center
-            justify-between
-            gap-2
-            min-w-0
-          ">
-
-            <div className="
-              min-w-0
-              flex
-              items-center
-              gap-1.5 sm:gap-2
-            ">
-
-              <span className="relative flex h-2 w-2 shrink-0">
-                <span className="
-                  absolute
-                  inline-flex
-                  h-full
-                  w-full
-                  rounded-full
-                  bg-emerald-400
-                  opacity-75
-                  animate-ping
-                />
-
-                <span className="
-                  relative
-                  inline-flex
-                  h-2
-                  w-2
-                  rounded-full
-                  bg-emerald-400
-                />
-              </span>
-
-              <span className="
-                min-w-0
-                truncate
-                text-[8px]
-                xs:text-[9px]
-                sm:text-[10px]
-                font-bold
-                uppercase
-                tracking-[0.06em]
-              ">
-                Mess Records & Fee Payment Portal
-              </span>
-
-              <span className="hidden md:inline text-slate-700">
-                •
-              </span>
-
-              <span className="
-                hidden
-                md:inline
-                text-[10px]
-                text-slate-500
-                shrink-0
-              ">
-                Hostel Administration
-              </span>
-
-            </div>
-
-
-            <div className="
-              shrink-0
-              flex
-              items-center
-              gap-1.5
-              text-[8px]
-              sm:text-[10px]
-              text-slate-400
-            ">
-
-              <ShieldCheck className="
-                w-3.5
-                h-3.5
-                text-emerald-400
-                shrink-0
-              " />
-
-              <span className="hidden sm:inline whitespace-nowrap">
-                Authorized administrative access
-              </span>
-
-              <span className="sm:hidden">
-                Admin Access
-              </span>
-
-            </div>
-
-          </div>
-
-        </div>
-
+        <div
+          className="absolute inset-0 opacity-[0.035]"
+          style={{
+            backgroundImage:
+              'linear-gradient(rgba(255,255,255,0.7) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.7) 1px, transparent 1px)',
+            backgroundSize: '36px 36px',
+          }}
+        />
       </div>
 
-
       {/* =========================================================
-          HEADER
+          TOP BAR
       ========================================================= */}
-      <header className="
-        bg-white
-        border-b
-        border-slate-200
-        shrink-0
-      ">
+      <header className="relative z-10 border-b border-white/10 bg-[#050c17]/90 backdrop-blur">
 
-        <div className="
-          max-w-7xl
-          mx-auto
-          w-full
-          px-3
-          sm:px-6
-          lg:px-8
-          py-3
-          sm:py-5
-        ">
+        <div className="mx-auto flex min-h-[58px] w-full max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
 
-          <div className="
-            flex
-            flex-col
-            lg:flex-row
-            items-center
-            justify-between
-            gap-3
-            sm:gap-4
-            lg:gap-8
-          ">
+          {/* Brand */}
+          <div className="flex min-w-0 items-center gap-2.5">
 
-            {/* Brand */}
-            <div className="
-              min-w-0
-              w-full
-              flex
-              items-center
-              justify-center
-              lg:justify-start
-              gap-2.5
-              sm:gap-4
-            ">
-
-              <div className="
-                w-10
-                h-10
-                sm:w-14
-                sm:h-14
-                lg:w-16
-                lg:h-16
-                shrink-0
-                rounded-xl
-                sm:rounded-2xl
-                bg-blue-950
-                flex
-                items-center
-                justify-center
-                shadow-sm
-              ">
-
-                <Landmark className="
-                  w-5
-                  h-5
-                  sm:w-7
-                  sm:h-7
-                  text-white
-                " />
-
-              </div>
-
-
-              <div className="
-                min-w-0
-                text-left
-              ">
-
-                <div className="
-                  flex
-                  flex-wrap
-                  items-center
-                  justify-start
-                  gap-1.5
-                  sm:gap-2
-                ">
-
-                  <h1 className="
-                    min-w-0
-                    text-sm
-                    sm:text-xl
-                    lg:text-2xl
-                    font-bold
-                    tracking-tight
-                    text-slate-950
-                    leading-tight
-                  ">
-                    Hostel Mess & Diet Management
-                  </h1>
-
-                  <span className="
-                    inline-flex
-                    items-center
-                    px-1.5
-                    sm:px-2
-                    py-0.5
-                    sm:py-1
-                    rounded-md
-                    bg-blue-50
-                    border
-                    border-blue-100
-                    text-blue-700
-                    text-[7px]
-                    sm:text-[9px]
-                    font-bold
-                    uppercase
-                    tracking-wide
-                    shrink-0
-                  ">
-                    Admin
-                  </span>
-
-                </div>
-
-
-                <p className="
-                  mt-1
-                  text-[9px]
-                  sm:text-xs
-                  lg:text-sm
-                  text-slate-500
-                  leading-relaxed
-                  max-w-2xl
-                ">
-                  Administrative portal for hostel mess records, payments and student services
-                </p>
-
-              </div>
-
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-amber-400/20 bg-amber-400/10">
+              <Landmark className="h-4 w-4 text-amber-300" />
             </div>
 
+            <div className="min-w-0">
+              <p className="truncate text-[10px] font-bold uppercase tracking-[0.12em] text-slate-200 sm:text-xs">
+                GNDU Hostel Administration
+              </p>
 
-            {/* Student Portal */}
-            <button
-              type="button"
-              onClick={onSwitchToStudent}
-              className="
-                w-full
-                lg:w-auto
-                shrink-0
-                inline-flex
-                items-center
-                justify-center
-                gap-2
-                px-4
-                py-2.5
-                sm:py-3
-                rounded-xl
-                border
-                border-slate-300
-                bg-white
-                text-slate-700
-                text-xs
-                sm:text-sm
-                font-semibold
-                shadow-sm
-                transition-all
-                duration-200
-                hover:bg-slate-50
-                hover:border-slate-400
-                lg:hover:-translate-y-0.5
-                active:translate-y-0
-                focus:outline-none
-                focus:ring-2
-                focus:ring-blue-200
-              "
-            >
-
-              <ArrowLeft className="
-                w-4
-                h-4
-                shrink-0
-              " />
-
-              <span>
-                Student Portal
-              </span>
-
-            </button>
+              <p className="hidden text-[9px] text-slate-500 sm:block">
+                Mess Records & Fee Management System
+              </p>
+            </div>
 
           </div>
 
+          {/* Desktop status */}
+          <div className="hidden items-center gap-2 sm:flex">
+
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-50" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+            </span>
+
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+              Secure Administrative Channel
+            </span>
+
+          </div>
+
+          {/* Mobile info button */}
+          <button
+            type="button"
+            onClick={() => setShowMobileInfo((prev) => !prev)}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-slate-300 sm:hidden"
+            aria-label="Show system information"
+          >
+            {showMobileInfo ? (
+              <X className="h-4 w-4" />
+            ) : (
+              <Menu className="h-4 w-4" />
+            )}
+          </button>
+
         </div>
 
-      </header>
+        {/* Mobile status panel */}
+        {showMobileInfo && (
+          <div className="border-t border-white/10 bg-[#050c17] px-4 py-3 sm:hidden">
 
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-emerald-400" />
+
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                Secure Administrative Channel
+              </span>
+            </div>
+
+          </div>
+        )}
+
+      </header>
 
       {/* =========================================================
           MAIN
       ========================================================= */}
-      <main className="
-        flex-1
-        w-full
-        min-w-0
-        flex
-        items-start
-        lg:items-center
-        justify-center
-        px-3
-        sm:px-5
-        py-5
-        sm:py-8
-        lg:py-12
-      ">
+      <main className="relative z-10 flex min-h-[calc(100vh-58px)] w-full items-center justify-center px-4 py-6 sm:px-6 sm:py-10">
 
-        <div className="
-          w-full
-          max-w-md
-          min-w-0
-        ">
+        <div className="mx-auto grid w-full max-w-6xl overflow-hidden rounded-2xl border border-white/10 bg-[#0b1728]/95 shadow-[0_25px_80px_rgba(0,0,0,0.35)] lg:grid-cols-[0.9fr_1.1fr]">
 
           {/* =====================================================
-              AUTH CARD
+              LEFT ADMINISTRATIVE PANEL
           ===================================================== */}
-          <div className="
-            w-full
-            min-w-0
-            bg-white
-            rounded-2xl
-            border
-            border-slate-200
-            shadow-[0_10px_35px_rgba(15,23,42,0.07)]
-            overflow-hidden
-          ">
+          <section className="relative hidden overflow-hidden border-r border-white/10 bg-[#091525] p-8 lg:flex lg:flex-col lg:justify-between xl:p-10">
 
-            {/* Card Header */}
-            <div className="
-              px-4
-              sm:px-7
-              pt-4
-              sm:pt-6
-              pb-4
-              sm:pb-5
-              border-b
-              border-slate-200
-              bg-slate-50/80
-            ">
+            {/* Decorative line */}
+            <div className="absolute left-0 top-0 h-1 w-full bg-gradient-to-r from-blue-700 via-blue-500 to-amber-400" />
 
-              <div className="
-                flex
-                items-start
-                gap-2.5
-                sm:gap-3
-              ">
+            <div>
 
-                <div className="
-                  w-9
-                  h-9
-                  sm:w-11
-                  sm:h-11
-                  shrink-0
-                  rounded-xl
-                  bg-blue-100
-                  text-blue-700
-                  flex
-                  items-center
-                  justify-center
-                ">
+              {/* Icon */}
+              <div className="mb-7 flex h-16 w-16 items-center justify-center rounded-2xl border border-amber-300/20 bg-amber-300/10">
+                <Landmark className="h-8 w-8 text-amber-300" />
+              </div>
 
-                  {isRegistering ? (
-                    <UserPlus className="w-4 h-4 sm:w-5 sm:h-5" />
-                  ) : (
-                    <LogIn className="w-4 h-4 sm:w-5 sm:h-5" />
-                  )}
+              <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-amber-300">
+                Administrative Division
+              </p>
+
+              <h1 className="max-w-md text-3xl font-bold leading-tight text-white xl:text-4xl">
+                Hostel Mess
+                <br />
+                <span className="text-slate-300">
+                  Control Center
+                </span>
+              </h1>
+
+              <p className="mt-5 max-w-md text-sm leading-6 text-slate-400">
+                Centralized management for student mess records, fee
+                clearances, meal expenditure, complaints and hostel
+                administration.
+              </p>
+
+              {/* System modules */}
+              <div className="mt-8 space-y-2.5">
+
+                <AdminModule
+                  icon={Database}
+                  title="Student Records"
+                  text="Centralized member directory"
+                />
+
+                <AdminModule
+                  icon={FileCheck2}
+                  title="Fee & Payment Ledger"
+                  text="Financial record management"
+                />
+
+                <AdminModule
+                  icon={Activity}
+                  title="Mess Operations"
+                  text="Meal and expenditure monitoring"
+                />
+
+              </div>
+
+            </div>
+
+            {/* Bottom security block */}
+            <div className="mt-10 border-t border-white/10 pt-6">
+
+              <div className="flex items-start gap-3">
+
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-400/10">
+                  <ShieldCheck className="h-4 w-4 text-emerald-400" />
+                </div>
+
+                <div>
+                  <p className="text-xs font-bold text-slate-200">
+                    Restricted administrative access
+                  </p>
+
+                  <p className="mt-1 text-[10px] leading-5 text-slate-500">
+                    Access is limited to authorized hostel administration
+                    personnel.
+                  </p>
+                </div>
+
+              </div>
+
+            </div>
+
+          </section>
+
+          {/* =====================================================
+              RIGHT AUTH PANEL
+          ===================================================== */}
+          <section className="bg-slate-50 text-slate-900">
+
+            {/* Top heading */}
+            <div className="border-b border-slate-200 px-5 py-5 sm:px-8 sm:py-7">
+
+              <div className="flex items-start justify-between gap-4">
+
+                <div className="flex min-w-0 items-start gap-3">
+
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-950 shadow-sm">
+                    {isRegistering ? (
+                      <UserPlus className="h-5 w-5 text-white" />
+                    ) : (
+                      <LogIn className="h-5 w-5 text-white" />
+                    )}
+                  </div>
+
+                  <div className="min-w-0">
+
+                    <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-blue-700 sm:text-[10px]">
+                      {isRegistering
+                        ? 'Administrator Registration'
+                        : 'Administrator Authentication'}
+                    </p>
+
+                    <h2 className="mt-1 text-xl font-bold tracking-tight text-slate-950 sm:text-2xl">
+                      {isRegistering
+                        ? 'Create Admin Account'
+                        : 'Sign in to Control Center'}
+                    </h2>
+
+                    <p className="mt-1 text-[11px] leading-relaxed text-slate-500 sm:text-xs">
+                      {isRegistering
+                        ? 'Register an authorized administrative account.'
+                        : 'Enter your credentials to continue.'}
+                    </p>
+
+                  </div>
 
                 </div>
 
+                {/* Security badge */}
+                <div className="hidden shrink-0 items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 sm:flex">
 
-                <div className="
-                  min-w-0
-                  flex-1
-                ">
+                  <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
 
-                  <h2 className="
-                    text-sm
-                    sm:text-lg
-                    font-bold
-                    text-slate-950
-                    leading-snug
-                  ">
-                    {isRegistering
-                      ? 'Create Admin Account'
-                      : 'Administrator Sign In'}
-                  </h2>
-
-                  <p className="
-                    mt-1
-                    text-[10px]
-                    sm:text-[11px]
-                    text-slate-500
-                    leading-relaxed
-                  ">
-                    {isRegistering
-                      ? 'Register an authorized administrator'
-                      : 'Sign in to manage hostel operations'}
-                  </p>
+                  <span className="text-[9px] font-bold uppercase tracking-wide text-emerald-700">
+                    Secure
+                  </span>
 
                 </div>
 
               </div>
 
-
-              {/* Mode Switch */}
-              <div className="
-                mt-4
-                sm:mt-5
-                grid
-                grid-cols-2
-                gap-1
-                p-1
-                bg-slate-200
-                rounded-xl
-              ">
+              {/* Mode switch */}
+              <div className="mt-6 grid grid-cols-2 gap-1 rounded-xl bg-slate-200 p-1">
 
                 <button
                   type="button"
                   onClick={() => switchMode(false)}
                   className={`
-                    min-w-0
-                    min-h-[42px]
-                    flex
-                    items-center
-                    justify-center
-                    gap-1.5
-                    px-2
-                    py-2.5
-                    rounded-lg
-                    text-[11px]
-                    sm:text-xs
-                    font-bold
-                    transition-all
-                    duration-200
-                    focus:outline-none
-                    focus:ring-2
-                    focus:ring-blue-200
-
+                    flex min-h-11 items-center justify-center gap-2 rounded-lg
+                    px-3 py-2.5 text-xs font-bold transition-all
+                    focus:outline-none focus:ring-2 focus:ring-blue-200
                     ${
                       !isRegistering
-                        ? 'bg-white text-blue-700 shadow-sm'
-                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70'
+                        ? 'bg-white text-blue-800 shadow-sm'
+                        : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
                     }
                   `}
                 >
-
-                  <LogIn className="
-                    w-3.5
-                    h-3.5
-                    shrink-0
-                  " />
-
-                  <span className="truncate">
-                    Sign In
-                  </span>
-
+                  <LogIn className="h-4 w-4" />
+                  Sign In
                 </button>
-
 
                 <button
                   type="button"
                   onClick={() => switchMode(true)}
                   className={`
-                    min-w-0
-                    min-h-[42px]
-                    flex
-                    items-center
-                    justify-center
-                    gap-1.5
-                    px-2
-                    py-2.5
-                    rounded-lg
-                    text-[11px]
-                    sm:text-xs
-                    font-bold
-                    transition-all
-                    duration-200
-                    focus:outline-none
-                    focus:ring-2
-                    focus:ring-blue-200
-
+                    flex min-h-11 items-center justify-center gap-2 rounded-lg
+                    px-3 py-2.5 text-xs font-bold transition-all
+                    focus:outline-none focus:ring-2 focus:ring-blue-200
                     ${
                       isRegistering
-                        ? 'bg-white text-blue-700 shadow-sm'
-                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70'
+                        ? 'bg-white text-blue-800 shadow-sm'
+                        : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
                     }
                   `}
                 >
-
-                  <UserPlus className="
-                    w-3.5
-                    h-3.5
-                    shrink-0
-                  " />
-
-                  <span className="truncate">
-                    Register
-                  </span>
-
+                  <UserPlus className="h-4 w-4" />
+                  Register
                 </button>
 
               </div>
 
             </div>
 
-
             {/* ===================================================
-                FORM CONTENT
+                FORM
             =================================================== */}
-            <div className="
-              min-w-0
-              p-4
-              sm:p-7
-            ">
+            <div className="px-5 py-5 sm:px-8 sm:py-7">
 
               {/* Error */}
               {error && (
-                <div className="
-                  mb-4
-                  sm:mb-5
-                  rounded-xl
-                  border
-                  border-red-200
-                  bg-red-50
-                  p-3
-                  sm:p-3.5
-                  flex
-                  items-start
-                  gap-2.5
-                  sm:gap-3
-                  min-w-0
-                ">
+                <div className="mb-5 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-3.5">
 
-                  <AlertCircle className="
-                    w-5
-                    h-5
-                    text-red-600
-                    shrink-0
-                    mt-0.5
-                  " />
+                  <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-600" />
 
-                  <div className="
-                    min-w-0
-                    flex-1
-                  ">
-
-                    <p className="
-                      text-xs
-                      font-bold
-                      text-red-800
-                    ">
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-red-800">
                       Authentication Failed
                     </p>
 
-                    <p className="
-                      mt-1
-                      text-xs
-                      text-red-700
-                      leading-relaxed
-                      break-words
-                    ">
+                    <p className="mt-1 break-words text-xs leading-relaxed text-red-700">
                       {error}
                     </p>
-
                   </div>
 
                 </div>
               )}
-
 
               {/* Success */}
               {successMsg && (
-                <div className="
-                  mb-4
-                  sm:mb-5
-                  rounded-xl
-                  border
-                  border-emerald-200
-                  bg-emerald-50
-                  p-3
-                  sm:p-3.5
-                  flex
-                  items-start
-                  gap-2.5
-                  sm:gap-3
-                  min-w-0
-                ">
+                <div className="mb-5 flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-3.5">
 
-                  <CheckCircle2 className="
-                    w-5
-                    h-5
-                    text-emerald-600
-                    shrink-0
-                    mt-0.5
-                  " />
+                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" />
 
-                  <div className="
-                    min-w-0
-                    flex-1
-                  ">
-
-                    <p className="
-                      text-xs
-                      font-bold
-                      text-emerald-800
-                    ">
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-emerald-800">
                       Account Created
                     </p>
 
-                    <p className="
-                      mt-1
-                      text-xs
-                      text-emerald-700
-                      leading-relaxed
-                      break-words
-                    ">
+                    <p className="mt-1 break-words text-xs leading-relaxed text-emerald-700">
                       {successMsg}
                     </p>
-
                   </div>
 
                 </div>
               )}
 
-
-              {/* Form */}
               <form
                 onSubmit={handleSubmit}
-                className="
-                  space-y-4
-                  sm:space-y-5
-                "
+                className="space-y-5"
               >
 
                 {/* =================================================
                     ADMIN NAME
                 ================================================= */}
-                <div className="min-w-0">
+                <div>
 
-                  <label className="
-                    block
-                    mb-1.5
-                    text-xs
-                    font-bold
-                    text-slate-700
-                  ">
+                  <label
+                    htmlFor="admin-name"
+                    className="mb-1.5 block text-xs font-bold text-slate-700"
+                  >
                     Administrator Name
-                    <span className="text-red-500 ml-1">*</span>
+                    <span className="ml-1 text-red-500">*</span>
                   </label>
 
                   <div className="relative">
 
-                    <User className="
-                      absolute
-                      left-3
-                      top-1/2
-                      -translate-y-1/2
-                      w-4
-                      h-4
-                      text-slate-400
-                      pointer-events-none
-                    " />
+                    <User className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
 
                     <input
+                      id="admin-name"
                       required
                       type="text"
                       autoComplete="username"
@@ -831,27 +501,18 @@ export default function AdminAuthModal({
                       onChange={(e) =>
                         updateField('name', e.target.value)
                       }
+                      disabled={loading}
                       className="
-                        w-full
-                        min-w-0
-                        min-h-[46px]
-                        pl-10
-                        pr-3
-                        py-3
-                        rounded-xl
-                        border
-                        border-slate-300
-                        bg-white
-                        text-sm
-                        text-slate-900
+                        min-h-[49px] w-full rounded-xl
+                        border border-slate-300 bg-white
+                        pl-10 pr-3 text-sm text-slate-900
+                        outline-none transition-all
                         placeholder:text-slate-400
-                        outline-none
-                        transition-all
-                        duration-200
                         hover:border-slate-400
-                        focus:border-blue-600
-                        focus:ring-4
-                        focus:ring-blue-50
+                        focus:border-blue-700
+                        focus:ring-4 focus:ring-blue-50
+                        disabled:cursor-not-allowed
+                        disabled:bg-slate-50
                       "
                     />
 
@@ -859,39 +520,35 @@ export default function AdminAuthModal({
 
                 </div>
 
-
                 {/* =================================================
                     PASSWORD
                 ================================================= */}
-                <div className="min-w-0">
+                <div>
 
-                  <label className="
-                    block
-                    mb-1.5
-                    text-xs
-                    font-bold
-                    text-slate-700
-                  ">
-                    Password
-                    <span className="text-red-500 ml-1">*</span>
-                  </label>
+                  <div className="mb-1.5 flex items-center justify-between gap-2">
+
+                    <label
+                      htmlFor="admin-password"
+                      className="text-xs font-bold text-slate-700"
+                    >
+                      Password
+                      <span className="ml-1 text-red-500">*</span>
+                    </label>
+
+                    <span className="text-[9px] font-semibold uppercase tracking-wide text-slate-400">
+                      Protected
+                    </span>
+
+                  </div>
 
                   <div className="relative">
 
-                    <Lock className="
-                      absolute
-                      left-3
-                      top-1/2
-                      -translate-y-1/2
-                      w-4
-                      h-4
-                      text-slate-400
-                      pointer-events-none
-                    " />
+                    <Lock className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
 
                     <input
+                      id="admin-password"
                       required
-                      type="password"
+                      type={showPassword ? 'text' : 'password'}
                       autoComplete={
                         isRegistering
                           ? 'new-password'
@@ -902,167 +559,155 @@ export default function AdminAuthModal({
                       onChange={(e) =>
                         updateField('password', e.target.value)
                       }
+                      disabled={loading}
                       className="
-                        w-full
-                        min-w-0
-                        min-h-[46px]
-                        pl-10
-                        pr-3
-                        py-3
-                        rounded-xl
-                        border
-                        border-slate-300
-                        bg-white
-                        text-sm
-                        text-slate-900
+                        min-h-[49px] w-full rounded-xl
+                        border border-slate-300 bg-white
+                        pl-10 pr-12 text-sm text-slate-900
+                        outline-none transition-all
                         placeholder:text-slate-400
-                        outline-none
-                        transition-all
-                        duration-200
                         hover:border-slate-400
-                        focus:border-blue-600
-                        focus:ring-4
-                        focus:ring-blue-50
+                        focus:border-blue-700
+                        focus:ring-4 focus:ring-blue-50
+                        disabled:cursor-not-allowed
+                        disabled:bg-slate-50
                       "
                     />
+
+                    <button
+                      type="button"
+                      disabled={loading}
+                      onClick={() =>
+                        setShowPassword((prev) => !prev)
+                      }
+                      className="
+                        absolute right-2 top-1/2 flex h-9 w-9
+                        -translate-y-1/2 items-center justify-center
+                        rounded-lg text-slate-400
+                        hover:bg-slate-100 hover:text-slate-700
+                        focus:outline-none focus:ring-2 focus:ring-blue-200
+                      "
+                      aria-label={
+                        showPassword
+                          ? 'Hide password'
+                          : 'Show password'
+                      }
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </button>
 
                   </div>
 
                   {isRegistering && (
-                    <p className="
-                      mt-1.5
-                      text-[10px]
-                      sm:text-[11px]
-                      text-slate-500
-                      leading-relaxed
-                    ">
+                    <p className="mt-1.5 text-[10px] leading-relaxed text-slate-500">
                       Password must contain at least 8 characters.
                     </p>
                   )}
 
                 </div>
 
-
                 {/* =================================================
                     AUTHORIZATION CODE
                 ================================================= */}
                 {isRegistering && (
-                  <div className="
-                    min-w-0
-                    rounded-xl
-                    border
-                    border-amber-200
-                    bg-amber-50
-                    p-3
-                    sm:p-4
-                  ">
+                  <div className="rounded-xl border border-amber-200 bg-amber-50 p-3.5 sm:p-4">
 
-                    <div className="
-                      flex
-                      items-start
-                      gap-2.5
-                      mb-3
-                    ">
+                    <div className="mb-3 flex items-start gap-2.5">
 
-                      <div className="
-                        w-8
-                        h-8
-                        shrink-0
-                        rounded-lg
-                        bg-amber-100
-                        flex
-                        items-center
-                        justify-center
-                      ">
-
-                        <KeySquare className="
-                          w-4
-                          h-4
-                          text-amber-700
-                        " />
-
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-100">
+                        <KeySquare className="h-4 w-4 text-amber-700" />
                       </div>
 
-
-                      <div className="
-                        min-w-0
-                        flex-1
-                      ">
-
-                        <label className="
-                          block
-                          text-xs
-                          font-bold
-                          text-amber-900
-                        ">
+                      <div className="min-w-0">
+                        <label
+                          htmlFor="admin-secret"
+                          className="block text-xs font-bold text-amber-900"
+                        >
                           Authorization Code
-                          <span className="text-red-600 ml-1">
-                            *
-                          </span>
+                          <span className="ml-1 text-red-600">*</span>
                         </label>
 
-                        <p className="
-                          mt-0.5
-                          text-[9px]
-                          sm:text-[10px]
-                          text-amber-700
-                          leading-relaxed
-                        ">
-                          Required for administrator registration
+                        <p className="mt-0.5 text-[10px] leading-relaxed text-amber-700">
+                          Required to register an administrator
                         </p>
-
                       </div>
 
                     </div>
 
+                    <div className="relative">
 
-                    <input
-                      required
-                      type="password"
-                      autoComplete="off"
-                      placeholder="Enter authorization code"
-                      value={formData.adminSecret}
-                      onChange={(e) =>
-                        updateField('adminSecret', e.target.value)
-                      }
-                      className="
-                        w-full
-                        min-w-0
-                        min-h-[46px]
-                        px-3
-                        py-3
-                        rounded-xl
-                        border
-                        border-amber-300
-                        bg-white
-                        text-sm
-                        text-slate-900
-                        placeholder:text-slate-400
-                        outline-none
-                        transition-all
-                        duration-200
-                        hover:border-amber-400
-                        focus:border-amber-500
-                        focus:ring-4
-                        focus:ring-amber-100
-                      "
-                    />
+                      <input
+                        id="admin-secret"
+                        required
+                        type={
+                          showAdminSecret
+                            ? 'text'
+                            : 'password'
+                        }
+                        autoComplete="off"
+                        placeholder="Enter authorization code"
+                        value={formData.adminSecret}
+                        onChange={(e) =>
+                          updateField(
+                            'adminSecret',
+                            e.target.value
+                          )
+                        }
+                        disabled={loading}
+                        className="
+                          min-h-[49px] w-full rounded-xl
+                          border border-amber-300 bg-white
+                          px-3 pr-12 text-sm text-slate-900
+                          outline-none transition-all
+                          placeholder:text-slate-400
+                          hover:border-amber-400
+                          focus:border-amber-500
+                          focus:ring-4 focus:ring-amber-100
+                        "
+                      />
 
-                    <p className="
-                      mt-2.5
-                      text-[9px]
-                      sm:text-[10px]
-                      leading-relaxed
-                      text-amber-800
-                      break-words
-                    ">
-                      This code should only be provided to authorized
-                      hostel administrative personnel.
+                      <button
+                        type="button"
+                        disabled={loading}
+                        onClick={() =>
+                          setShowAdminSecret(
+                            (prev) => !prev
+                          )
+                        }
+                        className="
+                          absolute right-2 top-1/2 flex h-9 w-9
+                          -translate-y-1/2 items-center justify-center
+                          rounded-lg text-amber-700
+                          hover:bg-amber-100
+                          focus:outline-none focus:ring-2
+                          focus:ring-amber-200
+                        "
+                        aria-label={
+                          showAdminSecret
+                            ? 'Hide authorization code'
+                            : 'Show authorization code'
+                        }
+                      >
+                        {showAdminSecret ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </button>
+
+                    </div>
+
+                    <p className="mt-2.5 text-[10px] leading-relaxed text-amber-800">
+                      This code should only be provided to
+                      authorized hostel administrative personnel.
                     </p>
 
                   </div>
                 )}
-
 
                 {/* =================================================
                     SUBMIT BUTTON
@@ -1071,94 +716,49 @@ export default function AdminAuthModal({
                   type="submit"
                   disabled={loading}
                   className="
-                    group
-                    w-full
-                    min-h-[48px]
-                    flex
-                    items-center
-                    justify-center
-                    gap-2
-                    px-4
-                    py-3
-                    rounded-xl
-                    bg-blue-700
-                    hover:bg-blue-800
-                    active:bg-blue-900
-                    text-white
-                    text-xs
-                    sm:text-sm
-                    font-bold
-                    shadow-sm
-                    transition-all
-                    duration-200
-                    hover:shadow-md
-                    focus:outline-none
-                    focus:ring-4
+                    group flex min-h-[51px] w-full
+                    items-center justify-center gap-2
+                    rounded-xl bg-blue-950 px-4 py-3
+                    text-sm font-bold text-white
+                    shadow-sm transition-all duration-200
+                    hover:bg-blue-900 hover:shadow-md
+                    active:scale-[0.995]
+                    focus:outline-none focus:ring-4
                     focus:ring-blue-100
-                    disabled:opacity-60
                     disabled:cursor-not-allowed
-                    disabled:hover:shadow-sm
+                    disabled:opacity-60
                   "
                 >
 
                   {loading ? (
                     <>
-                      <Loader2 className="
-                        w-4
-                        h-4
-                        animate-spin
-                        shrink-0
-                      " />
+                      <Loader2 className="h-4 w-4 animate-spin" />
 
-                      <span className="truncate">
+                      <span>
                         {isRegistering
                           ? 'Creating Account...'
-                          : 'Signing In...'}
+                          : 'Authenticating...'}
                       </span>
                     </>
                   ) : isRegistering ? (
                     <>
-                      <UserPlus className="
-                        w-4
-                        h-4
-                        shrink-0
-                      " />
+                      <UserPlus className="h-4 w-4" />
 
                       <span className="truncate">
                         Create Administrator Account
                       </span>
 
-                      <ChevronRight className="
-                        hidden
-                        sm:block
-                        w-4
-                        h-4
-                        opacity-70
-                        group-hover:translate-x-0.5
-                        transition-transform
-                      " />
+                      <ChevronRight className="hidden h-4 w-4 opacity-60 sm:block" />
                     </>
                   ) : (
                     <>
-                      <LogIn className="
-                        w-4
-                        h-4
-                        shrink-0
-                      " />
+                      <LogIn className="h-4 w-4" />
 
-                      <span className="truncate">
-                        Sign In to Admin Portal
+                      <span>
+                        Enter Administrative Portal
                       </span>
 
-                      <ChevronRight className="
-                        hidden
-                        sm:block
-                        w-4
-                        h-4
-                        opacity-70
-                        group-hover:translate-x-0.5
-                        transition-transform
-                      " />
+                      <ChevronRight className="hidden h-4 w-4 opacity-60 sm:block" />
                     </>
                   )}
 
@@ -1168,274 +768,106 @@ export default function AdminAuthModal({
 
             </div>
 
-
             {/* =====================================================
-                SECURITY FOOTER
+                BOTTOM ACTIONS
             ===================================================== */}
-            <div className="
-              border-t
-              border-slate-200
-              bg-slate-50
-              px-4
-              sm:px-6
-              py-3
-              sm:py-4
-            ">
+            <div className="border-t border-slate-200 bg-white px-5 py-4 sm:px-8">
 
-              <div className="
-                flex
-                items-start
-                gap-2.5
-                sm:gap-3
-              ">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 
-                <div className="
-                  w-8
-                  h-8
-                  shrink-0
-                  rounded-lg
-                  bg-blue-100
-                  flex
-                  items-center
-                  justify-center
-                ">
+                {/* Security */}
+                <div className="flex items-center gap-2.5">
 
-                  <ShieldCheck className="
-                    w-4
-                    h-4
-                    text-blue-700
-                  " />
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-50">
+                    <ShieldCheck className="h-4 w-4 text-emerald-600" />
+                  </div>
+
+                  <div>
+                    <p className="text-[10px] font-bold text-slate-700">
+                      Protected session
+                    </p>
+
+                    <p className="text-[9px] text-slate-400">
+                      Authorized personnel only
+                    </p>
+                  </div>
 
                 </div>
 
-
-                <div className="
-                  min-w-0
-                  flex-1
-                ">
-
-                  <p className="
-                    text-[11px]
-                    font-bold
-                    text-slate-700
-                  ">
-                    Secure administrative access
-                  </p>
-
-                  <p className="
-                    mt-0.5
-                    text-[9px]
-                    sm:text-[10px]
-                    text-slate-500
-                    leading-relaxed
-                    break-words
-                  ">
-                    This section is intended only for authorized hostel
-                    administration personnel.
-                  </p>
-
-                </div>
+                {/* Student portal */}
+                <button
+                  type="button"
+                  onClick={onSwitchToStudent}
+                  className="
+                    inline-flex min-h-10 items-center
+                    justify-center gap-2 rounded-lg
+                    border border-slate-300 bg-slate-50
+                    px-3.5 py-2 text-[11px] font-bold
+                    text-slate-700 transition-all
+                    hover:border-slate-400 hover:bg-slate-100
+                    focus:outline-none focus:ring-2
+                    focus:ring-blue-200
+                  "
+                >
+                  <ArrowLeft className="h-3.5 w-3.5" />
+                  Student Portal
+                </button>
 
               </div>
 
             </div>
 
-          </div>
-
-
-          {/* =======================================================
-              QUICK INFORMATION
-          ======================================================= */}
-          <div className="
-            mt-3
-            sm:mt-5
-            grid
-            grid-cols-2
-            gap-2
-            sm:gap-3
-          ">
-
-            {/* Portal */}
-            <div className="
-              min-w-0
-              bg-white
-              border
-              border-slate-200
-              rounded-xl
-              p-2.5
-              sm:p-3.5
-              flex
-              items-center
-              gap-2
-              sm:gap-2.5
-              shadow-sm
-            ">
-
-              <div className="
-                w-7
-                h-7
-                sm:w-8
-                sm:h-8
-                shrink-0
-                rounded-lg
-                bg-blue-50
-                flex
-                items-center
-                justify-center
-              ">
-
-                <Building2 className="
-                  w-3.5
-                  h-3.5
-                  sm:w-4
-                  sm:h-4
-                  text-blue-600
-                " />
-
-              </div>
-
-
-              <div className="
-                min-w-0
-                flex-1
-              ">
-
-                <p className="
-                  text-[7px]
-                  sm:text-[9px]
-                  font-bold
-                  text-slate-400
-                  uppercase
-                  tracking-wide
-                ">
-                  Portal
-                </p>
-
-                <p className="
-                  mt-0.5
-                  text-[9px]
-                  sm:text-xs
-                  font-semibold
-                  text-slate-800
-                  truncate
-                ">
-                  Hostel Administration
-                </p>
-
-              </div>
-
-            </div>
-
-
-            {/* Access */}
-            <div className="
-              min-w-0
-              bg-white
-              border
-              border-slate-200
-              rounded-xl
-              p-2.5
-              sm:p-3.5
-              flex
-              items-center
-              gap-2
-              sm:gap-2.5
-              shadow-sm
-            ">
-
-              <div className="
-                w-7
-                h-7
-                sm:w-8
-                sm:h-8
-                shrink-0
-                rounded-lg
-                bg-emerald-50
-                flex
-                items-center
-                justify-center
-              ">
-
-                <ShieldCheck className="
-                  w-3.5
-                  h-3.5
-                  sm:w-4
-                  sm:h-4
-                  text-emerald-600
-                " />
-
-              </div>
-
-
-              <div className="
-                min-w-0
-                flex-1
-              ">
-
-                <p className="
-                  text-[7px]
-                  sm:text-[9px]
-                  font-bold
-                  text-slate-400
-                  uppercase
-                  tracking-wide
-                ">
-                  Access
-                </p>
-
-                <p className="
-                  mt-0.5
-                  text-[9px]
-                  sm:text-xs
-                  font-semibold
-                  text-slate-800
-                ">
-                  Restricted
-                </p>
-
-              </div>
-
-            </div>
-
-          </div>
+          </section>
 
         </div>
 
       </main>
 
-
       {/* =========================================================
           FOOTER
       ========================================================= */}
-      <footer className="
-        border-t
-        border-slate-200
-        bg-white
-        shrink-0
-      ">
+      <footer className="relative z-10 border-t border-white/10 bg-[#050c17]">
 
-        <div className="
-          max-w-7xl
-          mx-auto
-          px-3
-          sm:px-6
-          py-2.5
-          sm:py-4
-          text-center
-        ">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-3 sm:flex-row sm:px-6 lg:px-8">
 
-          <p className="
-            text-[8px]
-            sm:text-[9px]
-            text-slate-400
-            tracking-wide
-          ">
-            2026 @ALL RIGHTS ARE RESERVED.
+          <p className="text-[8px] uppercase tracking-[0.12em] text-slate-600 sm:text-[9px]">
+            Hostel Mess & Fee Payment Portal
           </p>
+
+          <div className="flex items-center gap-1.5 text-[8px] text-slate-600 sm:text-[9px]">
+            <Server className="h-3 w-3" />
+            <span>Administrative Gateway</span>
+          </div>
 
         </div>
 
       </footer>
+
+    </div>
+  );
+}
+
+/* =============================================================
+   ADMIN MODULE COMPONENT
+============================================================= */
+
+function AdminModule({ icon: Icon, title, text }) {
+  return (
+    <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-3">
+
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-500/10">
+        <Icon className="h-4 w-4 text-blue-300" />
+      </div>
+
+      <div className="min-w-0">
+        <p className="text-xs font-bold text-slate-200">
+          {title}
+        </p>
+
+        <p className="mt-0.5 text-[10px] text-slate-500">
+          {text}
+        </p>
+      </div>
 
     </div>
   );
