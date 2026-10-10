@@ -17,7 +17,11 @@ import {
     Loader2,
     ShieldCheck,
     UsersRound,
-    Camera
+    Camera,
+    BookOpen,
+    CalendarDays,
+    ClipboardCheck,
+    FileText
 } from 'lucide-react';
 
 import { UNIVERSITY_FACULTIES_HIERARCHY } from '../data/coursesData';
@@ -85,10 +89,120 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
     };
 
     /* ============================================================
+       Course list
+
+       Uses the existing UNIVERSITY_FACULTIES_HIERARCHY data source.
+       This avoids guessing a nonexistent import path.
+    ============================================================ */
+
+    const courses = useMemo(() => {
+
+        const result = [];
+
+        const addCourse = (course) => {
+
+            if (!course) {
+                return;
+            }
+
+            if (typeof course === 'string') {
+
+                const value = course.trim();
+
+                if (value) {
+                    result.push(value);
+                }
+
+                return;
+            }
+
+            if (typeof course !== 'object') {
+                return;
+            }
+
+            const possibleName =
+                course.name ||
+                course.courseName ||
+                course.title ||
+                course.label ||
+                course.value;
+
+            if (typeof possibleName === 'string') {
+
+                const value = possibleName.trim();
+
+                if (value) {
+                    result.push(value);
+                }
+            }
+        };
+
+        const inspect = (value) => {
+
+            if (!value) {
+                return;
+            }
+
+            if (Array.isArray(value)) {
+
+                value.forEach(item => {
+                    inspect(item);
+                });
+
+                return;
+            }
+
+            if (typeof value !== 'object') {
+                return;
+            }
+
+            if (Array.isArray(value.courses)) {
+                value.courses.forEach(course => {
+                    addCourse(course);
+                });
+            }
+
+            if (Array.isArray(value.programs)) {
+                value.programs.forEach(program => {
+                    addCourse(program);
+                });
+            }
+
+            if (Array.isArray(value.courseList)) {
+                value.courseList.forEach(course => {
+                    addCourse(course);
+                });
+            }
+
+            if (Array.isArray(value.courseNames)) {
+                value.courseNames.forEach(course => {
+                    addCourse(course);
+                });
+            }
+
+            if (Array.isArray(value.departments)) {
+                value.departments.forEach(department => {
+                    inspect(department);
+                });
+            }
+        };
+
+        inspect(UNIVERSITY_FACULTIES_HIERARCHY);
+
+        return [...new Set(result)].sort((a, b) =>
+            a.localeCompare(b)
+        );
+
+    }, []);
+
+    /* ============================================================
        Form State
     ============================================================ */
 
     const [formData, setFormData] = useState({
+
+        /* Basic */
+
         name: user?.name || '',
         mobileNo: user?.mobileNo || user?.phone || '',
         email: user?.email || '',
@@ -98,26 +212,99 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
             ? String(user.dob).split('T')[0]
             : '',
 
-        /* Student fields */
+        /* Student identification */
 
-        studentId: user?.studentId || '',
-        rollNo: user?.rollNo || '',
-        hostelNo: user?.hostelNo || '',
+        studentId:
+            user?.studentId ||
+            user?.universityStudentId ||
+            '',
+
+        rollNo:
+            user?.rollNo ||
+            user?.departmentRollNo ||
+            '',
+
+        hostelNo:
+            user?.hostelNo ||
+            user?.hostelRollNo ||
+            '',
+
+        /* Institutional */
+
         university: user?.university || '',
         session: user?.session || '',
-        category: user?.category || '',
 
-        /* Academic fields */
+        /* Academic */
 
         faculty: getInitialFaculty(),
         facultyName: getInitialFaculty(),
         department: user?.department || '',
 
+        course: user?.course || '',
+
+        currentYear:
+            user?.currentYear ||
+            '',
+
+        currentSemester:
+            user?.currentSemester ||
+            user?.semester ||
+            '',
+
+        currentClass:
+            user?.currentClass ||
+            '',
+
+        /* Attendance */
+
+        currentAttendance:
+            user?.currentAttendance ??
+            user?.attendance ??
+            '',
+
+        /* Category */
+
+        category: user?.category || '',
+
+        /* Previous qualification */
+
+        previousYearQualification:
+            user?.previousYearQualification ||
+            '',
+
+        previousQualification:
+            user?.previousQualification ||
+            '',
+
+        previousBoardUniversity:
+            user?.previousBoardUniversity ||
+            user?.previousBoard ||
+            user?.previousUniversity ||
+            '',
+
+        previousPercentage:
+            user?.previousPercentage ??
+            '',
+
+        previousCgpa:
+            user?.previousCgpa ??
+            '',
+
         /* Admin fields */
 
-        teacherId: user?.teacherId || user?.employeeId || '',
-        employeeId: user?.employeeId || user?.teacherId || '',
-        designation: user?.designation || '',
+        teacherId:
+            user?.teacherId ||
+            user?.employeeId ||
+            '',
+
+        employeeId:
+            user?.employeeId ||
+            user?.teacherId ||
+            '',
+
+        designation:
+            user?.designation ||
+            '',
 
         wardenHostel:
             user?.wardenHostel ||
@@ -126,17 +313,27 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
 
         /* Family */
 
-        fatherName: user?.fatherName || '',
-        motherName: user?.motherName || '',
+        fatherName:
+            user?.fatherName ||
+            '',
+
+        motherName:
+            user?.motherName ||
+            '',
 
         /* Profile */
 
-        profilePhoto: user?.profilePhoto || '',
+        profilePhoto:
+            user?.profilePhoto ||
+            '',
 
         /* Security */
 
-        isMobileLocked: Boolean(user?.isMobileLocked),
-        isEmailLocked: Boolean(user?.isEmailLocked)
+        isMobileLocked:
+            Boolean(user?.isMobileLocked),
+
+        isEmailLocked:
+            Boolean(user?.isEmailLocked)
     });
 
     /* ============================================================
@@ -161,7 +358,10 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
 
             } catch (err) {
 
-                console.error('Failed to load hostels:', err);
+                console.error(
+                    'Failed to load hostels:',
+                    err
+                );
 
                 setHostelsList([]);
 
@@ -277,7 +477,10 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
             department => department.name === departmentName
         );
 
-        if (!isValidDepartment && departmentName !== '') {
+        if (
+            !isValidDepartment &&
+            departmentName !== ''
+        ) {
 
             setError(
                 'Please select a department belonging to the selected faculty.'
@@ -324,7 +527,9 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
 
         if (!file.type.startsWith('image/')) {
 
-            setError('Please select a valid image file.');
+            setError(
+                'Please select a valid image file.'
+            );
 
             setTimeout(() => {
                 setError('');
@@ -343,7 +548,8 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
 
             img.onload = () => {
 
-                const canvas = document.createElement('canvas');
+                const canvas =
+                    document.createElement('canvas');
 
                 const MAX_DIMENSION = 400;
 
@@ -376,7 +582,8 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
                 canvas.width = width;
                 canvas.height = height;
 
-                const ctx = canvas.getContext('2d');
+                const ctx =
+                    canvas.getContext('2d');
 
                 ctx.drawImage(
                     img,
@@ -394,7 +601,8 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
 
                 setFormData(prev => ({
                     ...prev,
-                    profilePhoto: compressedBase64
+                    profilePhoto:
+                        compressedBase64
                 }));
             };
         };
@@ -425,34 +633,44 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
         setError('');
         setSuccess('');
 
-        /* Admin validation */
+        /* ========================================================
+           Admin validation
+        ======================================================== */
 
         if (isAdmin) {
 
             if (!formData.faculty) {
 
-                setError('Please select a faculty.');
+                setError(
+                    'Please select a faculty.'
+                );
 
                 return;
             }
 
             if (!formData.department) {
 
-                setError('Please select a department.');
+                setError(
+                    'Please select a department.'
+                );
 
                 return;
             }
 
             const selectedFaculty = faculties.find(
-                faculty => faculty.name === formData.faculty
+                faculty =>
+                    faculty.name === formData.faculty
             );
 
             const departmentBelongsToFaculty =
                 selectedFaculty &&
-                Array.isArray(selectedFaculty.departments) &&
+                Array.isArray(
+                    selectedFaculty.departments
+                ) &&
                 selectedFaculty.departments.some(
                     department =>
-                        department.name === formData.department
+                        department.name ===
+                        formData.department
                 );
 
             if (!departmentBelongsToFaculty) {
@@ -469,11 +687,16 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
                 hostelsList.length > 0
             ) {
 
-                const hostelExists = hostelsList.some(
-                    hostel =>
-                        String(hostel.hostelNumber) ===
-                        String(formData.wardenHostel)
-                );
+                const hostelExists =
+                    hostelsList.some(
+                        hostel =>
+                            String(
+                                hostel.hostelNumber
+                            ) ===
+                            String(
+                                formData.wardenHostel
+                            )
+                    );
 
                 if (!hostelExists) {
 
@@ -486,6 +709,82 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
             }
         }
 
+        /* ========================================================
+           Student validation
+        ======================================================== */
+
+        if (!isAdmin) {
+
+            const attendanceValue =
+                formData.currentAttendance === ''
+                    ? null
+                    : Number(
+                        formData.currentAttendance
+                    );
+
+            if (
+                attendanceValue !== null &&
+                (
+                    Number.isNaN(attendanceValue) ||
+                    attendanceValue < 0 ||
+                    attendanceValue > 100
+                )
+            ) {
+
+                setError(
+                    'Current attendance must be between 0% and 100%.'
+                );
+
+                return;
+            }
+
+            const previousPercentage =
+                formData.previousPercentage === ''
+                    ? null
+                    : Number(
+                        formData.previousPercentage
+                    );
+
+            if (
+                previousPercentage !== null &&
+                (
+                    Number.isNaN(previousPercentage) ||
+                    previousPercentage < 0 ||
+                    previousPercentage > 100
+                )
+            ) {
+
+                setError(
+                    'Previous percentage must be between 0% and 100%.'
+                );
+
+                return;
+            }
+
+            const previousCgpa =
+                formData.previousCgpa === ''
+                    ? null
+                    : Number(
+                        formData.previousCgpa
+                    );
+
+            if (
+                previousCgpa !== null &&
+                (
+                    Number.isNaN(previousCgpa) ||
+                    previousCgpa < 0 ||
+                    previousCgpa > 10
+                )
+            ) {
+
+                setError(
+                    'Previous CGPA must be between 0 and 10.'
+                );
+
+                return;
+            }
+        }
+
         try {
 
             setSaving(true);
@@ -494,21 +793,29 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
 
             if (isAdmin) {
 
-                /* Admin payload */
+                /* ==================================================
+                   Admin payload
+                ================================================== */
 
                 const adminPayload = {
 
-                    name: formData.name.trim(),
+                    name:
+                        formData.name.trim(),
 
-                    email: formData.email.trim(),
+                    email:
+                        formData.email.trim(),
 
-                    mobileNo: formData.mobileNo.trim(),
+                    mobileNo:
+                        formData.mobileNo.trim(),
 
-                    gender: formData.gender,
+                    gender:
+                        formData.gender,
 
-                    dob: formData.dob,
+                    dob:
+                        formData.dob,
 
-                    profilePhoto: formData.profilePhoto,
+                    profilePhoto:
+                        formData.profilePhoto,
 
                     teacherId:
                         formData.teacherId.trim(),
@@ -552,7 +859,12 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
 
             } else {
 
-                /* Student payload */
+                /* ==================================================
+                   Student payload
+
+                   Existing backend-compatible field names are
+                   preserved while the UI uses the new terminology.
+                ================================================== */
 
                 const studentPayload = {
 
@@ -571,6 +883,8 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
                     dob:
                         formData.dob,
 
+                    /* University identification */
+
                     studentId:
                         formData.studentId,
 
@@ -579,6 +893,8 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
 
                     hostelNo:
                         formData.hostelNo,
+
+                    /* Institutional */
 
                     university:
                         formData.university,
@@ -595,8 +911,60 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
                     session:
                         formData.session,
 
+                    /* Academic */
+
+                    course:
+                        formData.course,
+
+                    currentYear:
+                        formData.currentYear,
+
+                    currentSemester:
+                        formData.currentSemester,
+
+                    currentClass:
+                        formData.currentClass,
+
+                    /* Attendance */
+
+                    currentAttendance:
+                        formData.currentAttendance === ''
+                            ? null
+                            : Number(
+                                formData.currentAttendance
+                            ),
+
+                    /* Category */
+
                     category:
                         formData.category,
+
+                    /* Previous academic record */
+
+                    previousYearQualification:
+                        formData.previousYearQualification,
+
+                    previousQualification:
+                        formData.previousQualification,
+
+                    previousBoardUniversity:
+                        formData.previousBoardUniversity,
+
+                    previousPercentage:
+                        formData.previousPercentage === ''
+                            ? null
+                            : Number(
+                                formData.previousPercentage
+                            ),
+
+                    previousCgpa:
+                        formData.previousCgpa === ''
+                            ? null
+                            : Number(
+                                formData.previousCgpa
+                            ),
+
+                    /* Family */
 
                     fatherName:
                         formData.fatherName.trim(),
@@ -604,8 +972,12 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
                     motherName:
                         formData.motherName.trim(),
 
+                    /* Profile */
+
                     profilePhoto:
                         formData.profilePhoto,
+
+                    /* Security */
 
                     isMobileLocked:
                         formData.isMobileLocked,
@@ -620,7 +992,9 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
                 );
             }
 
-            /* Get updated user/admin from response */
+            /* ========================================================
+               Get updated user/admin from response
+            ======================================================== */
 
             const updatedUser =
                 response?.data?.user ||
@@ -632,7 +1006,9 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
                     ...formData
                 };
 
-            /* Preserve role and ID */
+            /* ========================================================
+               Preserve role and ID
+            ======================================================== */
 
             const finalUser = {
 
@@ -653,20 +1029,26 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
                     user?.id
             };
 
-            /* Update localStorage */
+            /* ========================================================
+               Update localStorage
+            ======================================================== */
 
             localStorage.setItem(
                 'user',
                 JSON.stringify(finalUser)
             );
 
-            /* Notify other components */
+            /* ========================================================
+               Notify other components
+            ======================================================== */
 
             window.dispatchEvent(
                 new Event('userUpdated')
             );
 
-            /* Update parent */
+            /* ========================================================
+               Update parent
+            ======================================================== */
 
             if (onUpdateUser) {
                 onUpdateUser(finalUser);
@@ -1308,7 +1690,7 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
 
                                     </div>
 
-                                    {/* Student fields */}
+                                    {/* Student identification */}
 
                                     {!isAdmin && (
 
@@ -1317,7 +1699,7 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
                                             <div className="min-w-0">
 
                                                 <label className={labelClass}>
-                                                    Student ID
+                                                    University Student ID
                                                 </label>
 
                                                 <input
@@ -1331,7 +1713,7 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
                                             <div className="min-w-0">
 
                                                 <label className={labelClass}>
-                                                    Roll Number
+                                                    Department Roll No.
                                                 </label>
 
                                                 <input
@@ -1339,6 +1721,31 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
                                                     disabled
                                                     className={disabledInputClass}
                                                 />
+
+                                            </div>
+
+                                            <div className="min-w-0">
+
+                                                <label className={labelClass}>
+                                                    Hostel Roll No. (Temporary)
+                                                </label>
+
+                                                <input
+                                                    value={formData.hostelNo}
+                                                    disabled
+                                                    className={disabledInputClass}
+                                                />
+
+                                                <p
+                                                    className="
+                                                        mt-1.5
+                                                        text-[10px]
+                                                        sm:text-[11px]
+                                                        text-slate-500
+                                                    "
+                                                >
+                                                    This roll number may change when the hostel record is updated.
+                                                </p>
 
                                             </div>
 
@@ -1624,7 +2031,10 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
                                                 {faculties.map(faculty => (
 
                                                     <option
-                                                        key={faculty.id || faculty.name}
+                                                        key={
+                                                            faculty.id ||
+                                                            faculty.name
+                                                        }
                                                         value={faculty.name}
                                                     >
                                                         {faculty.name}
@@ -1679,16 +2089,23 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
 
                                                 </option>
 
-                                                {availableDepartments.map(department => (
+                                                {availableDepartments.map(
+                                                    department => (
 
-                                                    <option
-                                                        key={department.id || department.name}
-                                                        value={department.name}
-                                                    >
-                                                        {department.name}
-                                                    </option>
+                                                        <option
+                                                            key={
+                                                                department.id ||
+                                                                department.name
+                                                            }
+                                                            value={
+                                                                department.name
+                                                            }
+                                                        >
+                                                            {department.name}
+                                                        </option>
 
-                                                ))}
+                                                    )
+                                                )}
 
                                             </select>
 
@@ -1774,6 +2191,8 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
                                     "
                                 >
 
+                                    {/* Faculty */}
+
                                     <div className="min-w-0">
 
                                         <label className={labelClass}>
@@ -1791,6 +2210,8 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
 
                                     </div>
 
+                                    {/* Department */}
+
                                     <div className="min-w-0">
 
                                         <label className={labelClass}>
@@ -1805,10 +2226,12 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
 
                                     </div>
 
+                                    {/* course */}
+
                                     <div className="min-w-0">
 
                                         <label className={labelClass}>
-                                            University
+                                            course
                                         </label>
 
                                         <input
@@ -1819,10 +2242,12 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
 
                                     </div>
 
+                                    {/* Academic Year */}
+
                                     <div className="min-w-0">
 
                                         <label className={labelClass}>
-                                            Academic Session
+                                            Academic Year
                                         </label>
 
                                         <input
@@ -1831,7 +2256,523 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
                                             className={disabledInputClass}
                                         />
 
+                                        <p
+                                            className="
+                                                mt-1.5
+                                                text-[10px]
+                                                sm:text-[11px]
+                                                text-slate-500
+                                            "
+                                        >
+                                            Academic year is maintained by the institutional system.
+                                        </p>
+
                                     </div>
+
+                                    {/* university */}
+
+                                    <div className="min-w-0">
+
+                                        <label className={labelClass}>
+                                            University
+                                        </label>
+
+                                        <div className="relative">
+
+                                            <BookOpen
+                                                size={17}
+                                                className="
+                                                    absolute
+                                                    left-3
+                                                    top-1/2
+                                                    -translate-y-1/2
+                                                    text-slate-400
+                                                    pointer-events-none
+                                                "
+                                            />
+
+                                            {courses.length > 0 ? (
+
+                                                <select
+                                                    name="course"
+                                                    value={formData.course}
+                                                    onChange={handleChange}
+                                                    className={`${inputClass} pl-9 sm:pl-10`}
+                                                >
+
+                                                    <option value="">
+                                                        Select Course
+                                                    </option>
+
+                                                    {courses.map(course => (
+
+                                                        <option
+                                                            key={course}
+                                                            value={course}
+                                                        >
+                                                            {course}
+                                                        </option>
+
+                                                    ))}
+
+                                                </select>
+
+                                            ) : (
+
+                                                <input
+                                                    name="course"
+                                                    value={formData.course}
+                                                    onChange={handleChange}
+                                                    className={`${inputClass} pl-9 sm:pl-10`}
+                                                    placeholder="Enter university"
+                                                />
+
+                                            )}
+
+                                        </div>
+
+                                    </div>
+
+                                    {/* Current Year */}
+
+                                    <div className="min-w-0">
+
+                                        <label className={labelClass}>
+                                            Current Year
+                                        </label>
+
+                                        <select
+                                            name="currentYear"
+                                            value={formData.currentYear}
+                                            onChange={handleChange}
+                                            className={inputClass}
+                                        >
+
+                                            <option value="">
+                                                Select Current Year
+                                            </option>
+
+                                            <option value="1st Year">
+                                                1st Year
+                                            </option>
+
+                                            <option value="2nd Year">
+                                                2nd Year
+                                            </option>
+
+                                            <option value="3rd Year">
+                                                3rd Year
+                                            </option>
+
+                                            <option value="4th Year">
+                                                4th Year
+                                            </option>
+
+                                        </select>
+
+                                    </div>
+
+                                    {/* Current Semester */}
+
+                                    <div className="min-w-0">
+
+                                        <label className={labelClass}>
+                                            Current Semester / Class
+                                        </label>
+
+                                        <div className="relative">
+
+                                            <CalendarDays
+                                                size={17}
+                                                className="
+                                                    absolute
+                                                    left-3
+                                                    top-1/2
+                                                    -translate-y-1/2
+                                                    text-slate-400
+                                                    pointer-events-none
+                                                "
+                                            />
+
+                                            <select
+                                                name="currentSemester"
+                                                value={
+                                                    formData.currentSemester
+                                                }
+                                                onChange={handleChange}
+                                                className={`${inputClass} pl-9 sm:pl-10`}
+                                            >
+
+                                                <option value="">
+                                                    Select Semester / Class
+                                                </option>
+
+                                                <option value="1st Semester">
+                                                    1st Semester
+                                                </option>
+
+                                                <option value="2nd Semester">
+                                                    2nd Semester
+                                                </option>
+
+                                                <option value="3rd Semester">
+                                                    3rd Semester
+                                                </option>
+
+                                                <option value="4th Semester">
+                                                    4th Semester
+                                                </option>
+
+                                                <option value="5th Semester">
+                                                    5th Semester
+                                                </option>
+
+                                                <option value="6th Semester">
+                                                    6th Semester
+                                                </option>
+
+                                                <option value="7th Semester">
+                                                    7th Semester
+                                                </option>
+
+                                                <option value="8th Semester">
+                                                    8th Semester
+                                                </option>
+
+                                            </select>
+
+                                        </div>
+
+                                    </div>
+
+                                    {/* Current Class */}
+
+                                    <div className="min-w-0">
+
+                                        <label className={labelClass}>
+                                            Section
+                                        </label>
+
+                                        <input
+                                            name="currentClass"
+                                            value={formData.currentClass}
+                                            onChange={handleChange}
+                                            className={inputClass}
+                                            placeholder="Enter section of current class"
+                                        />
+
+                                    </div>
+
+                                    {/* Attendance */}
+
+                                    <div className="min-w-0">
+
+                                        <label className={labelClass}>
+                                            Current Attendance (%)
+                                        </label>
+
+                                        <div className="relative">
+
+                                            <ClipboardCheck
+                                                size={17}
+                                                className="
+                                                    absolute
+                                                    left-3
+                                                    top-1/2
+                                                    -translate-y-1/2
+                                                    text-slate-400
+                                                "
+                                            />
+
+                                            <input
+                                                type="number"
+                                                name="currentAttendance"
+                                                value={
+                                                    formData.currentAttendance
+                                                }
+                                                onChange={handleChange}
+                                                min="0"
+                                                max="100"
+                                                step="0.01"
+                                                className={`${inputClass} pl-9 sm:pl-10`}
+                                                placeholder="e.g. 82.50"
+                                            />
+
+                                        </div>
+
+                                        <p
+                                            className="
+                                                mt-1.5
+                                                text-[10px]
+                                                sm:text-[11px]
+                                                text-slate-500
+                                            "
+                                        >
+                                            Enter attendance as a percentage.
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+                            </section>
+
+                        )}
+
+                        {/* ==================================================
+                            PREVIOUS ACADEMIC QUALIFICATION
+                        ================================================== */}
+
+                        {!isAdmin && (
+
+                            <section
+                                className="
+                                    bg-white
+                                    border border-slate-200
+                                    rounded-xl
+                                    sm:rounded-2xl
+                                    p-3
+                                    sm:p-5
+                                    min-w-0
+                                "
+                            >
+
+                                <div
+                                    className="
+                                        flex
+                                        items-start
+                                        gap-2
+                                        mb-4
+                                        sm:mb-5
+                                    "
+                                >
+
+                                    <FileText
+                                        size={18}
+                                        className="
+                                            text-blue-700
+                                            shrink-0
+                                            mt-0.5
+                                        "
+                                    />
+
+                                    <div className="min-w-0">
+
+                                        <h3
+                                            className="
+                                                font-bold
+                                                text-slate-900
+                                                text-sm
+                                                sm:text-base
+                                            "
+                                        >
+                                            Previous Academic Qualification
+                                        </h3>
+
+                                        <p
+                                            className="
+                                                text-[10px]
+                                                sm:text-xs
+                                                text-slate-500
+                                                mt-0.5
+                                            "
+                                        >
+                                            Previous qualification details for your academic record.
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+                                <div
+                                    className="
+                                        grid
+                                        grid-cols-1
+                                        sm:grid-cols-2
+                                        gap-3
+                                        sm:gap-4
+                                    "
+                                >
+
+                                    {/* Previous Year of Qualification */}
+
+                                    <div className="min-w-0">
+
+                                        <label className={labelClass}>
+                                            Previous Qualification Year
+                                        </label>
+
+                                        <input
+                                            name="previousYearQualification"
+                                            value={
+                                                formData.previousYearQualification
+                                            }
+                                            onChange={handleChange}
+                                            className={inputClass}
+                                            placeholder="e.g. 1st Year"
+                                        />
+
+                                    </div>
+
+                                    {/* Previous Qualification */}
+
+                                    <div className="min-w-0">
+
+                                        <label className={labelClass}>
+                                            Previous Qualification
+                                        </label>
+
+                                        <input
+                                            name="previousQualification"
+                                            value={
+                                                formData.previousQualification
+                                            }
+                                            onChange={handleChange}
+                                            className={inputClass}
+                                            placeholder="e.g. 12th / Diploma"
+                                        />
+
+                                    </div>
+
+                                    {/* Previous Board / University */}
+
+                                    <div className="min-w-0 sm:col-span-2">
+
+                                        <label className={labelClass}>
+                                            Previous Board / University
+                                        </label>
+
+                                        <input
+                                            name="previousBoardUniversity"
+                                            value={
+                                                formData.previousBoardUniversity
+                                            }
+                                            onChange={handleChange}
+                                            className={inputClass}
+                                            placeholder="Enter previous board or university"
+                                        />
+
+                                    </div>
+
+                                    {/* Previous Percentage */}
+
+                                    <div className="min-w-0">
+
+                                        <label className={labelClass}>
+                                            Previous Percentage
+                                        </label>
+
+                                        <input
+                                            type="number"
+                                            name="previousPercentage"
+                                            value={
+                                                formData.previousPercentage
+                                            }
+                                            onChange={handleChange}
+                                            min="0"
+                                            max="100"
+                                            step="0.01"
+                                            className={inputClass}
+                                            placeholder="e.g. 78.50"
+                                        />
+
+                                    </div>
+
+                                    
+                                </div>
+
+                            </section>
+
+                        )}
+
+                        {/* ==================================================
+                            CATEGORY INFORMATION
+                        ================================================== */}
+
+                        {!isAdmin && (
+
+                            <section
+                                className="
+                                    bg-white
+                                    border border-slate-200
+                                    rounded-xl
+                                    sm:rounded-2xl
+                                    p-3
+                                    sm:p-5
+                                    min-w-0
+                                "
+                            >
+
+                                <div
+                                    className="
+                                        flex
+                                        items-center
+                                        gap-2
+                                        mb-4
+                                        sm:mb-5
+                                    "
+                                >
+
+                                    <IdCard
+                                        size={18}
+                                        className="text-blue-700 shrink-0"
+                                    />
+
+                                    <h3
+                                        className="
+                                            font-bold
+                                            text-slate-900
+                                            text-sm
+                                            sm:text-base
+                                        "
+                                    >
+                                        Student Category
+                                    </h3>
+
+                                </div>
+
+                                <div className="max-w-md">
+
+                                    <label className={labelClass}>
+                                        Category
+                                    </label>
+
+                                    <select
+                                        name="category"
+                                        value={formData.category}
+                                        onChange={handleChange}
+                                        className={inputClass}
+                                    >
+
+                                        <option value="">
+                                            Select Category
+                                        </option>
+
+                                        <option value="SC">
+                                            SC
+                                        </option>
+
+                                        <option value="BC">
+                                            BC
+                                        </option>
+
+                                        <option value="OBC">
+                                            OBC
+                                        </option>
+
+                                        <option value="GEN">
+                                            GEN
+                                        </option>
+
+                                        <option value="ST">
+                                            ST
+                                        </option>
+
+                                        <option value="Others">
+                                            Others
+                                        </option>
+
+                                    </select>
 
                                 </div>
 
@@ -2031,7 +2972,9 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
                                             name="mobileNo"
                                             value={formData.mobileNo}
                                             onChange={handleChange}
-                                            disabled={formData.isMobileLocked}
+                                            disabled={
+                                                formData.isMobileLocked
+                                            }
                                             className={`${formData.isMobileLocked
                                                 ? disabledInputClass
                                                 : inputClass
@@ -2106,7 +3049,9 @@ export default function ProfileModal({ user, onClose, onUpdateUser }) {
                                             name="email"
                                             value={formData.email}
                                             onChange={handleChange}
-                                            disabled={formData.isEmailLocked}
+                                            disabled={
+                                                formData.isEmailLocked
+                                            }
                                             className={`${formData.isEmailLocked
                                                 ? disabledInputClass
                                                 : inputClass

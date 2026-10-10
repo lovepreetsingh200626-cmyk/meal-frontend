@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
+
 import {
     LayoutDashboard,
     FileText,
     CreditCard,
     MessageSquareWarning,
-    BellRing,
     LogOut,
     Landmark,
     User as UserIcon,
@@ -12,20 +12,34 @@ import {
 } from 'lucide-react';
 
 import StudentOverview from '../pages/student/StudentOverview';
-import StudentLedger from '../pages/student/StudentLedger';
-import StudentPayments from '../pages/student/StudentPayments';
-import StudentComplaints from '../pages/student/StudentComplaints';
-import StudentNotices from '../pages/student/StudentNotices';
+import StudentLedgerPage from '../pages/student/StudentLedgerPage';
+import StudentPaymentPage from '../pages/student/StudentPaymentPage';
+import StudentComplaintsPage from '../pages/student/StudentComplaintsPage';
 
 import ProfileModal from './ProfileModal';
 
-export default function StudentDashboard({ user, onLogout, onUpdateUser }) {
-    const [activeTab, setActiveTab] = useState('dashboard');
-    const [isTransitioning, setIsTransitioning] = useState(false);
-    const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+export default function StudentDashboard({
+    user,
+    onLogout,
+    onUpdateUser
+}) {
+    const [activeTab, setActiveTab] =
+        useState('dashboard');
+
+    const [isTransitioning, setIsTransitioning] =
+        useState(false);
+
+    const [isProfileModalOpen, setIsProfileModalOpen] =
+        useState(false);
+
+    // =========================================================
+    // TAB SWITCH
+    // =========================================================
 
     const handleTabSwitch = (tabName) => {
-        if (activeTab === tabName) return;
+        if (activeTab === tabName) {
+            return;
+        }
 
         setIsTransitioning(true);
         setActiveTab(tabName);
@@ -34,6 +48,10 @@ export default function StudentDashboard({ user, onLogout, onUpdateUser }) {
             setIsTransitioning(false);
         }, 350);
     };
+
+    // =========================================================
+    // STUDENT NAVIGATION
+    // =========================================================
 
     const tabs = [
         {
@@ -60,36 +78,53 @@ export default function StudentDashboard({ user, onLogout, onUpdateUser }) {
             mobileLabel: 'Complaints',
             icon: MessageSquareWarning
         },
-        {
-            id: 'notices',
-            label: 'Campus Directives',
-            mobileLabel: 'Notices',
-            icon: BellRing
-        }
     ];
+
+    // =========================================================
+    // ACTIVE PAGE
+    // =========================================================
 
     const renderActivePage = () => {
         switch (activeTab) {
+
             case 'ledger':
-                return <StudentLedger user={user} />;
+                return (
+                    <StudentLedgerPage
+                        user={user}
+                    />
+                );
 
             case 'payments':
-                return <StudentPayments user={user} />;
+                return (
+                    <StudentPaymentPage
+                        user={user}
+                    />
+                );
 
             case 'complaints':
-                return <StudentComplaints user={user} />;
-
-            case 'notices':
-                return <StudentNotices user={user} />;
+                return (
+                    <StudentComplaintsPage
+                        user={user}
+                    />
+                );
 
             case 'dashboard':
             default:
-                return <StudentOverview user={user} />;
+                return (
+                    <StudentOverview
+                        user={user}
+                    />
+                );
         }
     };
 
+    // =========================================================
+    // LOADING TEXT
+    // =========================================================
+
     const getLoadingText = () => {
         switch (activeTab) {
+
             case 'ledger':
                 return 'Loading dietary ledger...';
 
@@ -98,9 +133,6 @@ export default function StudentDashboard({ user, onLogout, onUpdateUser }) {
 
             case 'complaints':
                 return 'Loading grievance records...';
-
-            case 'notices':
-                return 'Loading campus notices...';
 
             default:
                 return 'Loading student dashboard...';
@@ -113,11 +145,15 @@ export default function StudentDashboard({ user, onLogout, onUpdateUser }) {
             {/* =========================================================
                 GOVERNMENT / INSTITUTIONAL STRIP
             ========================================================= */}
+
             <div className="bg-slate-950 text-slate-300 border-b border-slate-800">
+
                 <div className="mx-auto w-full max-w-7xl px-3 sm:px-4 md:px-8">
+
                     <div className="flex min-h-[30px] items-center justify-between gap-3 py-1.5">
 
                         <div className="flex min-w-0 items-center gap-2">
+
                             <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400 sm:h-2 sm:w-2" />
 
                             <span className="truncate text-[8px] font-bold uppercase tracking-[0.12em] sm:text-[9px] md:text-[10px] md:tracking-widest">
@@ -131,9 +167,11 @@ export default function StudentDashboard({ user, onLogout, onUpdateUser }) {
                             <span className="hidden lg:inline text-[9px] font-black uppercase tracking-wider text-amber-300">
                                 Student Residential Portal
                             </span>
+
                         </div>
 
                         <div className="hidden shrink-0 items-center gap-2 text-[9px] font-mono uppercase text-slate-400 sm:flex">
+
                             <span>
                                 Status:
                                 <strong className="ml-1 text-emerald-400">
@@ -141,7 +179,9 @@ export default function StudentDashboard({ user, onLogout, onUpdateUser }) {
                                 </strong>
                             </span>
 
-                            <span className="text-slate-700">•</span>
+                            <span className="text-slate-700">
+                                •
+                            </span>
 
                             <span>
                                 Roll:
@@ -149,22 +189,26 @@ export default function StudentDashboard({ user, onLogout, onUpdateUser }) {
                                     {user?.rollNo || 'N/A'}
                                 </strong>
                             </span>
+
                         </div>
 
                     </div>
+
                 </div>
+
             </div>
 
 
             {/* =========================================================
                 MAIN INSTITUTIONAL HEADER
             ========================================================= */}
+
             <header className="border-b border-slate-200 bg-white shadow-sm">
+
                 <div className="mx-auto w-full max-w-7xl px-3 py-3 sm:px-4 sm:py-4 md:px-8">
 
                     <div className="flex items-center justify-between gap-3">
 
-                        {/* BRAND */}
                         <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
 
                             <div
@@ -178,6 +222,7 @@ export default function StudentDashboard({ user, onLogout, onUpdateUser }) {
                                     md:h-14 md:w-14
                                 "
                             >
+
                                 <Landmark className="mb-0.5 h-5 w-5 text-blue-700 sm:h-5 sm:w-5 md:h-6 md:w-6" />
 
                                 <span className="text-[5px] font-black tracking-widest text-blue-700 sm:text-[6px]">
@@ -187,11 +232,13 @@ export default function StudentDashboard({ user, onLogout, onUpdateUser }) {
                                 <span className="text-[4px] font-bold tracking-tight text-slate-600 sm:text-[5px]">
                                     HOSTELS
                                 </span>
+
                             </div>
 
                             <div className="min-w-0">
 
                                 <div className="flex min-w-0 items-center gap-2">
+
                                     <h1
                                         className="
                                             truncate
@@ -206,6 +253,7 @@ export default function StudentDashboard({ user, onLogout, onUpdateUser }) {
                                     <span className="hidden shrink-0 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-1 text-[8px] font-black uppercase text-emerald-800 sm:inline-flex">
                                         Student Portal
                                     </span>
+
                                 </div>
 
                                 <div className="mt-0.5 flex min-w-0 items-center gap-2 text-[8px] font-bold uppercase tracking-wide text-slate-500 sm:mt-1 sm:text-[9px] md:text-[10px]">
@@ -229,7 +277,6 @@ export default function StudentDashboard({ user, onLogout, onUpdateUser }) {
                         </div>
 
 
-                        {/* LOGOUT */}
                         <button
                             type="button"
                             onClick={onLogout}
@@ -249,30 +296,37 @@ export default function StudentDashboard({ user, onLogout, onUpdateUser }) {
                                 sm:px-4
                             "
                         >
+
                             <LogOut className="h-4 w-4" />
 
                             <span className="hidden text-[10px] font-black uppercase tracking-widest sm:inline">
                                 Sign Out
                             </span>
+
                         </button>
 
                     </div>
 
                 </div>
+
             </header>
 
 
             {/* =========================================================
                 STUDENT IDENTITY BAR
             ========================================================= */}
+
             <div className="border-b border-slate-800 bg-slate-900 text-white">
+
                 <div className="mx-auto w-full max-w-7xl px-3 sm:px-4 md:px-8">
+
                     <div className="flex min-h-[54px] items-center justify-between gap-3 py-2 sm:py-2.5">
 
-                        {/* PROFILE */}
                         <button
                             type="button"
-                            onClick={() => setIsProfileModalOpen(true)}
+                            onClick={() =>
+                                setIsProfileModalOpen(true)
+                            }
                             title="Open profile"
                             className="
                                 flex min-w-0 items-center gap-2.5
@@ -298,6 +352,7 @@ export default function StudentDashboard({ user, onLogout, onUpdateUser }) {
                                     sm:h-9 sm:w-9
                                 "
                             >
+
                                 {user?.profilePhoto ? (
                                     <img
                                         src={user.profilePhoto}
@@ -307,8 +362,8 @@ export default function StudentDashboard({ user, onLogout, onUpdateUser }) {
                                 ) : (
                                     <UserIcon className="h-4 w-4 text-slate-300" />
                                 )}
-                            </div>
 
+                            </div>
 
                             <div className="min-w-0">
 
@@ -327,6 +382,7 @@ export default function StudentDashboard({ user, onLogout, onUpdateUser }) {
                                 <p className="truncate text-[8px] font-mono uppercase text-slate-400 sm:text-[9px] md:text-[10px]">
 
                                     ID:
+
                                     <strong className="ml-1 text-amber-300">
                                         {user?.studentId || 'N/A'}
                                     </strong>
@@ -336,6 +392,7 @@ export default function StudentDashboard({ user, onLogout, onUpdateUser }) {
                                     </span>
 
                                     Hostel:
+
                                     <strong className="ml-1 text-white">
                                         {user?.hostelNo || 'N/A'}
                                     </strong>
@@ -347,11 +404,11 @@ export default function StudentDashboard({ user, onLogout, onUpdateUser }) {
                         </button>
 
 
-                        {/* DESKTOP INFORMATION */}
                         <div className="hidden shrink-0 items-center gap-5 text-[9px] font-mono uppercase text-slate-400 lg:flex">
 
                             <span>
                                 Department:
+
                                 <strong className="ml-1 text-white">
                                     {user?.department || 'N/A'}
                                 </strong>
@@ -363,6 +420,7 @@ export default function StudentDashboard({ user, onLogout, onUpdateUser }) {
 
                             <span>
                                 Roll:
+
                                 <strong className="ml-1 text-amber-400">
                                     {user?.rollNo || 'N/A'}
                                 </strong>
@@ -374,6 +432,7 @@ export default function StudentDashboard({ user, onLogout, onUpdateUser }) {
 
                             <span>
                                 Session:
+
                                 <strong className="ml-1 text-white">
                                     {user?.session || 'N/A'}
                                 </strong>
@@ -382,18 +441,22 @@ export default function StudentDashboard({ user, onLogout, onUpdateUser }) {
                         </div>
 
                     </div>
+
                 </div>
+
             </div>
 
 
             {/* =========================================================
                 MAIN CONTENT
             ========================================================= */}
+
             <main className="mx-auto w-full max-w-7xl min-w-0 px-2.5 py-3.5 sm:px-4 sm:py-5 md:px-8 md:py-6">
 
                 {/* =====================================================
                     NAVIGATION
                 ===================================================== */}
+
                 <section
                     className="
                         mb-3
@@ -425,14 +488,21 @@ export default function StudentDashboard({ user, onLogout, onUpdateUser }) {
                     >
 
                         {tabs.map((tab) => {
+
                             const Icon = tab.icon;
-                            const isActive = activeTab === tab.id;
+
+                            const isActive =
+                                activeTab === tab.id;
 
                             return (
                                 <button
                                     key={tab.id}
                                     type="button"
-                                    onClick={() => handleTabSwitch(tab.id)}
+                                    onClick={() =>
+                                        handleTabSwitch(
+                                            tab.id
+                                        )
+                                    }
                                     className={`
                                         shrink-0
                                         inline-flex
@@ -484,6 +554,7 @@ export default function StudentDashboard({ user, onLogout, onUpdateUser }) {
                 {/* =====================================================
                     PAGE CONTENT
                 ===================================================== */}
+
                 <section className="min-w-0">
 
                     {isTransitioning ? (
@@ -506,7 +577,9 @@ export default function StudentDashboard({ user, onLogout, onUpdateUser }) {
                         >
 
                             <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-blue-50 sm:mb-4 sm:h-12 sm:w-12">
+
                                 <Loader2 className="h-5 w-5 animate-spin text-blue-700 sm:h-6 sm:w-6" />
+
                             </div>
 
                             <p className="text-center text-[9px] font-black uppercase tracking-widest text-slate-600 sm:text-xs">
@@ -535,7 +608,9 @@ export default function StudentDashboard({ user, onLogout, onUpdateUser }) {
             {/* =========================================================
                 FOOTER
             ========================================================= */}
+
             <footer className="mt-4 border-t border-slate-200 bg-white sm:mt-8">
+
                 <div className="mx-auto w-full max-w-7xl px-3 py-4 sm:px-4 sm:py-5 md:px-8">
 
                     <div className="flex flex-col items-center justify-between gap-2.5 sm:gap-3 md:flex-row">
@@ -552,11 +627,11 @@ export default function StudentDashboard({ user, onLogout, onUpdateUser }) {
 
                         </div>
 
-
                         <div className="text-center text-[8px] text-slate-400 md:text-right sm:text-[9px]">
 
                             <p>
                                 Student ID:{' '}
+
                                 <strong className="text-slate-600">
                                     {user?.studentId || 'N/A'}
                                 </strong>
@@ -571,17 +646,23 @@ export default function StudentDashboard({ user, onLogout, onUpdateUser }) {
                     </div>
 
                 </div>
+
             </footer>
 
 
             {/* =========================================================
                 SHARED PROFILE MODAL
             ========================================================= */}
+
             {isProfileModalOpen && (
+
                 <ProfileModal
                     user={user}
-                    onClose={() => setIsProfileModalOpen(false)}
+                    onClose={() =>
+                        setIsProfileModalOpen(false)
+                    }
                     onUpdateUser={(updatedUser) => {
+
                         if (onUpdateUser) {
                             onUpdateUser(updatedUser);
                         }
@@ -589,6 +670,7 @@ export default function StudentDashboard({ user, onLogout, onUpdateUser }) {
                         setIsProfileModalOpen(false);
                     }}
                 />
+
             )}
 
         </div>

@@ -12,7 +12,7 @@ import {
     MessageSquareWarning,
     BellRing,
     Settings,
-    Lock
+    Lock,
 } from 'lucide-react';
 
 import ProfileModal from '../../components/ProfileModal';
@@ -126,21 +126,22 @@ export default function AdminLayout({ user, onLogout }) {
         rounded-lg
         sm:rounded-md
 
-        ${isActive
-            ? `
-                bg-blue-700
-                text-white
-                border-blue-800
-                shadow-sm
-            `
-            : `
-                bg-slate-50
-                text-slate-700
-                border-transparent
-                hover:bg-blue-50
-                hover:text-blue-800
-                hover:border-blue-100
-            `
+        ${
+            isActive
+                ? `
+                    bg-blue-700
+                    text-white
+                    border-blue-800
+                    shadow-sm
+                `
+                : `
+                    bg-slate-50
+                    text-slate-700
+                    border-transparent
+                    hover:bg-blue-50
+                    hover:text-blue-800
+                    hover:border-blue-100
+                `
         }
         `;
 
@@ -568,6 +569,7 @@ export default function AdminLayout({ user, onLogout }) {
                     />
 
                     <span>
+
                         <span className="hidden sm:inline">
                             Terminate Session
                         </span>
@@ -575,6 +577,7 @@ export default function AdminLayout({ user, onLogout }) {
                         <span className="sm:hidden">
                             Logout
                         </span>
+
                     </span>
 
                 </button>
@@ -902,6 +905,8 @@ export default function AdminLayout({ user, onLogout }) {
                         "
                     >
 
+                        {/* DASHBOARD */}
+
                         <NavLink
                             to="/admin"
                             end
@@ -931,6 +936,8 @@ export default function AdminLayout({ user, onLogout }) {
                         </NavLink>
 
 
+                        {/* USERS */}
+
                         <NavLink
                             to="/admin/users"
                             className={navLinkClass}
@@ -958,6 +965,8 @@ export default function AdminLayout({ user, onLogout }) {
 
                         </NavLink>
 
+
+                        {/* MEALS */}
 
                         <NavLink
                             to="/admin/meals"
@@ -987,6 +996,8 @@ export default function AdminLayout({ user, onLogout }) {
                         </NavLink>
 
 
+                        {/* PAYMENTS */}
+
                         <NavLink
                             to="/admin/payments"
                             className={navLinkClass}
@@ -1014,6 +1025,8 @@ export default function AdminLayout({ user, onLogout }) {
 
                         </NavLink>
 
+
+                        {/* COMPLAINTS */}
 
                         <NavLink
                             to="/admin/complaints"
@@ -1043,6 +1056,8 @@ export default function AdminLayout({ user, onLogout }) {
                         </NavLink>
 
 
+                        {/* NOTICES */}
+
                         <NavLink
                             to="/admin/notices"
                             className={navLinkClass}
@@ -1070,6 +1085,8 @@ export default function AdminLayout({ user, onLogout }) {
 
                         </NavLink>
 
+
+                        {/* SETTINGS */}
 
                         <NavLink
                             to="/admin/settings"
